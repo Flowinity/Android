@@ -1,5 +1,8 @@
 package com.troplo.privateuploader.api
 
+import com.troplo.privateuploader.data.model.Chat
+import com.troplo.privateuploader.data.model.User
+
 object TpuFunctions {
   fun image(link: String?, recipient: User?): String? {
       if(recipient?.avatar != null) {
@@ -20,7 +23,7 @@ object TpuFunctions {
       return "Communications"
     }
     return if(chat.type == "direct") {
-      chat.recipient?.username ?: "Deleted User"
+      chat.recipient?.username ?: "Deleted com.troplo.privateuploader.data.model.User"
     } else {
       chat.name
     }

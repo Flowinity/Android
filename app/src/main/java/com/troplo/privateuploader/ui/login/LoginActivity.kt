@@ -1,6 +1,7 @@
 package com.troplo.privateuploader.ui.login
 
 import android.app.Activity
+import android.content.Context
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
@@ -15,11 +16,27 @@ import android.widget.Toast
 import com.troplo.privateuploader.databinding.ActivityLoginBinding
 
 import com.troplo.privateuploader.R
+import com.troplo.privateuploader.api.SessionManager
+import com.troplo.privateuploader.api.TpuApi
+import com.troplo.privateuploader.data.model.LoginRequest
+import com.troplo.privateuploader.data.model.LoginResponse
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class LoginActivity : AppCompatActivity() {
 
   private lateinit var loginViewModel: LoginViewModel
   private lateinit var binding: ActivityLoginBinding
+
+  val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+    println("CoroutineExceptionHandler got $throwable")
+  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -32,99 +49,70 @@ class LoginActivity : AppCompatActivity() {
     val login = binding.login
     val loading = binding.loading
     val code = binding.code
+    val token = binding.token
 
-    loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
-      .get(LoginViewModel::class.java)
+    loginViewModel = ViewModelProvider(this, LoginViewModelFactory())[LoginViewModel::class.java]
 
-    loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
-      val loginState = it ?: return@Observer
-
-      // disable login button unless both username / password is valid
-      login.isEnabled = loginState.isDataValid
-
-      if (loginState.usernameError != null) {
-        username.error = getString(loginState.usernameError)
-      }
-      if (loginState.passwordError != null) {
-        password.error = getString(loginState.passwordError)
-      }
-    })
-
-    loginViewModel.loginResult.observe(this@LoginActivity, Observer {
-      val loginResult = it ?: return@Observer
-
-      loading.visibility = View.GONE
-      if (loginResult.error != null) {
-        showLoginFailed(loginResult.error)
-      }
-      if (loginResult.success != null) {
-        updateUiWithUser(loginResult.success)
-      }
-      setResult(Activity.RESULT_OK)
-
-      //Complete and destroy login activity once successful
-      finish()
-    })
-
-    username.afterTextChanged {
-      loginViewModel.loginDataChanged(
-        username.text.toString(),
-        password.text.toString(),
-        code.text.toString()
-      )
-    }
-
-    password.apply {
-      afterTextChanged {
-        loginViewModel.loginDataChanged(
-          username.text.toString(),
-          password.text.toString(),
-          code.text.toString()
-        )
-      }
-
-      code.apply {
-        afterTextChanged {
-          loginViewModel.loginDataChanged(
-            username.text.toString(),
-            password.text.toString(),
-            code.text.toString()
-          )
+    login.setOnClickListener {
+      try {
+        println(binding.token.text.toString())
+        if(binding.token.text.toString() != "") {
+          SessionManager(this).saveAuthToken(binding.token.text.toString())
+          setResult(Activity.RESULT_OK)
+          finish()
         }
-
-        setOnEditorActionListener { _, actionId, _ ->
-          when (actionId) {
-            EditorInfo.IME_ACTION_DONE ->
-              loginViewModel.login(
-                username.text.toString(),
-                password.text.toString(),
-                code.text.toString()
-              )
-          }
-          false
-        }
-
-        login.setOnClickListener {
-          loading.visibility = View.VISIBLE
-          loginViewModel.login(
-            username.text.toString(),
-            password.text.toString(),
-            code.text.toString()
-          )
-        }
+        println("login" + username.text.toString() + password.text.toString() + code.text.toString())
+        loading.visibility = View.VISIBLE
+        login(username, password, code, token, loading, this)
+        loading.visibility = View.GONE
+        setResult(Activity.RESULT_OK)
+        finish()
+      } catch (e: Exception) {
+        println(e.toString())
+        loading.visibility = View.GONE
+        Toast.makeText(this, "Login error.", Toast.LENGTH_LONG).show()
       }
     }
   }
 
-  private fun updateUiWithUser(model: LoggedInUserView) {
-    val welcome = getString(R.string.welcome)
-    val displayName = model.displayName
-    // TODO : initiate successful logged in experience
-    Toast.makeText(
-      applicationContext,
-      "$welcome $displayName",
-      Toast.LENGTH_LONG
-    ).show()
+  private fun login(username: EditText, password: EditText, code: EditText, token: EditText, loading: View, context: Context) {
+    val scope = CoroutineScope(Dispatchers.Main + exceptionHandler) // Use Dispatchers.Main to update UI
+
+    val loginDeferred = scope.async {
+      try {
+        val user = withContext(Dispatchers.IO) {
+          TpuApi.retrofitService.login(
+            LoginRequest(
+              username.text.toString(),
+              password.text.toString(),
+              code.text.toString()
+            )
+          ).execute().body()
+        }
+
+        if (user != null) {
+          SessionManager(context).saveAuthToken(user.token)
+          setResult(Activity.RESULT_OK)
+          finish()
+        } else {
+          throw Exception("Login error.")
+        }
+      } catch (e: Exception) {
+        println(e.toString())
+        throw e // Rethrow the exception to propagate it to the calling function
+      }
+    }
+
+    scope.launch {
+      try {
+        loginDeferred.await() // Await the completion of the loginDeferred
+      } catch (e: Exception) {
+        println(e.toString())
+        // Handle the exception here in the original calling function
+        loading.visibility = View.GONE
+        Toast.makeText(context, "Login error.", Toast.LENGTH_LONG).show()
+      }
+    }
   }
 
   private fun showLoginFailed(@StringRes errorString: Int) {

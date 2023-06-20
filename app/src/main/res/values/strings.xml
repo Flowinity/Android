@@ -20,4 +20,5 @@
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
     <string name="prompt_totp">2FA code (if enabled)</string>
+    <string name="prompt_token">Dev Token</string>
 </resources>

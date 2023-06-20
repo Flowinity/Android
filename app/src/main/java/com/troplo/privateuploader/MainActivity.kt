@@ -15,7 +15,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.TpuConfig
-import com.troplo.privateuploader.api.User
+import com.troplo.privateuploader.data.model.User
 import com.troplo.privateuploader.databinding.ActivityMainBinding
 import com.troplo.privateuploader.ui.login.LoginActivity
 import io.socket.client.Socket
@@ -32,16 +32,16 @@ class MainActivity : AppCompatActivity() {
             TpuApi.retrofitService.getUser(config.token!!).enqueue(object : retrofit2.Callback<User> {
                 override fun onResponse(call: retrofit2.Call<User>, response: retrofit2.Response<User>) {
                     if (response.body()?.username != null) {
-                        println("User is logged in")
+                        println("com.troplo.privateuploader.data.model.User is logged in")
                         setContentView(R.layout.activity_main)
                     } else {
-                        println("User is not logged in")
+                        println("com.troplo.privateuploader.data.model.User is not logged in")
                         val intent = Intent(this@MainActivity, LoginActivity::class.java)
                         startActivity(intent)
                     }
                 }
                 override fun onFailure(call: retrofit2.Call<User>, t: Throwable) {
-                    println("User is not logged in")
+                    println("com.troplo.privateuploader.data.model.User is not logged in")
                     val intent = Intent(this@MainActivity, LoginActivity::class.java)
                     startActivity(intent)
                 }
@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
         tpuSocket.on(Socket.EVENT_DISCONNECT) {
             println("Disconnected from TPU Server")
         }
-        tpuSocket.emit("echo", "Message from TPUKt")
+        tpuSocket.emit("echo", "com.troplo.privateuploader.data.model.Message from TPUKt")
         println("Sent message to TPU Server")
         SocketHandler.listeners()
 

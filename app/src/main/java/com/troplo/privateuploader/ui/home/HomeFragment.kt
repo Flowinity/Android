@@ -10,9 +10,9 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.troplo.privateuploader.R
-import com.troplo.privateuploader.api.Chat
 import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.TpuApi
+import com.troplo.privateuploader.data.model.Chat
 import com.troplo.privateuploader.databinding.FragmentHomeBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

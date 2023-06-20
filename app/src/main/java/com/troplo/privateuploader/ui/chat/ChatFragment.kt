@@ -1,4 +1,4 @@
-package com.troplo.privateuploader.ui.collections
+package com.troplo.privateuploader.ui.chat
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,8 +8,9 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.troplo.privateuploader.databinding.FragmentCollectionsBinding
+import com.troplo.privateuploader.ui.collections.ChatViewModel
 
-class CollectionsFragment : Fragment() {
+class ChatFragment : Fragment() {
 
     private var _binding: FragmentCollectionsBinding? = null
 
@@ -23,7 +24,7 @@ class CollectionsFragment : Fragment() {
             savedInstanceState: Bundle?
     ): View {
         val notificationsViewModel =
-                ViewModelProvider(this).get(ChatViewModel::class.java)
+            ViewModelProvider(this)[ChatViewModel::class.java]
 
         _binding = FragmentCollectionsBinding.inflate(inflater, container, false)
         val root: View = binding.root

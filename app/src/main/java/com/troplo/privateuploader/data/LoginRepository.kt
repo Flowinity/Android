@@ -1,7 +1,8 @@
 package com.troplo.privateuploader.data
 
-import com.troplo.privateuploader.api.LoginResponse
-import com.troplo.privateuploader.api.User
+import com.troplo.privateuploader.data.model.LoginResponse
+import com.troplo.privateuploader.data.model.User
+
 
 /**
  * Class that requests authentication and user information from the remote data source and

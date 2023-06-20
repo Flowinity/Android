@@ -8,8 +8,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.troplo.privateuploader.R
-import com.troplo.privateuploader.api.Chat
 import com.troplo.privateuploader.api.TpuFunctions
+import com.troplo.privateuploader.data.model.Chat
 
 class ChatAdapter(private val items: List<Chat>) : RecyclerView.Adapter<ChatAdapter.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

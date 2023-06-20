@@ -1,11 +1,8 @@
 package com.troplo.privateuploader.data
 
-import com.troplo.privateuploader.api.LoginRequest
-import com.troplo.privateuploader.api.LoginResponse
-import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.TpuApi
-import com.troplo.privateuploader.api.User
-import com.troplo.privateuploader.data.model.LoggedInUser
+import com.troplo.privateuploader.data.model.LoginRequest
+import com.troplo.privateuploader.data.model.LoginResponse
 import java.io.IOException
 
 /**
