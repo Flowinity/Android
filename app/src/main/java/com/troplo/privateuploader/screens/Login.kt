@@ -41,7 +41,7 @@ import org.json.JSONObject
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(onLoginSuccess: () -> Unit) {
-    var context = LocalContext.current
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -87,13 +87,9 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                     username = usernameState.value,
                     password = passwordState.value,
                     totp = totpState.value,
-                    context = context
-                ).also {
-                    println("deezer" + SessionManager(context).fetchAuthToken())
-                    if(SessionManager(context).fetchAuthToken() != null) {
-                        onLoginSuccess()
-                    }
-                }
+                    context = context,
+                    onLoginSuccess = onLoginSuccess
+                )
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -125,7 +121,7 @@ private fun DefaultPreview() {
 class LoginViewModel : ViewModel() {
     var loading by mutableStateOf(false)
 
-    fun login(username: String, password: String, totp: String, context: Context) {
+    fun login(username: String, password: String, totp: String, context: Context, onLoginSuccess: () -> Unit) {
         loading = true
         SessionManager(context).saveAuthToken(null)
         viewModelScope.launch(Dispatchers.IO) {
@@ -143,7 +139,7 @@ class LoginViewModel : ViewModel() {
                     // set the token
                     SessionManager(context).saveAuthToken(data.body()!!.token)
                     // go to the main screen
-
+                    onLoginSuccess()
                 } else {
                     // show Toast
                     val error: JSONObject = JSONObject(data.errorBody()?.string() ?: "{}")

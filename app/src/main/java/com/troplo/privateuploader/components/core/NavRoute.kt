@@ -5,6 +5,16 @@ sealed class NavRoute(val path: String) {
     object Home: NavRoute("home")
     object Gallery: NavRoute("gallery")
     object Settings: NavRoute("settings")
+    object SettingsUpload: NavRoute("settings/upload")
+
+    object Chat: NavRoute("chat") {
+        fun withArgs(chatId: Int): String {
+            return buildString {
+                append(path)
+                append("/$chatId")
+            }
+        }
+    }
 
 
     // build navigation path (for screen navigation)

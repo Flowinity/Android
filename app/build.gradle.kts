@@ -14,6 +14,7 @@ android {
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
+        multiDexEnabled = true
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -52,6 +53,8 @@ android {
 
 dependencies {
     // TPU
+    implementation("io.coil-kt:coil:2.3.0")
+    implementation("com.github.jeziellago:compose-markdown:0.3.3")
     implementation("com.github.bumptech.glide:compose:1.0.0-alpha.1")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
@@ -62,7 +65,9 @@ dependencies {
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("io.socket:socket.io-client:2.0.0")
+    implementation("io.socket:socket.io-client:2.1.0") {
+        exclude("org.json", "json")
+    }
     // Android
 
     implementation("androidx.navigation:navigation-compose:2.6.0")

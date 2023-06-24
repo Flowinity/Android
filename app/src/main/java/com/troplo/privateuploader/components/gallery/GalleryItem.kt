@@ -1,6 +1,5 @@
 package com.troplo.privateuploader.components.gallery
 
-import android.text.format.DateFormat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -74,7 +73,7 @@ fun GalleryItem(@PreviewParameter(
                 Text(text = "Uploaded name: ${item.attachment}")
                 Text(
                     text = "Created at: ${
-                        DateFormat.format("dd MMMM yyyy, h:mm a", item.createdAt)
+                        TpuFunctions.formatDate(item.createdAt)
                     }"
                 )
                 Text(text = "File size: ${item.fileSize}")
@@ -163,7 +162,8 @@ class SampleUploadProvider : PreviewParameterProvider<Upload> {
                 user = User(
                     id = 1,
                     username = "Test",
-                    avatar = "a.png"
+                    avatar = "a.png",
+                    banner = "b.png",
                 )
             )
         )

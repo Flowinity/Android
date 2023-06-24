@@ -20,7 +20,7 @@ fun BottomBarNav(navController: NavController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     println("currentRoute: $currentRoute")
-    if (currentRoute == null || currentRoute == NavRoute.Login.path) {
+    if (currentRoute == null || currentRoute == NavRoute.Login.path || currentRoute.contains("chat/")) {
         return
     }
 

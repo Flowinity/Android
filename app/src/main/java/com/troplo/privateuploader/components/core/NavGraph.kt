@@ -10,6 +10,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.troplo.privateuploader.data.model.User
 import com.troplo.privateuploader.screens.*
+import com.troplo.privateuploader.screens.settings.SettingsScreen
+import com.troplo.privateuploader.screens.settings.SettingsUploadScreen
 
 @Composable
 fun NavGraph(modifier: Modifier = Modifier, navController: NavHostController, user: User?) {
@@ -27,6 +29,9 @@ fun NavGraph(modifier: Modifier = Modifier, navController: NavHostController, us
         addLoginScreen(navController, this)
         addHomeScreen(navController, this)
         addGalleryScreen(navController, this)
+        addSettingsScreen(navController, this, user)
+        addChatScreen(navController, this)
+        addSettingsUploadScreen(navController, this)
     }
 }
 
@@ -37,6 +42,7 @@ private fun addLoginScreen(
     navGraphBuilder.composable(route = NavRoute.Login.path) {
         LoginScreen(
             onLoginSuccess = {
+                println("LoginScreen: onLoginSuccess")
                 navController.navigate(NavRoute.Home.path)
             }
         )
@@ -48,7 +54,11 @@ private fun addHomeScreen(
     navGraphBuilder: NavGraphBuilder
 ) {
     navGraphBuilder.composable(route = NavRoute.Home.path) {
-        HomeScreen()
+        HomeScreen(
+            openChat = { chatId ->
+                navController.navigate("${NavRoute.Chat.path}/$chatId")
+            },
+        )
     }
 }
 
@@ -58,5 +68,45 @@ private fun addGalleryScreen(
 ) {
     navGraphBuilder.composable(route = NavRoute.Gallery.path) {
         GalleryScreen()
+    }
+}
+
+private fun addSettingsScreen(
+    navController: NavHostController,
+    navGraphBuilder: NavGraphBuilder,
+    user: User?
+) {
+    navGraphBuilder.composable(route = NavRoute.Settings.path) {
+        SettingsScreen(
+            navigate = { subItem ->
+                navController.navigate("${NavRoute.Settings.path}/$subItem")
+            },
+        )
+    }
+}
+
+private fun addChatScreen(
+    navController: NavHostController,
+    navGraphBuilder: NavGraphBuilder
+) {
+    navGraphBuilder.composable(
+        route = NavRoute.Chat.withArgsFormat("chatId"),
+        arguments = listOf(
+            navArgument("chatId") {
+                type = NavType.IntType
+            }
+        )
+    ) { backStackEntry ->
+        val chatId = backStackEntry.arguments?.getInt("chatId")
+        ChatScreen(associationId = chatId!!)
+    }
+}
+
+private fun addSettingsUploadScreen(
+    navController: NavHostController,
+    navGraphBuilder: NavGraphBuilder
+) {
+    navGraphBuilder.composable(route = NavRoute.SettingsUpload.path) {
+        SettingsUploadScreen()
     }
 }

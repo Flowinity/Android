@@ -1,7 +1,9 @@
 package com.troplo.privateuploader.api
 
+import android.text.format.DateFormat
 import com.troplo.privateuploader.data.model.Chat
 import com.troplo.privateuploader.data.model.User
+import java.util.Date
 
 object TpuFunctions {
   fun image(link: String?, recipient: User?): String? {
@@ -28,4 +30,8 @@ object TpuFunctions {
       chat.name
     }
   }
+
+    fun formatDate(date: Date?): CharSequence? {
+        return DateFormat.format("dd MMMM yyyy, h:mm a", date)
+    }
 }

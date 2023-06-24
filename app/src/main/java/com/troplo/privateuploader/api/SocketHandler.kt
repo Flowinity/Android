@@ -1,69 +1,56 @@
 package com.troplo.privateuploader.api
 
-import android.app.NotificationManager
-import android.content.Context.NOTIFICATION_SERVICE
-import android.content.SharedPreferences
-import android.preference.PreferenceManager
-import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat.getSystemService
-import com.troplo.privateuploader.R
+import android.content.Context
 import io.socket.client.IO
+import io.socket.client.Manager
 import io.socket.client.Socket
-import io.socket.emitter.Emitter
+import java.net.URI
 import java.net.URISyntaxException
-import java.util.Collections.singletonMap
+import java.util.Collections
 
 
 object SocketHandler {
-  lateinit var tpuSocket: Socket
+  private const val SERVER_URL = "http://192.168.0.12:34582" // Replace with your Socket.io server URL
 
-  @Synchronized
-  fun setSocket(token: String?) {
+  private var socket: Socket? = null
+
+  fun initializeSocket(token: String) {
     try {
-      val options = IO.Options.builder()
-        .setAuth(singletonMap("token", token))
-        .build()
-      tpuSocket = IO.socket("http://192.168.0.12:34582", options)
-      println("Socket set")
+      val options = IO.Options()
+      options.forceNew = true
+      options.reconnection = true
+      options.auth = Collections.singletonMap("token", token)
+      socket = IO.socket(SERVER_URL, options)
+      if(socket != null) {
+        socket?.open()
+        socket?.on(Socket.EVENT_CONNECT) {
+          println("Socket connected ${socket?.isActive}")
+        }
+        socket?.on(Socket.EVENT_DISCONNECT) {
+          println("Socket disconnected ${socket?.isActive}")
+        }
+        socket?.on(Socket.EVENT_CONNECT_ERROR) {
+          println("Socket connect error ${socket?.isActive}")
+        }
+        // socket on any other events
+        socket?.on("message") {
+          println("Socket $it")
+        }
+        println("Socket connected ${socket?.isActive}")
+      } else {
+        println("Socket is null")
+      }
     } catch (e: URISyntaxException) {
       e.printStackTrace()
     }
   }
 
-  @Synchronized
-  fun getSocket(): Socket {
-    return tpuSocket
+  fun getSocket(): Socket? {
+    return socket
   }
 
-  @Synchronized
-  fun establishConnection() {
-    tpuSocket.connect()
-  }
-
-  @Synchronized
-  fun closeConnection() {
-    tpuSocket.disconnect()
-  }
-
-  @Synchronized
-  fun listeners() {
-    tpuSocket.on("message", Emitter.Listener { args->
-      /*NotificationCompat.Builder(this, "communications")
-        .setStyle(NotificationCompat.MessagingStyle("Me")
-          .setConversationTitle(TpuFunctions.getChatName(args[0].chat as Chat?))
-          .build()
-        )*/
-      println(args)
-    })
-
-    tpuSocket.on(Socket.EVENT_CONNECT) {
-      println("Connected to TPU Server")
-    }
-    tpuSocket.on(Socket.EVENT_DISCONNECT) {
-      println("Disconnected from TPU Server")
-    }
-    tpuSocket.on("echo") { args ->
-      println(args[0])
-    }
+  fun closeSocket() {
+    socket?.disconnect()
+    socket = null
   }
 }

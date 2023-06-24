@@ -5,7 +5,7 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class Chat(
-  @field:Json(name = "id") val id: String,
+  @field:Json(name = "id") val id: Int,
   @field:Json(name = "name") val name: String,
   @field:Json(name = "users") val users: List<User>,
   @field:Json(name = "recipient") val recipient: User?,

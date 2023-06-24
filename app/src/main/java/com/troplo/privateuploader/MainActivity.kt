@@ -1,18 +1,20 @@
 package com.troplo.privateuploader
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import com.troplo.privateuploader.api.SessionManager
+import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.data.model.User
 import com.troplo.privateuploader.ui.theme.PrivateUploaderTheme
+import io.socket.client.IO
+import kotlinx.coroutines.Dispatchers
+import java.util.Collections
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,14 +56,32 @@ class MainActivity : ComponentActivity() {
             }
         }
         super.onCreate(savedInstanceState)
-    }
-}
+/*
+        fun requestPermissions() {
+            val permissions = arrayOf(
+                android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                android.Manifest.permission.CAMERA
+            )
+            ActivityCompat.requestPermissions(this, permissions, 0)
+        }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
+        val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // There are no request codes
+                val data: Intent? = result.data
+                val folder = data?.getStringExtra("folder")
+                if(folder != null) {
+                    SessionManager(this).setFolder(folder)
+                }
+            }
+        }
+        fun requestFolder() {
+            requestPermissions()
+            val intent = Intent(this, MainActivity::class.java)
+            resultLauncher.launch(intent)
+        }
+        requestFolder()*/
+    }
 }
 

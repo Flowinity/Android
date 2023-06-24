@@ -4,6 +4,8 @@ import com.troplo.privateuploader.data.model.Chat
 import com.troplo.privateuploader.data.model.Gallery
 import com.troplo.privateuploader.data.model.LoginRequest
 import com.troplo.privateuploader.data.model.LoginResponse
+import com.troplo.privateuploader.data.model.Message
+import com.troplo.privateuploader.data.model.MessageRequest
 import com.troplo.privateuploader.data.model.User
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -14,6 +16,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 private const val BASE_URL = "http://192.168.0.12:34582/api/v3/"
@@ -55,6 +58,19 @@ interface TpuApiService {
         @Query("filter") filter: String = "all",
         @Query("sort") sort: String = "\"newest\""
     ): Call<Gallery>
+
+    @GET("chats/{id}/messages")
+    fun getMessages(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Call<List<Message>>
+
+    @POST("chats/{id}/message")
+    fun sendMessage(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int,
+        @Body messageRequest: MessageRequest
+    ): Call<Message>
 }
 
 object TpuApi {

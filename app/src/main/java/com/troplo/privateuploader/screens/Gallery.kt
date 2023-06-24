@@ -41,7 +41,9 @@ fun GalleryScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             galleryItems.value.value?.gallery?.forEach {
-                item {
+                item(
+                    key = it.id
+                ) {
                     GalleryItem(it)
                 }
             }

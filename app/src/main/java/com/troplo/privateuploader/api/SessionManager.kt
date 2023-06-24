@@ -20,4 +20,10 @@ class SessionManager (context: Context) {
   fun fetchAuthToken(): String? {
     return prefs.getString(USER_TOKEN, null)
   }
+
+  fun setFolder(folder: String) {
+    val editor = prefs.edit()
+    editor.putString("folder", folder)
+    editor.apply()
+  }
 }
