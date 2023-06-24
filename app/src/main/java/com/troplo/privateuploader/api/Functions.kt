@@ -23,7 +23,7 @@ object TpuFunctions {
       return "Communications"
     }
     return if(chat.type == "direct") {
-      chat.recipient?.username ?: "Deleted com.troplo.privateuploader.data.model.User"
+      chat.recipient?.username ?: "Deleted User"
     } else {
       chat.name
     }
