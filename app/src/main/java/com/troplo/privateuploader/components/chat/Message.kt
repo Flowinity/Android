@@ -82,7 +82,8 @@ fun Message(@PreviewParameter(
             if (normal) {
                 UserAvatar(
                     avatar = message.user?.avatar,
-                    username = message.user?.username ?: "Deleted User"
+                    username = message.user?.username ?: "Deleted User",
+                    modifier = Modifier.align(Alignment.Top)
                 )
             }
             if (!normal) {
@@ -90,7 +91,7 @@ fun Message(@PreviewParameter(
             }
             Column(modifier = Modifier.padding(start = 8.dp)) {
                 if (normal) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row {
                         Text(
                             text = message.user?.username ?: "Deleted User",
                             style = MaterialTheme.typography.bodyMedium,

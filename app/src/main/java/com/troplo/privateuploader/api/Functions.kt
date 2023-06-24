@@ -32,6 +32,9 @@ object TpuFunctions {
   }
 
     fun formatDate(date: Date?): CharSequence? {
-        return DateFormat.format("dd MMMM yyyy, h:mm a", date)
+        if(DateFormat.format("dd MMMM yyyy", date) == DateFormat.format("dd MMMM yyyy", Date())) {
+            return DateFormat.format("hh:mm:ss a", date)
+        }
+        return DateFormat.format("dd MMMM yyyy, hh:mm:ss a", date)
     }
 }

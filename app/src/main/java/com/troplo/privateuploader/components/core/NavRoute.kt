@@ -1,5 +1,20 @@
 package com.troplo.privateuploader.components.core
 
+import com.troplo.privateuploader.api.ChatStore
+import com.troplo.privateuploader.api.TpuFunctions
+import com.troplo.privateuploader.data.model.Chat
+
+fun getCurrentRouteTitle(route: String): String {
+    return when (route) {
+        NavRoute.Home.path -> "Chat"
+        NavRoute.Gallery.path -> "Gallery"
+        NavRoute.Settings.path -> "Settings"
+        NavRoute.SettingsUpload.path -> "Upload"
+        NavRoute.Chat.path -> "Chat"
+        else -> "PrivateUploader"
+    }
+}
+
 sealed class NavRoute(val path: String) {
     object Login: NavRoute("login")
     object Home: NavRoute("home")

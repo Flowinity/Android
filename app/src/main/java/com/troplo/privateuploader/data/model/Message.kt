@@ -11,7 +11,7 @@ data class Message(
   @field:Json(name = "userId") val userId: Int,
   @field:Json(name = "content") val content: String,
   @field:Json(name = "type") val type: String,
-  @field:Json(name = "embeds") val embeds: List<Embed>,
+  @field:Json(name = "embeds") var embeds: List<Embed>,
   @field:Json(name = "edited") val edited: Boolean,
   @field:Json(name = "editedAt") val editedAt: String?,
   @field:Json(name = "replyId") val replyId: Int?,
@@ -63,4 +63,9 @@ data class EmbedResolutionEvent(
   @field:Json(name = "chatId") val chatId: Int,
   @field:Json(name = "id") val id: Int,
   @field:Json(name = "embeds") val embeds: List<Embed>
+)
+
+data class EmbedFail(
+  val data: EmbedResolutionEvent,
+  val retries: Int
 )

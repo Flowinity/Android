@@ -52,7 +52,7 @@ fun TopBarNav(navController: NavController, user: User?) {
         },
         title = {
             Text(
-                "${navBackStackEntry?.destination?.route} (TPUvNATIVE)" ?: "PrivateUploader",
+                text = getCurrentRouteTitle(currentRoute),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

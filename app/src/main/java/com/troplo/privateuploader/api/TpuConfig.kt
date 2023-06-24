@@ -7,5 +7,5 @@ class TpuConfig (private val sharedPref: SharedPreferences) {
     get() = sharedPref.getString("token", null)
     set(value) = sharedPref.edit().putString("token", value).apply()
 
-  var instance: String? = "http://192.168.0.12:34582"
+  var instance: String? = "https://privateuploader.com"
 }

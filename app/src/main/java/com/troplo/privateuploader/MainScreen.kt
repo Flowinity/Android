@@ -25,7 +25,7 @@ fun MainScreen(user: User?) {
     val context = LocalContext.current
     val token = SessionManager(context).fetchAuthToken()
     if (token != null) {
-        SocketHandler.initializeSocket(token)
+        SocketHandler.initializeSocket(token, context)
         UserHandler.initializeUser(token)
     }
     val navController = rememberNavController()

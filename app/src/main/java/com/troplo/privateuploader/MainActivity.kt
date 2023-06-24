@@ -20,6 +20,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val token = SessionManager(this).fetchAuthToken()
         var user: User? = null
+
         if(token != null) {
             TpuApi.retrofitService.getUser(token).enqueue(object : retrofit2.Callback<User> {
                 override fun onResponse(

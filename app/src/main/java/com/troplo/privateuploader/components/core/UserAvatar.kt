@@ -22,6 +22,7 @@ import com.troplo.privateuploader.api.TpuFunctions
 fun UserAvatar(
     avatar: String?,
     username: String,
+    modifier: Modifier = Modifier,
 ) {
     if(avatar != null) {
         GlideImage(
@@ -30,6 +31,7 @@ fun UserAvatar(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
+                .then(modifier)
         )
     } else {
         Column(
@@ -39,6 +41,7 @@ fun UserAvatar(
                 .size(40.dp)
                 .background(MaterialTheme.colorScheme.primary, CircleShape)
                 .clip(CircleShape)
+                .then(modifier)
         ) {
             Text(
                 text = username.first().toString(),
