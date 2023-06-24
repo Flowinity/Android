@@ -1,5 +1,6 @@
 package com.troplo.privateuploader.ui.home
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -44,7 +45,7 @@ class HomeFragment : Fragment() {
     recyclerView?.adapter = ChatAdapter(chatList)
     progressBar = root.findViewById(R.id.progressBar)
     layoutManager = LinearLayoutManager(context)
-    getChats()
+    getChats(requireContext())
     return root
   }
 
@@ -53,11 +54,11 @@ class HomeFragment : Fragment() {
       _binding = null
   }
 
-  private fun getChats() {
+  private fun getChats(context: Context) {
     CoroutineScope(Dispatchers.IO).launch {
       progressBar?.visibility = View.VISIBLE
       TpuApi.retrofitService.getChats(
-        SessionManager(requireContext()).fetchAuthToken() ?: ""
+        SessionManager(context).fetchAuthToken() ?: ""
       ).enqueue(object : Callback<List<Chat>> {
         override fun onResponse(call: Call<List<Chat>>, response: Response<List<Chat>>) {
           if (response.isSuccessful) {

@@ -1,6 +1,7 @@
 package com.troplo.privateuploader.api
 
 import com.troplo.privateuploader.data.model.Chat
+import com.troplo.privateuploader.data.model.Gallery
 import com.troplo.privateuploader.data.model.LoginRequest
 import com.troplo.privateuploader.data.model.LoginResponse
 import com.troplo.privateuploader.data.model.User
@@ -13,6 +14,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 private const val BASE_URL = "http://192.168.0.12:34582/api/v3/"
 val client = OkHttpClient.Builder()
@@ -43,6 +45,16 @@ interface TpuApiService {
     fun getUser(
         @Header("Authorization") token: String
     ): Call<User>
+
+    @GET("gallery")
+    fun getGallery(
+        @Header("Authorization") token: String,
+        @Query("page") page: Int = 1,
+        @Query("search") search: String = "",
+        @Query("textMetadata") textMetadata: Boolean = true,
+        @Query("filter") filter: String = "all",
+        @Query("sort") sort: String = "\"newest\""
+    ): Call<Gallery>
 }
 
 object TpuApi {

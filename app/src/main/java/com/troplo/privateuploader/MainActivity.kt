@@ -1,5 +1,6 @@
 package com.troplo.privateuploader
 
+import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Intent
@@ -12,6 +13,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.TpuConfig
@@ -24,24 +26,22 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val sharedPref : SharedPreferences = applicationContext.getSharedPreferences("TpuConfig", MODE_PRIVATE)
-        val config = TpuConfig(sharedPref)
-
-        // run getUser to check if user is logged in
-        if(config.token != null)  {
-            TpuApi.retrofitService.getUser(config.token!!).enqueue(object : retrofit2.Callback<User> {
+        val token = SessionManager(this).fetchAuthToken()
+        var user: User? = null
+        if(token != null)  {
+            TpuApi.retrofitService.getUser(token).enqueue(object : retrofit2.Callback<User> {
                 override fun onResponse(call: retrofit2.Call<User>, response: retrofit2.Response<User>) {
                     if (response.body()?.username != null) {
-                        println("com.troplo.privateuploader.data.model.User is logged in")
-                        setContentView(R.layout.activity_main)
+                        println("User is logged in")
+                        user = response.body()!!
                     } else {
-                        println("com.troplo.privateuploader.data.model.User is not logged in")
+                        println("User is not logged in")
                         val intent = Intent(this@MainActivity, LoginActivity::class.java)
                         startActivity(intent)
                     }
                 }
                 override fun onFailure(call: retrofit2.Call<User>, t: Throwable) {
-                    println("com.troplo.privateuploader.data.model.User is not logged in")
+                    println("User is not logged in")
                     val intent = Intent(this@MainActivity, LoginActivity::class.java)
                     startActivity(intent)
                 }
@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        SocketHandler.setSocket(config.token)
+        SocketHandler.setSocket(token)
         SocketHandler.establishConnection()
         val tpuSocket = SocketHandler.getSocket()
         println(tpuSocket.connected())
@@ -93,6 +93,10 @@ class MainActivity : AppCompatActivity() {
                 R.id.navigation_home, R.id.navigation_gallery, R.id.navigation_collections, R.id.navigation_settings))
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+        // set navigation_settings to user profile picture
+        if(user != null) {
+            // set the
+        }
     }
 
 }

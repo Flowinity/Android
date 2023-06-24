@@ -18,7 +18,14 @@
 
     <item
         android:id="@+id/navigation_settings"
-        android:icon="@drawable/ic_notifications_black_24dp"
-        android:title="@string/title_settings" />
+        android:title="@string/title_settings">
+        <ImageView
+            android:id="@+id/galleryItemImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxHeight="300dp"
+            android:layout_gravity="center"
+            android:scaleType="fitXY" />
+    </item>
 
 </menu>
