@@ -17,13 +17,23 @@ class SessionManager (context: Context) {
     editor.apply()
   }
 
-  fun fetchAuthToken(): String? {
+  fun getAuthToken(): String? {
     return prefs.getString(USER_TOKEN, null)
+  }
+
+  fun getLastChatId(): Int {
+    return prefs.getInt("lastChatId", 0)
   }
 
   fun setFolder(folder: String) {
     val editor = prefs.edit()
     editor.putString("folder", folder)
+    editor.apply()
+  }
+
+  fun setLastChatId(id: Int) {
+    val editor = prefs.edit()
+    editor.putInt("lastChatId", id)
     editor.apply()
   }
 }

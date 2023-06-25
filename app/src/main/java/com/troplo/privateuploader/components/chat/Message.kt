@@ -32,6 +32,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.troplo.privateuploader.data.model.Embed
+import com.troplo.privateuploader.data.model.defaultUser
 import dev.jeziellago.compose.markdowntext.MarkdownText
 import java.util.Date
 
@@ -132,12 +133,7 @@ class SampleMessageProvider : PreviewParameterProvider<Message> {
         get() = sequenceOf(
             Message(
                 id = 1,
-                user = User(
-                    id = 1,
-                    username = "Troplo",
-                    avatar = "deez",
-                    banner = "deez"
-                ),
+                user = defaultUser(),
                 chatId = 1,
                 content = "Hello World!",
                 createdAt = Date("2021-09-01T00:00:00.000Z"),

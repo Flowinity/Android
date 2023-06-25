@@ -28,6 +28,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.troplo.privateuploader.api.ChatStore
 import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.data.model.User
 
@@ -39,10 +40,22 @@ fun TopBarNav(navController: NavController, user: User?) {
     if (currentRoute == null || currentRoute == NavRoute.Login.path) {
         return
     }
+
+    // if chat/ then ChatStore.getChat(0).name else title
+    val title = if(currentRoute == NavRoute.Chat.path && ChatStore.getChat() != null) {
+        TpuFunctions.getChatName(ChatStore.getChat())
+    } else {
+        getCurrentRouteTitle(currentRoute)
+    }
     TopAppBar(
         navigationIcon = {
             if(currentRoute != NavRoute.Home.path) {
-                IconButton(onClick = { navController.navigateUp() }) {
+                IconButton(onClick = {
+                    // if cannot go back, go to home
+                    if(!navController.popBackStack()) {
+                        navController.navigate(NavRoute.Home.path)
+                    }
+                }) {
                     Icon(
                         imageVector = Icons.Filled.ArrowBack,
                         contentDescription = "Back"
@@ -52,7 +65,7 @@ fun TopBarNav(navController: NavController, user: User?) {
         },
         title = {
             Text(
-                text = getCurrentRouteTitle(currentRoute),
+                text = title,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

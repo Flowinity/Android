@@ -7,7 +7,7 @@ import com.squareup.moshi.JsonClass
 data class Chat(
   @field:Json(name = "id") val id: Int,
   @field:Json(name = "name") val name: String,
-  @field:Json(name = "users") val users: List<User>,
+  @field:Json(name = "users") val users: List<ChatAssociation>,
   @field:Json(name = "recipient") val recipient: User?,
   @field:Json(name = "icon") val icon: String?,
   @field:Json(name = "type") val type: String?,
@@ -18,6 +18,6 @@ data class Chat(
   @field:Json(name = "legacyUser") val legacyUser: User?,
   @field:Json(name = "association") val association: ChatAssociation?,
   @field:Json(name = "messages") val messages: List<Message>?,
-  @field:Json(name = "unread") val unread: String?,
+  @field:Json(name = "unread") var unread: Int?,
   @field:Json(name = "typers") val typers: List<Typing>?
 )

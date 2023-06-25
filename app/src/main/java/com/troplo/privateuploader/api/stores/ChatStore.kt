@@ -1,6 +1,7 @@
 package com.troplo.privateuploader.api
 
 import android.content.Context
+import androidx.compose.ui.platform.LocalContext
 import com.troplo.privateuploader.data.model.Chat
 import com.troplo.privateuploader.data.model.User
 import io.socket.client.IO
@@ -18,13 +19,14 @@ import java.util.Collections
 
 object ChatStore {
     private val _chats: MutableStateFlow<List<Chat>> = MutableStateFlow(emptyList())
-    private var associationId = 0
+    var associationId = MutableStateFlow(0)
 
     val chats: StateFlow<List<Chat>>
         get() = _chats
 
     fun initializeChats(token: String) {
         try {
+            if(_chats.value.isNotEmpty()) return
             CoroutineScope(Dispatchers.IO).launch {
                 val response = TpuApi.retrofitService.getChats(token).execute().body() ?: emptyList()
                 _chats.value = response
@@ -34,7 +36,7 @@ object ChatStore {
             val socket: Socket? = SocketHandler.getSocket()
             if (socket != null) {
                 socket.on("chatCreated") {
-                    println("Socket $it")
+                    _chats.value = _chats.value + it[0] as Chat
                 }
             } else {
                 println("Socket is null")
@@ -45,11 +47,12 @@ object ChatStore {
     }
 
     fun getChat(): Chat? {
-        return chats.value.find { it.association?.id == associationId }
+        return chats.value.find { it.association?.id == associationId.value }
     }
 
-    fun setAssociationId(id: Int) {
-        associationId = id
+    fun setAssociationId(id: Int, context: Context) {
+        SessionManager(context).setLastChatId(id)
+        associationId.value = id
     }
 
     fun setChats(chats: List<Chat>) {

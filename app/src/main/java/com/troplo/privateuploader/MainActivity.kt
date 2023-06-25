@@ -18,7 +18,7 @@ import java.util.Collections
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        val token = SessionManager(this).fetchAuthToken()
+        val token = SessionManager(this).getAuthToken()
         var user: User? = null
 
         if(token != null) {

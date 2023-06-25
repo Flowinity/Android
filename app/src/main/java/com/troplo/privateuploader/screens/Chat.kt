@@ -50,6 +50,7 @@ import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.UserHandler
 import com.troplo.privateuploader.components.chat.Message
 import com.troplo.privateuploader.components.core.NavRoute
+import com.troplo.privateuploader.components.core.OverlappingPanelsState
 import com.troplo.privateuploader.data.model.ChatAssociation
 import com.troplo.privateuploader.data.model.Embed
 import com.troplo.privateuploader.data.model.EmbedFail
@@ -70,15 +71,24 @@ import java.util.Date
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
-    associationId: Int
+    chatId: Int?
 ) {
+    var associationId = chatId
     val loading = remember { mutableStateOf(true) }
-    val token = SessionManager(LocalContext.current).fetchAuthToken() ?: ""
+    val context = LocalContext.current
+    val token = SessionManager(context).getAuthToken() ?: ""
     val chatViewModel = remember { ChatViewModel() }
     val messages = remember { mutableStateOf(chatViewModel.messages) }
     val message = remember { mutableStateOf("") }
-    val context = LocalContext.current
     val listState = rememberLazyListState()
+    var initialLoad = false
+    if(associationId == 0 || associationId == null) {
+        val lastChatId = SessionManager(context).getLastChatId()
+        associationId = lastChatId
+        initialLoad = true
+    }
+    if(associationId == 0) return;
+    ChatStore.setAssociationId(associationId, context)
     chatViewModel.associationId = associationId
     LaunchedEffect(messages.value.value?.size) {
         listState.animateScrollToItem(0)
@@ -128,9 +138,11 @@ fun ChatScreen(
                         .focusRequester(focusRequester)
                 )
                 // Autofocus the input on mount
-                DisposableEffect(Unit) {
-                    focusRequester.requestFocus()
-                    onDispose { }
+                if(!initialLoad) {
+                    DisposableEffect(Unit) {
+                        focusRequester.requestFocus()
+                        onDispose { }
+                    }
                 }
             }
 
@@ -287,7 +299,7 @@ class ChatViewModel : ViewModel() {
                             message
                         )
                     ).execute()
-                    launch(Dispatchers.Main) {
+                    launch(Dispatchers.IO) {
                         if (!response.isSuccessful) {
                             val error: JSONObject =
                                 JSONObject(response.errorBody()?.string() ?: "{}")
@@ -331,20 +343,6 @@ class ChatViewModel : ViewModel() {
                     }
                 }
             }
-        }
-    }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-private fun DefaultPreview() {
-    PrivateUploaderTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            ChatScreen(1)
         }
     }
 }

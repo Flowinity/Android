@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.graphics.drawable.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Reply
@@ -13,6 +14,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
 import androidx.core.content.ContextCompat.getSystemService
 import com.google.gson.Gson
+import com.troplo.privateuploader.BuildConfig
 import com.troplo.privateuploader.R
 import com.troplo.privateuploader.data.model.MessageEvent
 import io.socket.client.IO
@@ -21,9 +23,8 @@ import org.json.JSONObject
 import java.net.URISyntaxException
 import java.util.Collections
 
-
 object SocketHandler {
-  private const val SERVER_URL = "http://192.168.0.12:34582" // Replace with your Socket.io server URL
+  private const val SERVER_URL = BuildConfig.SERVER_URL
 
   private var socket: Socket? = null
   private val gson = Gson()
@@ -34,6 +35,7 @@ object SocketHandler {
       options.forceNew = true
       options.reconnection = true
       options.auth = Collections.singletonMap("token", token)
+      options.query = "platform=android_kotlin"
       socket = IO.socket(SERVER_URL, options)
       if(socket != null) {
         socket?.open()
@@ -45,6 +47,23 @@ object SocketHandler {
         }
         socket?.on(Socket.EVENT_CONNECT_ERROR) {
           println("Socket connect error ${socket?.isActive}")
+        }
+        socket?.on("message") { it ->
+          val jsonArray = it[0] as JSONObject
+          val payload = jsonArray.toString()
+          val messageEvent = gson.fromJson(payload, MessageEvent::class.java)
+
+          val message = messageEvent.message
+          println("Message received (SocketHandler): $message")
+          if(messageEvent.association.id != ChatStore.associationId.value) {
+            // increase unread count
+            val chat = ChatStore.chats.value.find { it.association?.id == messageEvent.association.id }
+            println(chat)
+            if(chat != null) {
+              chat.unread = chat.unread?.plus(1)
+              ChatStore.setChats(listOf(chat) + ChatStore.chats.value.filter { it.association?.id != messageEvent.association.id })
+            }
+          }
         }
         /*socket?.on("message") {
           val jsonArray = it[0] as JSONObject

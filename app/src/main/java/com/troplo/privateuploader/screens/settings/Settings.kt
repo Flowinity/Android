@@ -1,5 +1,6 @@
 package com.troplo.privateuploader.screens.settings
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.Card
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -23,7 +25,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
+import com.troplo.privateuploader.BuildConfig
 import com.troplo.privateuploader.components.user.UserBanner
+import com.troplo.privateuploader.ui.theme.Primary
+import java.util.Date
 
 @Composable
 @Preview
@@ -45,6 +50,55 @@ fun SettingsScreen(
                 "Options to automatically upload to TPU",
                 onClick = { navigate("upload") }
             )
+
+            Card(
+                modifier = Modifier
+                    .padding(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "TPU",
+                            style = MaterialTheme.typography.displayMedium,
+                            color = Primary
+                        )
+                        Text(
+                            text = "Mobile Beta",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Primary
+                        )
+                        Divider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 2.dp)
+                        )
+                        Text(text = "Product name: TPUvNATIVE (android_kotlin)", style = MaterialTheme.typography.bodyMedium)
+                        Text(text = "Version: ${
+                            BuildConfig.VERSION_NAME
+                        }", style = MaterialTheme.typography.bodySmall)
+                        Text(text = "Build type: ${
+                            BuildConfig.BUILD_TYPE.uppercase()
+                        }", style = MaterialTheme.typography.bodySmall)
+                        Text(text = "TPU Server: ${
+                            BuildConfig.SERVER_URL
+                        }", style = MaterialTheme.typography.bodySmall)
+                        Text(text = "App ID: ${
+                            BuildConfig.APPLICATION_ID
+                        }", style = MaterialTheme.typography.bodySmall)
+                        Text(text = "Build time: ${
+                            BuildConfig.BUILD_TIME
+                        }", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
         }
     }
 }

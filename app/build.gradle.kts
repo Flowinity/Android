@@ -15,6 +15,8 @@ android {
         versionCode = 1
         versionName = "1.0"
         multiDexEnabled = true
+        buildConfigField("String", "SERVER_URL", "\"https://privateuploader.com\"")
+        buildConfigField("String", "BUILD_TIME", "\"${System.currentTimeMillis()}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -25,10 +27,15 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            buildConfigField("String", "SERVER_URL", "\"https://privateuploader.com\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+
+        debug {
+            buildConfigField("String", "SERVER_URL", "\"http://192.168.0.12:34582\"")
         }
     }
     compileOptions {
@@ -40,6 +47,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.4.3"
@@ -53,6 +61,9 @@ android {
 
 dependencies {
     // TPU
+    implementation("io.coil-kt:coil-gif:2.4.0")
+    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("com.github.X1nto:OverlappingPanelsCompose:1.2.0")
     implementation("io.coil-kt:coil:2.3.0")
     implementation("com.github.jeziellago:compose-markdown:0.3.3")
     implementation("com.github.bumptech.glide:compose:1.0.0-alpha.1")
@@ -60,7 +71,7 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
     implementation("com.squareup.moshi:moshi:1.12.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
-    implementation("com.github.bumptech.glide:glide:4.15.1")
+    implementation("com.github.bumptech.glide:glide:4.16.0-SNAPSHOT")
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.1")
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("com.google.code.gson:gson:2.10.1")
@@ -74,6 +85,8 @@ dependencies {
 
     // Material Design 3
     implementation("androidx.compose.material3:material3")
+    // For SwipeableState
+    implementation("androidx.compose.material:material:1.4.3")
     // or only import the main APIs for the underlying toolkit systems,
     // such as input and measurement/layout
     implementation("androidx.compose.ui:ui")
