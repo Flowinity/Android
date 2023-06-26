@@ -44,7 +44,7 @@ fun MainScreen(user: User?) {
     val token = SessionManager(context).getAuthToken()
     if (token != null) {
         SocketHandler.initializeSocket(token, context)
-        UserStore.initializeUser(token)
+        UserStore.initializeUser(context)
     }
     val navController = rememberNavController()
     val panelState = rememberOverlappingPanelsState()
@@ -63,8 +63,9 @@ fun MainScreen(user: User?) {
         topBar = {
             if(!SocketHandler.connected.value) {
                 ConnectingBanner()
+            } else {
+                TopBarNav(navController = navController, user = user)
             }
-            TopBarNav(navController =  navController, user = user)
          },
         bottomBar = { BottomBarNav(navController = navController, panelState = panelState, closePanels = closePanelsFunc) },
     ) { paddingValues ->

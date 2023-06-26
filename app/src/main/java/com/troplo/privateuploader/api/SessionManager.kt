@@ -2,7 +2,9 @@ package com.troplo.privateuploader.api
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.google.gson.Gson
 import com.troplo.privateuploader.R
+import com.troplo.privateuploader.data.model.User
 
 class SessionManager (context: Context) {
   private var prefs: SharedPreferences = context.getSharedPreferences(context.getString(R.string.app_name), Context.MODE_PRIVATE)
@@ -35,5 +37,20 @@ class SessionManager (context: Context) {
     val editor = prefs.edit()
     editor.putInt("lastChatId", id)
     editor.apply()
+  }
+
+  fun setUserCache(user: User?) {
+    val editor = prefs.edit()
+    editor.putString("user", Gson().toJson(user))
+    editor.apply()
+  }
+
+  fun getUserCache(): User? {
+    val user = prefs.getString("user", null)
+    return if(user != null) {
+      Gson().fromJson(user, User::class.java)
+    } else {
+      null
+    }
   }
 }
