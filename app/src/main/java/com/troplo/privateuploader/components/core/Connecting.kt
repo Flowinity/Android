@@ -1,6 +1,5 @@
 package com.troplo.privateuploader.components.core
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -30,8 +29,8 @@ fun ConnectingBanner() {
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+              .fillMaxWidth()
+              .padding(16.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.SignalCellularConnectedNoInternet4Bar,

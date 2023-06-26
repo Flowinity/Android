@@ -13,6 +13,7 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,13 +40,9 @@ import com.troplo.privateuploader.screens.HomeScreen
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun MainScreen(user: User?) {
+fun MainScreen() {
+    val user = UserStore.user.collectAsState()
     val context = LocalContext.current
-    val token = SessionManager(context).getAuthToken()
-    if (token != null) {
-        SocketHandler.initializeSocket(token, context)
-        UserStore.initializeUser(context)
-    }
     val navController = rememberNavController()
     val panelState = rememberOverlappingPanelsState()
     var closePanels by remember { mutableStateOf(false) }
@@ -61,13 +58,19 @@ fun MainScreen(user: User?) {
     }
     Scaffold(
         topBar = {
-            if(!SocketHandler.connected.value) {
+            if (!SocketHandler.connected.value) {
                 ConnectingBanner()
             } else {
-                TopBarNav(navController = navController, user = user)
+                TopBarNav(navController = navController, user = user.value, panelState = panelState)
             }
-         },
-        bottomBar = { BottomBarNav(navController = navController, panelState = panelState, closePanels = closePanelsFunc) },
+        },
+        bottomBar = {
+            BottomBarNav(
+                navController = navController,
+                panelState = panelState,
+                closePanels = closePanelsFunc
+            )
+        },
     ) { paddingValues ->
         OverlappingPanels(
             modifier = Modifier.fillMaxSize(),
@@ -78,15 +81,15 @@ fun MainScreen(user: User?) {
                     ModalDrawerSheet(
                         modifier = Modifier.padding(
                             top = paddingValues.calculateTopPadding(),
-                            bottom = paddingValues.calculateBottomPadding())
+                            bottom = paddingValues.calculateBottomPadding()
+                        )
                     ) {
                         Spacer(Modifier.height(12.dp))
                         HomeScreen(
-                           openChat = {
-                                chatId ->
-                                    ChatStore.setAssociationId(chatId, context)
-                                    navController.navigate("${NavRoute.Chat.path}/$chatId")
-                                    closePanels = true
+                            openChat = { chatId ->
+                                ChatStore.setAssociationId(chatId, context)
+                                navController.navigate("${NavRoute.Chat.path}/$chatId")
+                                closePanels = true
                             },
                             panelState = panelState
                         )
@@ -101,7 +104,7 @@ fun MainScreen(user: User?) {
                             bottom = paddingValues.calculateBottomPadding()
                         ),
                         navController = navController,
-                        user = user,
+                        user = user.value,
                         context,
                         panelsState = panelState
                     )

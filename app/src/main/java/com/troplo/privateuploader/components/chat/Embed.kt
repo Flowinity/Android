@@ -35,116 +35,123 @@ import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.api.imageLoader
 import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.data.model.Embed
-import com.troplo.privateuploader.data.model.Upload
 import kotlinx.coroutines.Dispatchers
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun Embed(embed: Embed) {
-  if (embed.data != null) {
-    when (embed.type) {
-      "openGraph" -> {
-        Card {
-          Column {
-            Text(
-              text = embed.data?.siteName.orEmpty(),
-              modifier = Modifier.padding(top = 8.dp),
-              style = MaterialTheme.typography.bodySmall
-            )
-            Text(
-              text = embed.data?.title.orEmpty(),
-              modifier = Modifier.padding(top = 8.dp),
-              style = MaterialTheme.typography.bodyLarge
-            )
-            Text(
-              text = embed.data?.description.orEmpty(),
-              modifier = Modifier.padding(top = 8.dp),
-              style = MaterialTheme.typography.bodyMedium
-            )
-          }
-        }
-      }
-      "image" -> {
-        Image(
-          contentDescription = "Embed image (no alt text)",
-          painter = rememberAsyncImagePainter(
-            ImageRequest.Builder(LocalContext.current)
-              .dispatcher(Dispatchers.IO)
-              .data(data = "https://" + UserStore.getUser()?.domain?.domain + embed.data.url).apply(block = fun ImageRequest.Builder.() {
-                size(Size.ORIGINAL)
-              }).build(), imageLoader = imageLoader(LocalContext.current, false)
-          ),
-          modifier = Modifier
-            .fillMaxWidth()
-            .height(if (embed.data.height!! > 300) 300.dp else embed.data.height.dp)
-        )
-
-      }
-      "file" -> {
-        val context = LocalContext.current
-        Card {
-          Column {
-            Row(
-              verticalAlignment = Alignment.CenterVertically,
-              modifier = Modifier.padding(start = 16.dp, top = 16.dp)
-            ) {
-              Icon(
-                imageVector = Icons.Default.InsertDriveFile,
-                contentDescription = null,
-                modifier = Modifier.size(48.dp)
-              )
-              Text(
-                text = embed.data?.upload?.name.orEmpty(),
-                modifier = Modifier.padding(start = 8.dp),
-                style = MaterialTheme.typography.bodyMedium
-              )
-            }
-            Row(
-              verticalAlignment = Alignment.CenterVertically,
-              modifier = Modifier.padding(start = 16.dp)
-            ) {
-              Text(
-                text = TpuFunctions.fileSize(embed.data.upload?.fileSize),
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
-                modifier = Modifier.weight(1f)
-              )
-              Spacer(modifier = Modifier.weight(0.1f))
-              IconButton(
-                onClick = {
-                  val attachment = embed.data.upload?.attachment
-                  if (attachment != null) {
-                    val intent = Intent(Intent.ACTION_VIEW)
-                    intent.data = Uri.parse("https://${UserStore.getUser()?.domain?.domain}/i/${attachment}?force=true")
-                    context.startActivity(intent)
-                  }
+    if (embed.data != null) {
+        when (embed.type) {
+            "openGraph" -> {
+                Card {
+                    Column {
+                        Text(
+                            text = embed.data.siteName.orEmpty(),
+                            modifier = Modifier.padding(top = 8.dp),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Text(
+                            text = embed.data.title.orEmpty(),
+                            modifier = Modifier.padding(top = 8.dp),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Text(
+                            text = embed.data.description.orEmpty(),
+                            modifier = Modifier.padding(top = 8.dp),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
-              ) {
-                Icon(imageVector = Icons.Default.Download, contentDescription = null)
-              }
             }
-          }
+
+            "image" -> {
+                Image(
+                    contentDescription = "Embed image (no alt text)",
+                    painter = rememberAsyncImagePainter(
+                        ImageRequest.Builder(LocalContext.current)
+                            .dispatcher(Dispatchers.IO)
+                            .data(data = "https://" + UserStore.getUser()?.domain?.domain + embed.data.url)
+                            .apply(block = fun ImageRequest.Builder.() {
+                                size(Size.ORIGINAL)
+                            }).build(), imageLoader = imageLoader(LocalContext.current, false)
+                    ),
+                    modifier = Modifier
+                      .fillMaxWidth()
+                      .height(if (embed.data.height!! > 300) 300.dp else embed.data.height.dp)
+                )
+
+            }
+
+            "file" -> {
+                val context = LocalContext.current
+                Card {
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(start = 16.dp, top = 16.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.InsertDriveFile,
+                                contentDescription = null,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Text(
+                                text = embed.data.upload?.name.orEmpty(),
+                                modifier = Modifier.padding(start = 8.dp),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(start = 16.dp)
+                        ) {
+                            Text(
+                                text = TpuFunctions.fileSize(embed.data.upload?.fileSize),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.Gray,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Spacer(modifier = Modifier.weight(0.1f))
+                            IconButton(
+                                onClick = {
+                                    val attachment = embed.data.upload?.attachment
+                                    if (attachment != null) {
+                                        val intent = Intent(Intent.ACTION_VIEW)
+                                        intent.data =
+                                            Uri.parse("https://${UserStore.getUser()?.domain?.domain}/i/${attachment}?force=true")
+                                        context.startActivity(intent)
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Download,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            else -> {
+                Card {
+                    Text(
+                        text = "The version of TPUvNATIVE you are using does not yet support the embed type ${embed.type}!",
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
         }
-      }
-      else -> {
-        Card {
-          Text(
-            text = "The version of TPUvNATIVE you are using does not yet support the embed type ${embed.type}!",
-            modifier = Modifier.padding(16.dp)
-          )
+    } else {
+        Card(
+            modifier = Modifier.width(300.dp)
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "This embed cannot be loaded.", modifier = Modifier.padding(16.dp))
+            }
         }
-      }
     }
-  } else {
-    Card(
-      modifier = Modifier.width(300.dp)
-    ) {
-      Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-      ) {
-        Text(text = "This embed cannot be loaded.", modifier = Modifier.padding(16.dp))
-      }
-    }
-  }
 }

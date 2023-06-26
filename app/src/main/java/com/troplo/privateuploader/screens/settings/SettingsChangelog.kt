@@ -1,8 +1,6 @@
 package com.troplo.privateuploader.screens.settings
 
-import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,29 +8,29 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat.startActivityForResult
-import androidx.lifecycle.ViewModel
-import com.troplo.privateuploader.MainActivity
 
 
 @Composable
 fun ChangelogLayout() {
     Card(
         modifier = Modifier
-        .fillMaxSize()
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
     ) {
-        Column() {
+        Column {
             ChangelogSection("Beta 2") {
+                ChangelogItem("Character limit is now visible")
+                ChangelogItem("User is cached to SharedPreferences")
                 ChangelogItem("Remove Glide for Coil image rendering (0 width crash)")
                 ChangelogItem("Added user avatar caching")
                 ChangelogItem("Added HTTP error handling to prevent Retrofit2 crashes")
@@ -82,12 +80,17 @@ fun ChangelogSection(title: String, content: @Composable () -> Unit) {
 
 @Composable
 fun ChangelogItem(text: String) {
-    Row(modifier = Modifier
-        .fillMaxWidth()
-        .padding(vertical = 4.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Text(
             text = "\u2022",
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(end = 4.dp)
         )
         Text(
             text = text,

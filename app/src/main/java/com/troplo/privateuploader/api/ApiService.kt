@@ -18,7 +18,7 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.Response
-import okhttp3.ResponseBody
+import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.internal.http2.ConnectionShutdownException
 import okhttp3.logging.HttpLoggingInterceptor
 import org.json.JSONObject
@@ -28,7 +28,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
-import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
@@ -78,7 +77,7 @@ object TpuApi {
                         .protocol(Protocol.HTTP_2)
                         .code(999)
                         .message("Error")
-                        .body(ResponseBody.create(null, "TpuServerError")).build()
+                        .body("TpuServerError".toResponseBody(null)).build()
                 }
 
                 return response
@@ -89,18 +88,23 @@ object TpuApi {
                     is SocketTimeoutException -> {
                         msg = "Timeout - Please check your internet connection."
                     }
+
                     is UnknownHostException -> {
                         msg = "Unable to make a connection. Please check your internet connection."
                     }
+
                     is ConnectionShutdownException -> {
                         msg = "Connection shutdown. Please check your internet connection."
                     }
+
                     is IOException -> {
                         msg = "TPU Server is unreachable, please try again later."
                     }
+
                     is IllegalStateException -> {
                         msg = "${e.message}"
                     }
+
                     else -> {
                         msg = "${e.message}"
                     }
@@ -111,7 +115,7 @@ object TpuApi {
                     .protocol(Protocol.HTTP_2)
                     .code(999)
                     .message(msg)
-                    .body(ResponseBody.create(null, "{${e}}")).build()
+                    .body("{${e}}".toResponseBody(null)).build()
             }
         }
 
@@ -123,7 +127,7 @@ object TpuApi {
     }
 
     private class AuthorizationInterceptor : Interceptor {
-        override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
+        override fun intercept(chain: Interceptor.Chain): Response {
             val originalRequest = chain.request()
             val requestBuilder = originalRequest.newBuilder()
                 .header("Authorization", token)
@@ -150,35 +154,35 @@ object TpuApi {
             @Query("search") search: String = "",
             @Query("textMetadata") textMetadata: Boolean = true,
             @Query("filter") filter: String = "all",
-            @Query("sort") sort: String = "\"newest\""
+            @Query("sort") sort: String = "\"newest\"",
         ): Call<Gallery>
 
         @GET("chats/{id}/messages")
         fun getMessages(
-            @Path("id") id: Int
+            @Path("id") id: Int,
         ): Call<List<Message>>
 
         @POST("chats/{id}/message")
         fun sendMessage(
             @Path("id") id: Int,
-            @Body messageRequest: MessageRequest
+            @Body messageRequest: MessageRequest,
         ): Call<Message>
 
         @POST("gallery/star/{attachment}")
         fun star(
-            @Path("attachment") attachment: String
+            @Path("attachment") attachment: String,
         ): Call<StarResponse>
 
         @PUT("chats/{chatId}/message")
         fun editMessage(
             @Path("chatId") chatId: Int,
-            @Body editRequest: EditRequest
+            @Body editRequest: EditRequest,
         ): Call<Message>
 
         @DELETE("chats/{chatId}/messages/{messageId}")
         fun deleteMessage(
             @Path("chatId") chatId: Int,
-            @Path("messageId") messageId: Int
+            @Path("messageId") messageId: Int,
         ): Call<Unit>
     }
 

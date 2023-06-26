@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,7 +21,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -61,8 +58,8 @@ fun GalleryScreen(
                 onValueChange = { searchState.value.value = it },
                 label = { Text("Search") },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
+                  .fillMaxWidth()
+                  .padding(8.dp),
                 trailingIcon = {
                     IconButton(onClick = {
                         galleryViewModel.getGalleryItems(token)
@@ -78,9 +75,11 @@ fun GalleryScreen(
         },
         content = {
             Box {
-                LazyColumn(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = it.calculateTopPadding())) {
+                LazyColumn(
+                    modifier = Modifier
+                      .fillMaxSize()
+                      .padding(top = it.calculateTopPadding())
+                ) {
                     galleryItems.value.value?.gallery?.forEach {
                         item(
                             key = it.id

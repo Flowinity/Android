@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.MoreTime
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
@@ -28,12 +29,11 @@ import androidx.lifecycle.ViewModel
 import com.troplo.privateuploader.BuildConfig
 import com.troplo.privateuploader.components.user.UserBanner
 import com.troplo.privateuploader.ui.theme.Primary
-import java.util.Date
 
 @Composable
 @Preview
 fun SettingsScreen(
-    navigate: (String) -> Unit = {}
+    navigate: (String) -> Unit = {},
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         UserBanner()
@@ -42,7 +42,7 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 208.dp)
-        ){
+        ) {
             SettingsItem(Icons.Default.AccountBox, "My TPU", "Your TPU account settings")
             SettingsItem(
                 Icons.Default.Upload,
@@ -51,7 +51,7 @@ fun SettingsScreen(
                 onClick = { navigate("upload") }
             )
             SettingsItem(
-                Icons.Default.Upload,
+                Icons.Default.MoreTime,
                 "Changelog",
                 "Recent updates to TPU Mobile",
                 onClick = { navigate("changelog") }
@@ -86,22 +86,35 @@ fun SettingsScreen(
                                 .fillMaxWidth()
                                 .padding(vertical = 2.dp)
                         )
-                        Text(text = "Product name: TPUvNATIVE (android_kotlin)", style = MaterialTheme.typography.bodyMedium)
-                        Text(text = "Version: ${
-                            BuildConfig.VERSION_NAME
-                        }", style = MaterialTheme.typography.bodySmall)
-                        Text(text = "Build type: ${
-                            BuildConfig.BUILD_TYPE.uppercase()
-                        }", style = MaterialTheme.typography.bodySmall)
-                        Text(text = "TPU Server: ${
-                            BuildConfig.SERVER_URL
-                        }", style = MaterialTheme.typography.bodySmall)
-                        Text(text = "App ID: ${
-                            BuildConfig.APPLICATION_ID
-                        }", style = MaterialTheme.typography.bodySmall)
-                        Text(text = "Build time: ${
-                            BuildConfig.BUILD_TIME
-                        }", style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            text = "Product name: TPUvNATIVE (android_kotlin)",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = "Version: ${
+                                BuildConfig.VERSION_NAME
+                            }", style = MaterialTheme.typography.bodySmall
+                        )
+                        Text(
+                            text = "Build type: ${
+                                BuildConfig.BUILD_TYPE.uppercase()
+                            }", style = MaterialTheme.typography.bodySmall
+                        )
+                        Text(
+                            text = "TPU Server: ${
+                                BuildConfig.SERVER_URL
+                            }", style = MaterialTheme.typography.bodySmall
+                        )
+                        Text(
+                            text = "App ID: ${
+                                BuildConfig.APPLICATION_ID
+                            }", style = MaterialTheme.typography.bodySmall
+                        )
+                        Text(
+                            text = "Build time: ${
+                                BuildConfig.BUILD_TIME
+                            }", style = MaterialTheme.typography.bodySmall
+                        )
                     }
                 }
             }
@@ -109,7 +122,7 @@ fun SettingsScreen(
     }
 }
 
-class SettingsViewModel : ViewModel() {}
+class SettingsViewModel : ViewModel()
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -129,7 +142,7 @@ fun SettingsItem(icon: ImageVector, title: String, subtitle: String, onClick: ()
             Icon(
                 icon,
                 contentDescription = title,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp).padding(start = 4.dp)
             )
             Column(
                 modifier = Modifier.padding(start = 16.dp)

@@ -3,10 +3,19 @@ package com.troplo.privateuploader.components.core
 import android.content.res.Configuration
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ResistanceConfig
+import androidx.compose.material.SwipeableState
+import androidx.compose.material.swipeable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,10 +31,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -197,7 +202,8 @@ fun OverlappingPanels(
             else
                 sidePanelWidthFraction.landscape()
 
-        val offsetValue = (constraints.maxWidth * fraction) + PanelDefaults.MarginBetweenPanels.value
+        val offsetValue =
+            (constraints.maxWidth * fraction) + PanelDefaults.MarginBetweenPanels.value
 
         //TODO make animation configurable
         val animatedCenterPanelAlpha by animateFloatAsState(
@@ -217,16 +223,16 @@ fun OverlappingPanels(
 
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .swipeable(
-                    state = panelsState.swipeableState,
-                    orientation = Orientation.Horizontal,
-                    velocityThreshold = velocityThreshold,
-                    anchors = anchors,
-                    enabled = gesturesEnabled,
-                    reverseDirection = layoutDirection == LayoutDirection.Rtl,
-                    resistance = resistance(anchors.keys),
-                )
+              .fillMaxSize()
+              .swipeable(
+                state = panelsState.swipeableState,
+                orientation = Orientation.Horizontal,
+                velocityThreshold = velocityThreshold,
+                anchors = anchors,
+                enabled = gesturesEnabled,
+                reverseDirection = layoutDirection == LayoutDirection.Rtl,
+                resistance = resistance(anchors.keys),
+              )
         ) {
             val sidePanelAlignment = organizeSidePanel(
                 panelsState,
@@ -236,16 +242,16 @@ fun OverlappingPanels(
             )
 
             val modifierZero = Modifier
-                .fillMaxWidth(0f)
-                .size(0.dp)
+              .fillMaxWidth(0f)
+              .size(0.dp)
 
             val modifierFull = Modifier
 
             Box(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(fraction)
-                    .align(sidePanelAlignment)
+                  .fillMaxHeight()
+                  .fillMaxWidth(fraction)
+                  .align(sidePanelAlignment)
             ) {
                 Box(
                     modifier = if (panelsState.offset.value < 0) modifierFull else modifierZero
@@ -260,16 +266,16 @@ fun OverlappingPanels(
             }
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .align(Alignment.Center)
-                    .alpha(animatedCenterPanelAlpha)
-                    .offset {
-                        IntOffset(
-                            x = panelsState.offset.value.roundToInt(),
-                            y = 0
-                        )
-                    }
-                    .shadow(centerPanelElevation),
+                  .fillMaxSize()
+                  .align(Alignment.Center)
+                  .alpha(animatedCenterPanelAlpha)
+                  .offset {
+                    IntOffset(
+                      x = panelsState.offset.value.roundToInt(),
+                      y = 0
+                    )
+                  }
+                  .shadow(centerPanelElevation),
                 content = panelCenter
             )
         }
@@ -335,7 +341,7 @@ object PanelDefaults {
     @Composable
     fun centerPanelAlpha(
         sidesOpened: Float = 0.7f,
-        sidesClosed: Float = 1f
+        sidesClosed: Float = 1f,
     ): CenterPanelAlpha = DefaultCenterPanelAlpha(
         sidesOpened = sidesOpened,
         sidesClosed = sidesClosed,

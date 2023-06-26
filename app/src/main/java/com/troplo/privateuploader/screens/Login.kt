@@ -8,12 +8,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,8 +44,8 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
     val context = LocalContext.current
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+          .fillMaxSize()
+          .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
@@ -96,7 +96,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
             Text(text = "Log in")
         }
 
-        if(LoginViewModel().loading) {
+        if (LoginViewModel().loading) {
             CircularProgressIndicator()
         }
     }
@@ -121,7 +121,13 @@ private fun DefaultPreview() {
 class LoginViewModel : ViewModel() {
     var loading by mutableStateOf(false)
 
-    fun login(username: String, password: String, totp: String, context: Context, onLoginSuccess: () -> Unit) {
+    fun login(
+        username: String,
+        password: String,
+        totp: String,
+        context: Context,
+        onLoginSuccess: () -> Unit,
+    ) {
         loading = true
         SessionManager(context).saveAuthToken(null)
         viewModelScope.launch(Dispatchers.IO) {
@@ -135,7 +141,7 @@ class LoginViewModel : ViewModel() {
 
             launch(Dispatchers.Main) {
                 loading = false
-                if(data.isSuccessful) {
+                if (data.isSuccessful) {
                     // set the token
                     SessionManager(context).saveAuthToken(data.body()!!.token)
                     // go to the main screen

@@ -10,27 +10,27 @@ import java.io.IOException
  */
 class LoginDataSource {
 
-  fun login(username: String, password: String, code: String?): Result<LoginResponse> {
-    try {
-      val login = TpuApi.retrofitService.login(
-        LoginRequest(
-          username,
-          password,
-          code ?: ""
-        )
-      ).execute().body()
+    fun login(username: String, password: String, code: String?): Result<LoginResponse> {
+        try {
+            val login = TpuApi.retrofitService.login(
+                LoginRequest(
+                    username,
+                    password,
+                    code ?: ""
+                )
+            ).execute().body()
 
-      return if (login != null) {
-        Result.Success(LoginResponse(login.token, login.user))
-      } else {
-        Result.Error(IOException("Error logging in"))
-      }
-    } catch (e: Throwable) {
-      return Result.Error(IOException("Error logging in", e))
+            return if (login != null) {
+                Result.Success(LoginResponse(login.token, login.user))
+            } else {
+                Result.Error(IOException("Error logging in"))
+            }
+        } catch (e: Throwable) {
+            return Result.Error(IOException("Error logging in", e))
+        }
     }
-  }
 
-  fun logout() {
-    // TODO: revoke authentication
-  }
+    fun logout() {
+        // TODO: revoke authentication
+    }
 }

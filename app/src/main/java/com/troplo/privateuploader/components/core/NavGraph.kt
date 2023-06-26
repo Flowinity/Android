@@ -14,12 +14,13 @@ import androidx.navigation.navArgument
 import com.troplo.privateuploader.api.ChatStore
 import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.data.model.User
-import com.troplo.privateuploader.screens.*
+import com.troplo.privateuploader.screens.ChatScreen
+import com.troplo.privateuploader.screens.GalleryScreen
+import com.troplo.privateuploader.screens.HomeScreen
+import com.troplo.privateuploader.screens.LoginScreen
+import com.troplo.privateuploader.screens.settings.ChangelogLayout
 import com.troplo.privateuploader.screens.settings.SettingsScreen
 import com.troplo.privateuploader.screens.settings.SettingsUploadScreen
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,7 +29,7 @@ fun NavGraph(
     navController: NavHostController,
     user: User?,
     context: Context,
-    panelsState: OverlappingPanelsState
+    panelsState: OverlappingPanelsState,
 ) {
     // if user is null, start at login screen, if not start at home screen
     var startDestination = NavRoute.Login.path
@@ -38,7 +39,6 @@ fun NavGraph(
     } else if (user != null) {
         startDestination = "${NavRoute.Chat.path}/0"
     }
-    print("THIS SHOULD ONLY CALL ONCE")
     NavHost(
         modifier = modifier,
         navController = navController,
@@ -51,12 +51,13 @@ fun NavGraph(
         addSettingsScreen(navController, this, user)
         addChatScreen(navController, this, context, panelsState)
         addSettingsUploadScreen(navController, this)
+        addSettingsChangelogScreen(navController, this)
     }
 }
 
 private fun addLoginScreen(
     navController: NavHostController,
-    navGraphBuilder: NavGraphBuilder
+    navGraphBuilder: NavGraphBuilder,
 ) {
     navGraphBuilder.composable(route = NavRoute.Login.path) {
         LoginScreen(
@@ -72,7 +73,7 @@ private fun addLoginScreen(
 private fun addHomeScreen(
     navController: NavHostController,
     navGraphBuilder: NavGraphBuilder,
-    context: Context
+    context: Context,
 ) {
     navGraphBuilder.composable(route = NavRoute.Home.path) {
         HomeScreen(
@@ -87,7 +88,7 @@ private fun addHomeScreen(
 
 private fun addGalleryScreen(
     navController: NavHostController,
-    navGraphBuilder: NavGraphBuilder
+    navGraphBuilder: NavGraphBuilder,
 ) {
     navGraphBuilder.composable(route = NavRoute.Gallery.path) {
         GalleryScreen()
@@ -97,7 +98,7 @@ private fun addGalleryScreen(
 private fun addSettingsScreen(
     navController: NavHostController,
     navGraphBuilder: NavGraphBuilder,
-    user: User?
+    user: User?,
 ) {
     navGraphBuilder.composable(route = NavRoute.Settings.path) {
         SettingsScreen(
@@ -113,7 +114,7 @@ private fun addChatScreen(
     navController: NavHostController,
     navGraphBuilder: NavGraphBuilder,
     context: Context,
-    panelsState: OverlappingPanelsState
+    panelsState: OverlappingPanelsState,
 ) {
     navGraphBuilder.composable(
         route = "${NavRoute.Chat.path}/{chatId}",
@@ -124,7 +125,7 @@ private fun addChatScreen(
         )
     ) { backStackEntry ->
         val chatId = backStackEntry.arguments?.getInt("chatId")
-        if(chatId == 0 || chatId == null) {
+        if (chatId == 0 || chatId == null) {
             LaunchedEffect(key1 = chatId) {
                 panelsState.openStartPanel()
             }
@@ -138,9 +139,18 @@ private fun addChatScreen(
 
 private fun addSettingsUploadScreen(
     navController: NavHostController,
-    navGraphBuilder: NavGraphBuilder
+    navGraphBuilder: NavGraphBuilder,
 ) {
     navGraphBuilder.composable(route = NavRoute.SettingsUpload.path) {
         SettingsUploadScreen()
+    }
+}
+
+private fun addSettingsChangelogScreen(
+    navController: NavHostController,
+    navGraphBuilder: NavGraphBuilder,
+) {
+    navGraphBuilder.composable(route = NavRoute.SettingsChangelog.path) {
+        ChangelogLayout()
     }
 }

@@ -21,13 +21,13 @@ data class Upload(
     @Json(name = "updatedAt") val updatedAt: String,
     @Json(name = "starred") var starred: Star?,
     @Json(name = "collections") val collections: List<Collection>,
-    @Json(name = "user") val user: User
+    @Json(name = "user") val user: User,
 )
 
 @JsonClass(generateAdapter = true)
 data class StarResponse(
     @Json(name = "status") val status: Boolean,
-    @Json(name = "star") val star: Star?
+    @Json(name = "star") val star: Star?,
 )
 
 @JsonClass(generateAdapter = true)
@@ -36,5 +36,5 @@ data class Star(
     @Json(name = "userId") val userId: Int,
     @Json(name = "attachmentId") val attachmentId: Int,
     @Json(name = "createdAt") val createdAt: String,
-    @Json(name = "updatedAt") val updatedAt: String
+    @Json(name = "updatedAt") val updatedAt: String,
 )

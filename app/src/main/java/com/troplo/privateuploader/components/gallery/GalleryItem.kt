@@ -51,10 +51,10 @@ import coil.size.Size
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.TpuFunctions
-import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.api.imageLoader
-import com.troplo.privateuploader.data.model.Upload
+import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.data.model.Collection
+import com.troplo.privateuploader.data.model.Upload
 import com.troplo.privateuploader.data.model.defaultUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -69,12 +69,12 @@ fun GalleryItem(@PreviewParameter(SampleUploadProvider::class) item: Upload) {
 
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(4.dp)
-            .clickable(
-                indication = null,
-                interactionSource = remember { MutableInteractionSource() }
-            ) {},
+          .fillMaxWidth()
+          .padding(4.dp)
+          .clickable(
+            indication = null,
+            interactionSource = remember { MutableInteractionSource() }
+          ) {},
         onClick = {
             //
         },
@@ -105,8 +105,8 @@ fun GalleryItem(@PreviewParameter(SampleUploadProvider::class) item: Upload) {
                         imageVector = Icons.Default.InsertDriveFile,
                         contentDescription = "File",
                         modifier = Modifier
-                            .size(150.dp)
-                            .padding(16.dp)
+                          .size(150.dp)
+                          .padding(16.dp)
                     )
                 }
             }
@@ -186,7 +186,8 @@ fun GalleryItem(@PreviewParameter(SampleUploadProvider::class) item: Upload) {
                 FilledTonalIconButton(
                     onClick = {
                         val intent = Intent(Intent.ACTION_VIEW)
-                        intent.data = Uri.parse("https://${UserStore.getUser()?.domain?.domain}/i/${item.attachment}?force=true")
+                        intent.data =
+                            Uri.parse("https://${UserStore.getUser()?.domain?.domain}/i/${item.attachment}?force=true")
                         context.startActivity(intent)
                     },
                     colors = IconButtonDefaults.filledTonalIconButtonColors(
@@ -202,7 +203,7 @@ fun GalleryItem(@PreviewParameter(SampleUploadProvider::class) item: Upload) {
                     }
                 )
 
-                if(item.type == "image" && item.textMetadata != "") {
+                if (item.type == "image" && item.textMetadata != "") {
                     FilledTonalIconButton(
                         onClick = {
                             clipboardManager.setPrimaryClip(
@@ -248,7 +249,7 @@ fun GalleryItem(@PreviewParameter(SampleUploadProvider::class) item: Upload) {
                     ),
                     content = {
                         Icon(
-                            imageVector = if ( itemStarred.value != null) Icons.Default.Star else Icons.Outlined.StarOutline,
+                            imageVector = if (itemStarred.value != null) Icons.Default.Star else Icons.Outlined.StarOutline,
                             contentDescription = "Star",
                             tint = Color(255, 160, 0, 255)
                         )

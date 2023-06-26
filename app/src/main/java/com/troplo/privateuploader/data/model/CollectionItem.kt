@@ -5,12 +5,12 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class CollectionItem(
-  @Json(name = "id") val id: Int,
-  @Json(name = "collectionId") val collectionId: Int,
-  @Json(name = "attachmentId") val attachmentId: Int,
-  @Json(name = "userId") val userId: Int,
-  @Json(name = "identifier") val identifier: String,
-  @Json(name = "pinned") val pinned: Boolean,
-  @Json(name = "createdAt") val createdAt: String,
-  @Json(name = "updatedAt") val updatedAt: String
+    @Json(name = "id") val id: Int,
+    @Json(name = "collectionId") val collectionId: Int,
+    @Json(name = "attachmentId") val attachmentId: Int,
+    @Json(name = "userId") val userId: Int,
+    @Json(name = "identifier") val identifier: String,
+    @Json(name = "pinned") val pinned: Boolean,
+    @Json(name = "createdAt") val createdAt: String,
+    @Json(name = "updatedAt") val updatedAt: String,
 )

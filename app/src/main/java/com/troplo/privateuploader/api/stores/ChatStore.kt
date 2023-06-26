@@ -1,21 +1,15 @@
 package com.troplo.privateuploader.api
 
 import android.content.Context
-import androidx.compose.ui.platform.LocalContext
 import com.troplo.privateuploader.data.model.Chat
 import com.troplo.privateuploader.data.model.Typing
-import com.troplo.privateuploader.data.model.User
-import io.socket.client.IO
-import io.socket.client.Manager
 import io.socket.client.Socket
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.net.URI
 import java.net.URISyntaxException
-import java.util.Collections
 
 
 object ChatStore {
@@ -28,7 +22,7 @@ object ChatStore {
 
     fun initializeChats(token: String) {
         try {
-            if(_chats.value.isNotEmpty()) return
+            if (_chats.value.isNotEmpty()) return
             CoroutineScope(Dispatchers.IO).launch {
                 val response = TpuApi.retrofitService.getChats().execute().body() ?: emptyList()
                 _chats.value = response
@@ -59,7 +53,7 @@ object ChatStore {
         val socket = SocketHandler.getSocket()
         socket?.emit("readChat", id)
         val chat = chats.value.find { it.association?.id == id }
-        if(chat != null) {
+        if (chat != null) {
             chat.unread = 0
         }
     }
@@ -69,7 +63,7 @@ object ChatStore {
     }
 
     fun deleteMessage(messageId: Int) {
-        if(messageId == 0 || associationId.value == 0) return
+        if (messageId == 0 || associationId.value == 0) return
 
         CoroutineScope(Dispatchers.IO).launch {
             TpuApi.retrofitService.deleteMessage(associationId.value, messageId).execute()

@@ -49,7 +49,7 @@ data class User(
     @field:Json(name = "integrations") val integrations: List<Any>,
     @field:Json(name = "scopes") val scopes: String,
     @field:Json(name = "pendingAutoCollects") val pendingAutoCollects: Int,
-    @field:Json(name = "notifications") val notifications: List<Notification>
+    @field:Json(name = "notifications") val notifications: List<Notification>,
 )
 
 @JsonClass(generateAdapter = true)
@@ -59,7 +59,7 @@ data class Experiment(
     @field:Json(name = "value") val value: String,
     @field:Json(name = "userId") val userId: Int,
     @field:Json(name = "createdAt") val createdAt: String,
-    @field:Json(name = "updatedAt") val updatedAt: String
+    @field:Json(name = "updatedAt") val updatedAt: String,
 )
 
 @JsonClass(generateAdapter = true)
@@ -76,7 +76,7 @@ data class Domain(
     @field:Json(name = "customUserEligibility") val customUserEligibility: String?,
     @field:Json(name = "restricted") val restricted: String,
     @field:Json(name = "createdAt") val createdAt: String,
-    @field:Json(name = "updatedAt") val updatedAt: String
+    @field:Json(name = "updatedAt") val updatedAt: String,
 )
 
 @JsonClass(generateAdapter = true)
@@ -92,7 +92,7 @@ data class Plan(
     @field:Json(name = "internalFeatures") val internalFeatures: String,
     @field:Json(name = "icon") val icon: String,
     @field:Json(name = "createdAt") val createdAt: String,
-    @field:Json(name = "updatedAt") val updatedAt: String
+    @field:Json(name = "updatedAt") val updatedAt: String,
 )
 
 @JsonClass(generateAdapter = true)
@@ -109,7 +109,7 @@ data class Badge(
     @field:Json(name = "createdAt") val createdAt: String,
     @field:Json(name = "updatedAt") val updatedAt: String,
     @field:Json(name = "planId") val planId: String?,
-    @field:Json(name = "BadgeAssociation") val badgeAssociation: BadgeAssociation
+    @field:Json(name = "BadgeAssociation") val badgeAssociation: BadgeAssociation,
 )
 
 @JsonClass(generateAdapter = true)
@@ -119,7 +119,7 @@ data class BadgeAssociation(
     @field:Json(name = "expiredAt") val expiredAt: String?,
     @field:Json(name = "hidden") val hidden: Boolean,
     @field:Json(name = "createdAt") val createdAt: String,
-    @field:Json(name = "updatedAt") val updatedAt: String
+    @field:Json(name = "updatedAt") val updatedAt: String,
 )
 
 @JsonClass(generateAdapter = true)
@@ -130,7 +130,7 @@ data class Notification(
     @field:Json(name = "dismissed") val dismissed: Int,
     @field:Json(name = "route") val route: String,
     @field:Json(name = "createdAt") val createdAt: String,
-    @field:Json(name = "updatedAt") val updatedAt: String
+    @field:Json(name = "updatedAt") val updatedAt: String,
 )
 
 // default new uwser

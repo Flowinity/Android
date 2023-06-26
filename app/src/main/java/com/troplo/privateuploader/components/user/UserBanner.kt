@@ -22,7 +22,9 @@ fun UserBanner() {
         GlideImage(
             model = TpuFunctions.image(user?.banner, null),
             contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxWidth().height(200.dp),
+            modifier = Modifier
+              .fillMaxWidth()
+              .height(200.dp),
             contentDescription = null
         )
     }

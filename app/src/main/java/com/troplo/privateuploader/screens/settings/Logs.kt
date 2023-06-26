@@ -6,5 +6,5 @@ import androidx.compose.ui.tooling.preview.Preview
 @Composable
 @Preview
 fun Logs() {
-    
+
 }
