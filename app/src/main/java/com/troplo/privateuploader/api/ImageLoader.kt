@@ -5,8 +5,10 @@ import android.os.Build.VERSION.SDK_INT
 import coil.ImageLoader
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
+import coil.disk.DiskCache
+import kotlinx.coroutines.Dispatchers
 
-fun imageLoader(context: Context): ImageLoader {
+fun imageLoader(context: Context, cache: Boolean? = true): ImageLoader {
     return ImageLoader.Builder(context)
         .components {
             if (SDK_INT >= 28) {
@@ -15,5 +17,17 @@ fun imageLoader(context: Context): ImageLoader {
                 add(GifDecoder.Factory())
             }
         }
+        .dispatcher(Dispatchers.IO)
+        .diskCache {
+            if (cache == true) {
+                DiskCache.Builder()
+                    .directory(context.cacheDir.resolve("image_cache"))
+                    .maxSizeBytes(20 * 1024 * 1024)
+                    .build()
+            } else {
+                null
+            }
+        }
+        .respectCacheHeaders(false)
         .build()
 }

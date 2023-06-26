@@ -3,6 +3,7 @@ package com.troplo.privateuploader.api
 import android.content.Context
 import androidx.compose.ui.platform.LocalContext
 import com.troplo.privateuploader.data.model.Chat
+import com.troplo.privateuploader.data.model.Typing
 import com.troplo.privateuploader.data.model.User
 import io.socket.client.IO
 import io.socket.client.Manager
@@ -20,6 +21,7 @@ import java.util.Collections
 object ChatStore {
     private val _chats: MutableStateFlow<List<Chat>> = MutableStateFlow(emptyList())
     var associationId = MutableStateFlow(0)
+    var typers = MutableStateFlow(emptyList<Typing>())
 
     val chats: StateFlow<List<Chat>>
         get() = _chats
@@ -28,9 +30,8 @@ object ChatStore {
         try {
             if(_chats.value.isNotEmpty()) return
             CoroutineScope(Dispatchers.IO).launch {
-                val response = TpuApi.retrofitService.getChats(token).execute().body() ?: emptyList()
+                val response = TpuApi.retrofitService.getChats().execute().body() ?: emptyList()
                 _chats.value = response
-                println("Chats: $response")
             }
 
             val socket: Socket? = SocketHandler.getSocket()
@@ -53,9 +54,25 @@ object ChatStore {
     fun setAssociationId(id: Int, context: Context) {
         SessionManager(context).setLastChatId(id)
         associationId.value = id
+
+        // Handle unread count, and init read receipt
+        val socket = SocketHandler.getSocket()
+        socket?.emit("readChat", id)
+        val chat = chats.value.find { it.association?.id == id }
+        if(chat != null) {
+            chat.unread = 0
+        }
     }
 
     fun setChats(chats: List<Chat>) {
         _chats.value = chats
+    }
+
+    fun deleteMessage(messageId: Int) {
+        if(messageId == 0 || associationId.value == 0) return
+
+        CoroutineScope(Dispatchers.IO).launch {
+            TpuApi.retrofitService.deleteMessage(associationId.value, messageId).execute()
+        }
     }
 }

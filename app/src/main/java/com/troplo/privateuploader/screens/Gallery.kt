@@ -100,7 +100,7 @@ class GalleryViewModel : ViewModel() {
 
     fun getGalleryItems(token: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val response = TpuApi.retrofitService.getGallery(token, search = search.value).execute()
+            val response = TpuApi.retrofitService.getGallery(search = search.value).execute()
             println(response.body())
             withContext(Dispatchers.Main) {
                 gallery.value = response.body()

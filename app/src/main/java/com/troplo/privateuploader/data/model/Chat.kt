@@ -2,6 +2,7 @@ package com.troplo.privateuploader.data.model
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
+import kotlinx.coroutines.flow.MutableStateFlow
 
 @JsonClass(generateAdapter = true)
 data class Chat(
@@ -19,5 +20,5 @@ data class Chat(
   @field:Json(name = "association") val association: ChatAssociation?,
   @field:Json(name = "messages") val messages: List<Message>?,
   @field:Json(name = "unread") var unread: Int?,
-  @field:Json(name = "typers") val typers: List<Typing>?
+  @field:Json(name = "typers") var typers: MutableStateFlow<List<Typing>>? = MutableStateFlow(emptyList())
 )

@@ -6,17 +6,18 @@ plugins {
 
 android {
     namespace = "com.troplo.privateuploader"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.troplo.privateuploader"
         minSdk = 26
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.2"
         multiDexEnabled = true
         buildConfigField("String", "SERVER_URL", "\"https://privateuploader.com\"")
         buildConfigField("String", "BUILD_TIME", "\"${System.currentTimeMillis()}\"")
+        buildConfigField("Integer", "BETA_VERSION", "2")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -61,6 +62,7 @@ android {
 
 dependencies {
     // TPU
+    implementation("androidx.compose.runtime:runtime-tracing:1.0.0-alpha03")
     implementation("io.coil-kt:coil-gif:2.4.0")
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("com.github.X1nto:OverlappingPanelsCompose:1.2.0")
@@ -84,7 +86,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.6.0")
 
     // Material Design 3
-    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material3:material3:1.2.0-alpha03")
     // For SwipeableState
     implementation("androidx.compose.material:material:1.4.3")
     // or only import the main APIs for the underlying toolkit systems,

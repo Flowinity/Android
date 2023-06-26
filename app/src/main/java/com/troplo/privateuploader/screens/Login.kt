@@ -140,6 +140,7 @@ class LoginViewModel : ViewModel() {
                     SessionManager(context).saveAuthToken(data.body()!!.token)
                     // go to the main screen
                     onLoginSuccess()
+                    TpuApi.init(data.body()!!.token, context)
                 } else {
                     // show Toast
                     val error: JSONObject = JSONObject(data.errorBody()?.string() ?: "{}")

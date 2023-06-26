@@ -22,13 +22,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.troplo.privateuploader.api.ChatStore
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomBarNav(navController: NavController, panelState: OverlappingPanelsState, closePanels: () -> Unit) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    println("currentRoute: $currentRoute")
     if (currentRoute == null || currentRoute == NavRoute.Login.path) {
         return
     }
@@ -57,12 +57,11 @@ fun BottomBarNav(navController: NavController, panelState: OverlappingPanelsStat
                             contentDescription = NavRoute.Home.path
                         )
                     },
-                    selected = currentRoute == NavRoute.Home.path,
+                    selected = currentRoute.startsWith("chat/"),
                     onClick = {
-                        closePanels()
-                        if (currentRoute != NavRoute.Home.path) {
-                            navController.navigate(NavRoute.Home.path) {
-                                popUpTo(NavRoute.Home.path) { inclusive = true }
+                        if (!currentRoute.startsWith("chat/")) {
+                            navController.navigate("${NavRoute.Chat.path}/${ChatStore.associationId.value}") {
+                                popUpTo("chat/${ChatStore.associationId.value}") { inclusive = true }
                             }
                         }
                     },

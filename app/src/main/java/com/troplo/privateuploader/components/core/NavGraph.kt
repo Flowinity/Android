@@ -130,7 +130,8 @@ private fun addChatScreen(
             }
         }
         ChatScreen(
-            chatId = chatId
+            chatId = chatId,
+            panelsState = panelsState
         )
     }
 }

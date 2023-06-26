@@ -36,11 +36,33 @@ data class MessageRequest(
 )
 
 @JsonClass(generateAdapter = true)
+data class EditRequest(
+  @field:Json(name = "content") val content: String,
+  @field:Json(name = "id") val id: Int
+)
+
+@JsonClass(generateAdapter = true)
 data class MessageEvent(
   @field:Json(name = "message") val message: Message,
   @field:Json(name = "mention") val mention: Boolean,
   @field:Json(name = "chat") val chat: Chat,
   @field:Json(name = "association") val association: ChatAssociation
+)
+
+@JsonClass(generateAdapter = true)
+data class DeleteEvent(
+  @field:Json(name = "chatId") val chatId: Int,
+  @field:Json(name = "id") val id: Int
+)
+
+@JsonClass(generateAdapter = true)
+data class EditEvent(
+  @field:Json(name = "chatId") val chatId: Int,
+  @field:Json(name = "id") val id: Int,
+  @field:Json(name = "content") val content: String,
+  @field:Json(name = "edited") val edited: Boolean,
+  @field:Json(name = "editedAt") val editedAt: String?,
+  @field:Json(name = "user") val user: User?
 )
 
 data class Embed(

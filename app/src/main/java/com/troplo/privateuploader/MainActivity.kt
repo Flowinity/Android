@@ -3,6 +3,7 @@ package com.troplo.privateuploader
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.os.StrictMode
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,11 +19,13 @@ import java.util.Collections
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+       // if(BuildConfig.DEBUG) StrictMode.enableDefaults();
         val token = SessionManager(this).getAuthToken()
         var user: User? = null
 
         if(token != null) {
-            TpuApi.retrofitService.getUser(token).enqueue(object : retrofit2.Callback<User> {
+            TpuApi.init(token, this)
+            TpuApi.retrofitService.getUser().enqueue(object : retrofit2.Callback<User> {
                 override fun onResponse(
                     call: retrofit2.Call<User>,
                     response: retrofit2.Response<User>
@@ -50,6 +53,7 @@ class MainActivity : ComponentActivity() {
                 }
             })
         } else {
+            TpuApi.init("", this)
             setContent {
                 PrivateUploaderTheme {
                     MainScreen(user)

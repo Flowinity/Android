@@ -50,6 +50,12 @@ fun SettingsScreen(
                 "Options to automatically upload to TPU",
                 onClick = { navigate("upload") }
             )
+            SettingsItem(
+                Icons.Default.Upload,
+                "Changelog",
+                "Recent updates to TPU Mobile",
+                onClick = { navigate("changelog") }
+            )
 
             Card(
                 modifier = Modifier
@@ -71,7 +77,7 @@ fun SettingsScreen(
                             color = Primary
                         )
                         Text(
-                            text = "Mobile Beta",
+                            text = "Mobile Beta ${BuildConfig.BETA_VERSION}",
                             style = MaterialTheme.typography.bodyLarge,
                             color = Primary
                         )

@@ -24,8 +24,18 @@ import com.troplo.privateuploader.data.model.ChatAssociation
 import com.troplo.privateuploader.data.model.Message
 import com.troplo.privateuploader.data.model.User
 import android.text.format.DateFormat
+import android.widget.Toast
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.runtime.MutableState
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
@@ -38,12 +48,20 @@ import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
-@Preview
 fun Message(@PreviewParameter(
     SampleMessageProvider::class
-) message: Message, compact: String = "none"
+) message: Message, compact: String = "none", messageCtx: MutableState<Boolean>, messageCtxMessage: MutableState<Message?>
 ) {
-    Column {
+    Column(
+        modifier = Modifier.pointerInput(Unit) {
+            detectTapGestures(
+                onLongPress = {
+                    messageCtxMessage.value = message
+                    messageCtx.value = true
+                }
+            )
+        }
+    ) {
         if (compact == "separator") {
             Column(
                 modifier = Modifier.padding(top = 12.dp, start = 16.dp, end = 16.dp),
@@ -106,7 +124,7 @@ fun Message(@PreviewParameter(
                     }
                 }
 
-                val color = if(message.pending == false) {
+                val color = if(message.pending == false || message.pending == null) {
                     LocalContentColor.current
                 } else if(message.error == true) {
                     MaterialTheme.colorScheme.error
@@ -114,12 +132,36 @@ fun Message(@PreviewParameter(
                     MaterialTheme.colorScheme.onSurfaceVariant
                 }
 
-                MarkdownText(
-                    markdown = message.content ?: "",
-                    textAlign = TextAlign.Center,
-                    color = color
-                )
+                Row {
+                    MarkdownText(
+                        markdown = message.content ?: "",
+                        color = color,
+                        modifier = Modifier.pointerInput(Unit) {
+                            detectTapGestures(
+                                onLongPress = {
+                                    messageCtxMessage.value = message
+                                    messageCtx.value = true
+                                }
+                            )
+                        }
+                    )
 
+                    if (message.edited) {
+                        val context = LocalContext.current
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edited",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.clickable {
+                                Toast.makeText(
+                                    context,
+                                    "Edited at ${message.editedAt}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }.size(20.dp).padding(start = 4.dp)
+                        )
+                    }
+                }
                 message.embeds.forEach {
                     Embed(embed = it)
                 }

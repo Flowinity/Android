@@ -3,7 +3,6 @@ package com.troplo.privateuploader.components.core
 import android.content.res.Configuration
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -18,11 +17,11 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -215,7 +214,7 @@ fun OverlappingPanels(
             -offsetValue to OverlappingPanelsValue.OpenStart
         )
 
-        Box(
+      Box(
             modifier = Modifier
                 .fillMaxSize()
                 .swipeable(
@@ -228,36 +227,22 @@ fun OverlappingPanels(
                     resistance = resistance(anchors.keys),
                 )
         ) {
-            val sidePanelAlignment = organizeSidePanel(
-                panelsState,
-                onStartPanel = { Alignment.CenterStart },
-                onEndPanel = { Alignment.CenterEnd },
-                onNeither = { Alignment.Center }
-            )
-
-            val modifierZero = Modifier
-                .fillMaxWidth(0f)
-                .size(0.dp)
-
-            val modifierFull = Modifier
-
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(fraction)
-                    .align(sidePanelAlignment)
-            ) {
-                Box(
-                    modifier = if (panelsState.offset.value < 0) modifierFull else modifierZero
-                ) {
-                    panelEnd()
-                }
-                Box(
-                    modifier = if (panelsState.offset.value < 0) modifierZero else modifierFull
-                ) {
-                    panelStart()
-                }
-            }
+                    .align(Alignment.CenterStart)
+                    .alpha(if(panelsState.offsetIsPositive) 1f else 0f),
+                content = panelStart
+            )
+          Box(
+              modifier = Modifier
+                  .fillMaxHeight()
+                  .fillMaxWidth(fraction)
+                  .align(Alignment.CenterEnd)
+                  .alpha(if(panelsState.offsetIsNegative) 1f else 0f),
+              content = panelEnd
+          )
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -368,5 +353,4 @@ private class DefaultCenterPanelAlpha(
     override fun sidesClosed() = sidesClosed
 
 }
-
 

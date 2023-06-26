@@ -9,6 +9,7 @@ import android.content.pm.ApplicationInfo
 import android.graphics.drawable.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Reply
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.RemoteInput
@@ -17,17 +18,24 @@ import com.google.gson.Gson
 import com.troplo.privateuploader.BuildConfig
 import com.troplo.privateuploader.R
 import com.troplo.privateuploader.data.model.MessageEvent
+import com.troplo.privateuploader.data.model.Typing
 import io.socket.client.IO
 import io.socket.client.Socket
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.net.URISyntaxException
 import java.util.Collections
+import java.util.concurrent.Executors
 
 object SocketHandler {
   private const val SERVER_URL = BuildConfig.SERVER_URL
 
   private var socket: Socket? = null
   private val gson = Gson()
+  var connected = mutableStateOf(false)
 
   fun initializeSocket(token: String, context: Context) {
     try {
@@ -40,13 +48,16 @@ object SocketHandler {
       if(socket != null) {
         socket?.open()
         socket?.on(Socket.EVENT_CONNECT) {
-          println("Socket connected ${socket?.isActive}")
+          this.connected.value = true
+          println("Socket connected ${socket?.isActive}, Connected: ${this.connected.value}")
         }
         socket?.on(Socket.EVENT_DISCONNECT) {
-          println("Socket disconnected ${socket?.isActive}")
+          this.connected.value = false
+          println("Socket disconnected ${socket?.isActive}, Connected: ${this.connected.value}")
         }
         socket?.on(Socket.EVENT_CONNECT_ERROR) {
-          println("Socket connect error ${socket?.isActive}")
+          this.connected.value = false
+          println("Socket connect error ${socket?.isActive}, Connected: ${this.connected.value}")
         }
         socket?.on("message") { it ->
           val jsonArray = it[0] as JSONObject
@@ -63,6 +74,30 @@ object SocketHandler {
               chat.unread = chat.unread?.plus(1)
               ChatStore.setChats(listOf(chat) + ChatStore.chats.value.filter { it.association?.id != messageEvent.association.id })
             }
+          }
+        }
+        socket?.on("typing") { it ->
+          CoroutineScope(Dispatchers.IO).launch {
+            val jsonArray = it[0] as JSONObject
+            val payload = jsonArray.toString()
+            val typeEvent = gson.fromJson(payload, Typing::class.java)
+            println("TYPING EVENT: $typeEvent")
+            val find = ChatStore.typers.value.find { it.userId == typeEvent.userId }
+            if (find == null) {
+              ChatStore.typers.value = ChatStore.typers.value + typeEvent
+            } else {
+              ChatStore.typers.value =
+                ChatStore.typers.value.filter { it.userId != typeEvent.userId } + typeEvent
+            }
+
+            // Remove the event
+            val scheduler = Executors.newSingleThreadScheduledExecutor()
+            scheduler.schedule({
+              if (ChatStore.typers.value.find { it.userId == typeEvent.userId }?.expires == typeEvent.expires) {
+                ChatStore.typers.value =
+                  ChatStore.typers.value.filter { it.userId != typeEvent.userId }
+              }
+            }, 5, java.util.concurrent.TimeUnit.SECONDS)
           }
         }
         /*socket?.on("message") {

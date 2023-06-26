@@ -14,12 +14,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.AssistChip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
@@ -27,13 +24,10 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.StarOutline
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -45,39 +39,27 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
-import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.TpuFunctions
-import com.troplo.privateuploader.api.UserHandler
+import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.api.imageLoader
-import com.troplo.privateuploader.data.model.Badge
-import com.troplo.privateuploader.data.model.BadgeAssociation
 import com.troplo.privateuploader.data.model.Upload
-import com.troplo.privateuploader.data.model.User
 import com.troplo.privateuploader.data.model.Collection
-import com.troplo.privateuploader.data.model.Domain
-import com.troplo.privateuploader.data.model.Experiment
-import com.troplo.privateuploader.data.model.Notification
-import com.troplo.privateuploader.data.model.Plan
 import com.troplo.privateuploader.data.model.defaultUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Date
-import kotlin.coroutines.coroutineContext
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
@@ -184,7 +166,7 @@ fun GalleryItem(@PreviewParameter(SampleUploadProvider::class) item: Upload) {
                         clipboardManager.setPrimaryClip(
                             ClipData.newPlainText(
                                 "attachment",
-                                "https://${UserHandler.getUser()?.domain?.domain}/i/${item.attachment}"
+                                "https://${UserStore.getUser()?.domain?.domain}/i/${item.attachment}"
                             )
                         )
                     },
@@ -204,7 +186,7 @@ fun GalleryItem(@PreviewParameter(SampleUploadProvider::class) item: Upload) {
                 FilledTonalIconButton(
                     onClick = {
                         val intent = Intent(Intent.ACTION_VIEW)
-                        intent.data = Uri.parse("https://${UserHandler.getUser()?.domain?.domain}/i/${item.attachment}?force=true")
+                        intent.data = Uri.parse("https://${UserStore.getUser()?.domain?.domain}/i/${item.attachment}?force=true")
                         context.startActivity(intent)
                     },
                     colors = IconButtonDefaults.filledTonalIconButtonColors(
@@ -253,7 +235,6 @@ fun GalleryItem(@PreviewParameter(SampleUploadProvider::class) item: Upload) {
                     onClick = {
                         CoroutineScope(Dispatchers.IO).launch {
                             val response = TpuApi.retrofitService.star(
-                                SessionManager(context).getAuthToken() ?: "",
                                 item.attachment
                             ).execute()
                             if (response.isSuccessful) {

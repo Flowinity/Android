@@ -47,6 +47,9 @@ fun ChatItem(
     // track ChatStore.associationId, is mutableStateOf<Int>(0)
     val id = ChatStore.associationId.collectAsState()
     val unread = remember { mutableStateOf(chat.unread) }
+    if(id.value == chat.association?.id) {
+        unread.value = 0
+    }
     NavigationDrawerItem(
         onClick = {
             chat.association?.let {

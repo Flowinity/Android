@@ -27,6 +27,7 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.api.imageLoader
+import kotlinx.coroutines.Dispatchers
 
 @Composable
 fun UserAvatar(
@@ -39,6 +40,7 @@ fun UserAvatar(
             contentDescription = "User profile picture",
             painter = rememberAsyncImagePainter(
                 ImageRequest.Builder(LocalContext.current)
+                    .dispatcher(Dispatchers.IO)
                     .data(data = TpuFunctions.image(avatar, null)).apply(block = fun ImageRequest.Builder.() {
                         size(Size.ORIGINAL)
                     }).build(), imageLoader = imageLoader(LocalContext.current)

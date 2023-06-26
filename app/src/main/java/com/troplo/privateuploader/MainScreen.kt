@@ -24,9 +24,10 @@ import androidx.navigation.compose.rememberNavController
 import com.troplo.privateuploader.api.ChatStore
 import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.SocketHandler
-import com.troplo.privateuploader.api.UserHandler
+import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.components.chat.MemberSidebar
 import com.troplo.privateuploader.components.core.BottomBarNav
+import com.troplo.privateuploader.components.core.ConnectingBanner
 import com.troplo.privateuploader.components.core.NavGraph
 import com.troplo.privateuploader.components.core.NavRoute
 import com.troplo.privateuploader.components.core.OverlappingPanels
@@ -43,11 +44,12 @@ fun MainScreen(user: User?) {
     val token = SessionManager(context).getAuthToken()
     if (token != null) {
         SocketHandler.initializeSocket(token, context)
-        UserHandler.initializeUser(token)
+        UserStore.initializeUser(token)
     }
     val navController = rememberNavController()
     val panelState = rememberOverlappingPanelsState()
     var closePanels by remember { mutableStateOf(false) }
+    // track socket connection status
     val closePanelsFunc = {
         closePanels = true
     }
@@ -58,13 +60,18 @@ fun MainScreen(user: User?) {
         }
     }
     Scaffold(
-        topBar = { TopBarNav(navController =  navController, user = user) },
+        topBar = {
+            if(!SocketHandler.connected.value) {
+                ConnectingBanner()
+            }
+            TopBarNav(navController =  navController, user = user)
+         },
         bottomBar = { BottomBarNav(navController = navController, panelState = panelState, closePanels = closePanelsFunc) },
     ) { paddingValues ->
         OverlappingPanels(
             modifier = Modifier.fillMaxSize(),
             panelsState = panelState,
-            gesturesEnabled = true,
+            gesturesEnabled = navController.currentDestination?.route?.startsWith("chat/") == true,
             panelStart = {
                 PanelSurface {
                     ModalDrawerSheet(
