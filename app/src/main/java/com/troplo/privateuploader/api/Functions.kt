@@ -1,9 +1,16 @@
 package com.troplo.privateuploader.api
 
-import android.text.format.DateFormat
 import com.troplo.privateuploader.data.model.Chat
 import com.troplo.privateuploader.data.model.User
-import java.util.Date
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Calendar
+import java.util.Locale
 import kotlin.math.ln
 import kotlin.math.pow
 
@@ -33,11 +40,43 @@ object TpuFunctions {
         }
     }
 
-    fun formatDate(date: Date?): CharSequence? {
-        if (DateFormat.format("dd MMMM yyyy", date) == DateFormat.format("dd MMMM yyyy", Date())) {
-            return DateFormat.format("hh:mm:ss a", date)
+
+
+    fun formatDate(date: String?): CharSequence {
+        try {
+            val utcDateTime = ZonedDateTime.parse(date)
+            val localDateTime = utcDateTime.withZoneSameInstant(ZoneId.systemDefault())
+            val currentDate = LocalDate.now()
+
+            val formatter = if (localDateTime.toLocalDate() == currentDate) {
+                DateTimeFormatter.ofPattern("hh:mm:ss a")
+            } else {
+                DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm:ss a")
+            }
+
+            return localDateTime.format(formatter)
+        } catch (e: Exception) {
+            println("Error formatting date (FD): $e")
+            return "Check logcat"
         }
-        return DateFormat.format("dd MMMM yyyy, hh:mm:ss a", date)
+    }
+
+    fun formatDateDay(date: String?): CharSequence {
+        try {
+            val utcDateTime = ZonedDateTime.parse(date)
+            val localDateTime = utcDateTime.withZoneSameInstant(ZoneId.systemDefault())
+
+            val formatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy")
+
+            return localDateTime.format(formatter)
+        } catch (e: Exception) {
+            println("Error formatting date (FDD): $e")
+            return "Check logcat"
+        }
+    }
+
+    fun currentISODate(): String {
+        return ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
     }
 
     fun fileSize(size: Int?): String {
@@ -47,5 +86,15 @@ object TpuFunctions {
         val exp = (Math.log(size.toDouble()) / ln(unit.toDouble())).toInt()
         val pre = "KMGTPE"[exp - 1] + "i"
         return String.format("%.1f %sB", size / unit.toDouble().pow(exp.toDouble()), pre)
+    }
+
+    fun getStatusDetails(status: String): Pair<Long, String> {
+        return when (status) {
+            "online" -> Pair(0xFF4CAF50, "Online")
+            "idle" -> Pair(0xFFFF9800, "Idle")
+            "busy" -> Pair(0xFFF44336, "Do Not Disturb")
+            "invisible" -> Pair(0xFF757575, "Invisible")
+            else -> Pair(0xFF757575, "Offline")
+        }
     }
 }

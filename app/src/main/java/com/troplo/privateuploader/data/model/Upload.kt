@@ -17,7 +17,7 @@ data class Upload(
     @Json(name = "deletable") val deletable: Boolean,
     @Json(name = "data") val data: Any?,
     @Json(name = "textMetadata") val textMetadata: String,
-    @Json(name = "createdAt") val createdAt: Date,
+    @Json(name = "createdAt") val createdAt: String,
     @Json(name = "updatedAt") val updatedAt: String,
     @Json(name = "starred") var starred: Star?,
     @Json(name = "collections") val collections: List<Collection>,

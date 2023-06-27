@@ -7,6 +7,7 @@ import android.widget.Toast
 import com.troplo.privateuploader.BuildConfig
 import com.troplo.privateuploader.data.model.Chat
 import com.troplo.privateuploader.data.model.EditRequest
+import com.troplo.privateuploader.data.model.Friend
 import com.troplo.privateuploader.data.model.Gallery
 import com.troplo.privateuploader.data.model.LoginRequest
 import com.troplo.privateuploader.data.model.LoginResponse
@@ -160,6 +161,7 @@ object TpuApi {
         @GET("chats/{id}/messages")
         fun getMessages(
             @Path("id") id: Int,
+            @Query("offset") offset: Int? = null
         ): Call<List<Message>>
 
         @POST("chats/{id}/message")
@@ -184,6 +186,14 @@ object TpuApi {
             @Path("chatId") chatId: Int,
             @Path("messageId") messageId: Int,
         ): Call<Unit>
+
+        @GET("user/profile/{username}")
+        fun getUserProfile(
+            @Path("username") username: String
+        ): Call<User>
+
+        @GET("user/friends")
+        fun getFriends(): Call<List<Friend>>
     }
 
     val retrofitService: TpuApiService by lazy {

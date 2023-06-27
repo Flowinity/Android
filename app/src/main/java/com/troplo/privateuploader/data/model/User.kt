@@ -50,6 +50,15 @@ data class User(
     @field:Json(name = "scopes") val scopes: String,
     @field:Json(name = "pendingAutoCollects") val pendingAutoCollects: Int,
     @field:Json(name = "notifications") val notifications: List<Notification>,
+    @field:Json(name = "platforms") val platforms: List<Platform>?,
+)
+
+@JsonClass(generateAdapter = true)
+data class Platform (
+    @field:Json(name = "platform") val platform: String,
+    @field:Json(name = "id") val id: String,
+    @field:Json(name = "lastSeen") val userId: String,
+    @field:Json(name = "status") val status: String
 )
 
 @JsonClass(generateAdapter = true)
@@ -248,5 +257,37 @@ fun defaultUser() = User(
             createdAt = "2023-06-14T01:08:10.000Z",
             updatedAt = "2023-06-23T00:22:37.000Z"
         )
-    )
+    ),
+    platforms = emptyList()
+)
+
+@JsonClass(generateAdapter = true)
+data class StatusPayload(
+    @field:Json(name = "status") val status: String,
+    @field:Json(name = "id") val id: Int
+)
+
+@JsonClass(generateAdapter = true)
+data class PartialUser(
+    @field:Json(name = "avatar") val avatar: String?,
+    @field:Json(name = "banner") val banner: String?,
+    @field:Json(name = "description") val description: String?,
+    @field:Json(name = "id") val id: Int,
+    @field:Json(name = "nickname") val nickname: Nickname?,
+    @field:Json(name = "plan") val plan: Plan?,
+    @field:Json(name = "platforms") val platforms: List<Platform>?,
+    @field:Json(name = "status") val status: String?,
+    @field:Json(name = "username") val username: String
+)
+
+@JsonClass(generateAdapter = true)
+data class Nickname(
+    @field:Json(name = "id") val id: Int,
+    @field:Json(name = "nickname") val nickname: String,
+    @field:Json(name = "userId") val userId: Int,
+    @field:Json(name = "createdAt") val createdAt: String,
+    @field:Json(name = "updatedAt") val updatedAt: String,
+    @field:Json(name = "user") val user: PartialUser?,
+    @field:Json(name = "friend") val friend: PartialUser?,
+    @field:Json(name = "friendId") val friendId: Int?
 )

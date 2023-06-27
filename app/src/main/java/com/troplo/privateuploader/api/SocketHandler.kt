@@ -21,7 +21,7 @@ object SocketHandler {
     private const val SERVER_URL = BuildConfig.SERVER_URL
 
     private var socket: Socket? = null
-    private val gson = Gson()
+    val gson = Gson()
     var connected = mutableStateOf(false)
 
     fun initializeSocket(token: String, context: Context) {

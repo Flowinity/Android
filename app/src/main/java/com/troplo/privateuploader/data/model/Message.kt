@@ -22,8 +22,8 @@ data class Message(
     @field:Json(name = "user") val user: User?,
     @field:Json(name = "pending") val pending: Boolean?,
     @field:Json(name = "error") val error: Boolean?,
-    @field:Json(name = "createdAt") val createdAt: Date?,
-    @field:Json(name = "updatedAt") val updatedAt: Date?,
+    @field:Json(name = "createdAt") val createdAt: String?,
+    @field:Json(name = "updatedAt") val updatedAt: String?,
     @field:Json(name = "pinned") val pinned: Boolean?,
     @field:Json(name = "readReceipts") val readReceipts: List<ChatAssociation>,
 )

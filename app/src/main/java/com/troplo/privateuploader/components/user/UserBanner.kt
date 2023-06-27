@@ -12,12 +12,12 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.api.stores.UserStore
+import com.troplo.privateuploader.data.model.User
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 @Preview
-fun UserBanner() {
-    val user = UserStore.getUser()
+fun UserBanner(user: User? = UserStore.getUser()) {
     Box {
         GlideImage(
             model = TpuFunctions.image(user?.banner, null),

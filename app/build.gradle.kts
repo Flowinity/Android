@@ -2,6 +2,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
+    id("io.sentry.android.gradle") version "3.11.1"
 }
 
 android {
@@ -62,6 +63,14 @@ android {
 
 dependencies {
     // TPU
+
+    implementation("io.noties.markwon:core:4.6.2")
+    implementation("io.noties.markwon:ext-strikethrough:4.6.2")
+    implementation("io.noties.markwon:ext-tables:4.6.2")
+    implementation("io.noties.markwon:html:4.6.2")
+    implementation("io.noties.markwon:linkify:4.6.2")
+    implementation("io.sentry:sentry-android:6.23.0")
+    implementation("io.sentry:sentry-compose-android:6.23.0")
     implementation("androidx.compose.runtime:runtime-tracing:1.0.0-alpha03")
     implementation("io.coil-kt:coil-gif:2.4.0")
     implementation("io.coil-kt:coil-compose:2.4.0")

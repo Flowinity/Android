@@ -269,7 +269,7 @@ class SampleUploadProvider : PreviewParameterProvider<Upload> {
                 attachment = "aaa.png",
                 type = "imagse",
                 originalFilename = "Test.png",
-                createdAt = Date(),
+                createdAt = "2021-08-01T00:00:00.000Z",
                 fileSize = 1000,
                 collections = listOf(
                     Collection(

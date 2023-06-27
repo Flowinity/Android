@@ -26,12 +26,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.troplo.privateuploader.api.ChatStore
 import com.troplo.privateuploader.api.stores.UserStore
-import com.troplo.privateuploader.data.model.Message
+import com.troplo.privateuploader.data.model.Message as MessageModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MessageActions(
-    message: MutableState<Message?>,
+    message: MutableState<MessageModel?>,
     openBottomSheet: MutableState<Boolean>,
     editId: MutableState<Int>,
     messageInput: MutableState<String>,
@@ -46,6 +46,9 @@ fun MessageActions(
         sheetState = bottomSheetState,
         windowInsets = windowInsets
     ) {
+        if(message.value != null) {
+            Message(message.value!!, "none", null, null, modifier = Modifier.padding(bottom = 8.dp))
+        }
         Column(
             modifier = Modifier.padding(bottom = 8.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp)

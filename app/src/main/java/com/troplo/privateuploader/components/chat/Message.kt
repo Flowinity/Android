@@ -35,28 +35,28 @@ import com.troplo.privateuploader.data.model.ChatAssociation
 import com.troplo.privateuploader.data.model.Embed
 import com.troplo.privateuploader.data.model.Message
 import com.troplo.privateuploader.data.model.defaultUser
-import dev.jeziellago.compose.markdowntext.MarkdownText
+import com.troplo.privateuploader.components.chat.MarkdownText
 import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
 fun Message(
-    @PreviewParameter(
-        SampleMessageProvider::class
-    ) message: Message,
+    message: Message,
     compact: String = "none",
-    messageCtx: MutableState<Boolean>,
-    messageCtxMessage: MutableState<Message?>,
+    messageCtx: MutableState<Boolean>?,
+    messageCtxMessage: MutableState<Message?>?,
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = Modifier.pointerInput(Unit) {
             detectTapGestures(
                 onLongPress = {
+                    if(messageCtx == null || messageCtxMessage == null) return@detectTapGestures
                     messageCtxMessage.value = message
                     messageCtx.value = true
                 }
             )
-        }
+        }.then(modifier)
     ) {
         if (compact == "separator") {
             Column(
@@ -71,7 +71,7 @@ fun Message(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = DateFormat.format("EEE, dd MMM yyyy", message.createdAt).toString(),
+                        text = TpuFunctions.formatDateDay(message.createdAt).toString(),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(horizontal = 8.dp)
                     )
@@ -98,7 +98,8 @@ fun Message(
                 UserAvatar(
                     avatar = message.user?.avatar,
                     username = message.user?.username ?: "Deleted User",
-                    modifier = Modifier.align(Alignment.Top)
+                    modifier = Modifier.align(Alignment.Top),
+                    showStatus = false
                 )
             }
             if (!normal) {
@@ -132,13 +133,10 @@ fun Message(
                     MarkdownText(
                         markdown = message.content,
                         color = color,
-                        modifier = Modifier.pointerInput(Unit) {
-                            detectTapGestures(
-                                onLongPress = {
-                                    messageCtxMessage.value = message
-                                    messageCtx.value = true
-                                }
-                            )
+                        onLongClick = {
+                            if(messageCtx == null || messageCtxMessage == null) return@MarkdownText
+                            messageCtxMessage.value = message
+                            messageCtx.value = true
                         }
                     )
 
@@ -171,7 +169,7 @@ fun Message(
     }
 }
 
-class SampleMessageProvider : PreviewParameterProvider<Message> {
+/*class SampleMessageProvider : PreviewParameterProvider<Message> {
     override val values: Sequence<Message>
         get() = sequenceOf(
             Message(
@@ -179,8 +177,8 @@ class SampleMessageProvider : PreviewParameterProvider<Message> {
                 user = defaultUser(),
                 chatId = 1,
                 content = "Hello World!",
-                createdAt = Date("2021-09-01T00:00:00.000Z"),
-                updatedAt = Date("2021-09-01T00:00:00.000Z"),
+                createdAt = "2021-09-01T00:00:00.000Z",
+                updatedAt = "2021-09-01T00:00:00.000Z",
                 edited = false,
                 editedAt = null,
                 embeds = emptyList<Embed>(),
@@ -200,4 +198,4 @@ class SampleMessageProvider : PreviewParameterProvider<Message> {
 
     override val count: Int
         get() = values.count()
-}
+}*/

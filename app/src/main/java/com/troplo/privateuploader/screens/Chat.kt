@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -48,9 +49,11 @@ import com.troplo.privateuploader.api.ChatStore
 import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.TpuApi
+import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.components.chat.Message
 import com.troplo.privateuploader.components.chat.MessageActions
+import com.troplo.privateuploader.components.core.InfiniteListHandler
 import com.troplo.privateuploader.components.core.NavRoute
 import com.troplo.privateuploader.components.core.OverlappingPanelsState
 import com.troplo.privateuploader.data.model.ChatAssociation
@@ -78,7 +81,7 @@ fun ChatScreen(
     panelsState: OverlappingPanelsState,
 ) {
     var associationId = chatId
-    val loading = remember { mutableStateOf(true) }
+    val loading = remember { mutableStateOf(false) }
     val context = LocalContext.current
     val token = SessionManager(context).getAuthToken() ?: ""
     val chatViewModel = remember { ChatViewModel() }
@@ -89,26 +92,29 @@ fun ChatScreen(
     val messageCtx = remember { mutableStateOf(false) }
     val messageCtxMessage: MutableState<Message?> = remember { mutableStateOf(null) }
     val editId = remember { mutableIntStateOf(0) }
-    // track ChatStore.chats.chat.typers
-    val typers = remember { mutableStateOf(ChatStore.getChat()?.typers) }
 
     if (associationId == 0 || associationId == null) {
         val lastChatId = SessionManager(context).getLastChatId()
         associationId = lastChatId
         initialLoad.value = true
     }
+
     if (associationId == 0) return
     ChatStore.setAssociationId(associationId, context)
     chatViewModel.associationId = associationId
-    LaunchedEffect(messages.value.value?.size) {
+
+    LaunchedEffect(chatViewModel.newMessage.value) {
+        chatViewModel.newMessage.value = false
         listState.animateScrollToItem(0)
     }
 
     LaunchedEffect(Unit) {
-        chatViewModel.getMessages(token, associationId).also {
+        chatViewModel.getMessages(associationId).also {
             loading.value = false
         }
     }
+
+
 
     Scaffold(
         bottomBar = {
@@ -161,10 +167,10 @@ fun ChatScreen(
                         label = { Text("Message") },
                         placeholder = { Text("Keep it civil") },
                         modifier = Modifier
-                          .fillMaxWidth()
-                          .padding(8.dp)
-                          .padding(top = 16.dp)
-                          .focusRequester(focusRequester),
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                            .padding(top = 16.dp)
+                            .focusRequester(focusRequester),
                         supportingText = {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -239,8 +245,8 @@ fun ChatScreen(
     ) {
         Box(
             modifier = Modifier
-              .fillMaxSize()
-              .padding(bottom = it.calculateBottomPadding())
+                .fillMaxSize()
+                .padding(bottom = it.calculateBottomPadding())
         ) {
             LazyColumn(
                 modifier = Modifier
@@ -264,6 +270,12 @@ fun ChatScreen(
         }
     }
 
+    InfiniteListHandler(listState = listState) {
+        println("Load more" + chatViewModel.messages.value?.size.toString())
+        if(chatViewModel.messages.value?.size == 0 || chatViewModel.messages.value?.size == null || chatViewModel.loading.value) return@InfiniteListHandler
+        chatViewModel.getMessages(associationId)
+    }
+
     if (messageCtx.value) {
         MessageActions(messageCtxMessage, messageCtx, editId, message)
     }
@@ -274,6 +286,8 @@ class ChatViewModel : ViewModel() {
     private val socket = SocketHandler.getSocket()
     var associationId = 0
     val messages = mutableStateOf<List<Message>?>(null)
+    val loading = mutableStateOf(false)
+    val newMessage = mutableStateOf(false)
 
     init {
         println("Route Param: ${NavRoute.Chat}}")
@@ -310,6 +324,7 @@ class ChatViewModel : ViewModel() {
                     msg[index] = newMessage
                 }
             }
+            newMessage.value = true
         }
 
         var embedFails: Array<EmbedFail> = arrayOf()
@@ -413,13 +428,16 @@ class ChatViewModel : ViewModel() {
             }
         }
     }
-
-    fun getMessages(token: String, associationId: Int) {
+    fun getMessages(associationId: Int) {
+        if(loading.value) return
         viewModelScope.launch(Dispatchers.IO) {
-            val response = TpuApi.retrofitService.getMessages(associationId).execute()
+            loading.value = true
+            val response = TpuApi.retrofitService.getMessages(associationId, offset = messages.value?.last()?.id).execute()
             withContext(Dispatchers.Main) {
-                messages.value = response.body()
+                if(messages.value?.last()?.id == response.body()?.last()?.id) return@withContext
+                messages.value = messages.value.orEmpty() + response.body().orEmpty()
             }
+            loading.value = false
         }
     }
 
@@ -442,8 +460,8 @@ class ChatViewModel : ViewModel() {
                         chatId = associationId,
                         userId = user.id,
                         content = message,
-                        createdAt = Date(),
-                        updatedAt = Date(),
+                        createdAt = TpuFunctions.currentISODate(),
+                        updatedAt = TpuFunctions.currentISODate(),
                         user = user,
                         pending = true,
                         edited = false,
@@ -530,13 +548,10 @@ private fun compact(message: Message, messages: List<Message>): String {
     val index = messages.indexOf(message)
     if (index == messages.size - 1) return "none"
     val previousMessage = messages[index + 1]
-    val fmt = SimpleDateFormat("yyyyMMdd")
-    return if (fmt.format(message.createdAt) != fmt.format(previousMessage.createdAt)) {
+
+    return if (TpuFunctions.formatDateDay(message.createdAt) != TpuFunctions.formatDateDay(previousMessage.createdAt)) {
         "separator"
-    } else if (message.userId == previousMessage.userId && Date(message.createdAt.toString()).time - Date(
-            previousMessage.createdAt.toString()
-        ).time < 7 * 60 * 1000
-    ) {
+    } else if (message.userId == previousMessage.userId) {
         "compact"
     } else {
         "none"

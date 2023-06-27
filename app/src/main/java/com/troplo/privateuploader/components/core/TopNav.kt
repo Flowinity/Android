@@ -3,6 +3,7 @@ package com.troplo.privateuploader.components.core
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,11 +20,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.troplo.privateuploader.api.ChatStore
 import com.troplo.privateuploader.api.TpuFunctions
+import com.troplo.privateuploader.components.chat.dialogs.SearchDialog
 import com.troplo.privateuploader.data.model.User
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
 fun TopBarNav(navController: NavController, user: User?, panelState: OverlappingPanelsState) {
+    val chatSearch = remember { mutableStateOf(false) }
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     if (currentRoute == null || currentRoute == NavRoute.Login.path) {
@@ -38,6 +41,10 @@ fun TopBarNav(navController: NavController, user: User?, panelState: Overlapping
     }
 
     val openPanel = remember { mutableStateOf(false) }
+
+    if(chatSearch.value) {
+        SearchDialog()
+    }
 
     if(openPanel.value) {
         LaunchedEffect(Unit) {
@@ -71,6 +78,16 @@ fun TopBarNav(navController: NavController, user: User?, panelState: Overlapping
             )
         },
         actions = {
+            if(currentRoute.startsWith("chat/")) {
+                IconButton(onClick = {
+                    chatSearch.value = true
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = "Search"
+                    )
+                }
+            }
             IconButton(onClick = { /* doSomething() */ }) {
                 UserAvatar(
                     avatar = user?.avatar,

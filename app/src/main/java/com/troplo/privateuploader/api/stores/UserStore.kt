@@ -4,8 +4,11 @@ import android.content.Context
 import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.data.model.User
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.net.URISyntaxException
@@ -13,6 +16,7 @@ import java.net.URISyntaxException
 
 object UserStore {
     var user: MutableStateFlow<User?> = MutableStateFlow(null)
+    var cachedUsers: MutableStateFlow<List<User>> = MutableStateFlow(listOf())
 
     fun initializeUser(context: Context) {
         try {
@@ -25,6 +29,7 @@ object UserStore {
             ).launch {
                 user.value = TpuApi.retrofitService.getUser().execute().body()
                 SessionManager(context).setUserCache(user.value)
+                FriendStore.initializeFriends()
             }
         } catch (e: URISyntaxException) {
             e.printStackTrace()
@@ -37,5 +42,24 @@ object UserStore {
 
     fun resetUser() {
         user.value = null
+    }
+
+    fun getUserProfile(username: String): Deferred<User?> {
+        // TODO: Fix crash
+        /*val cachedUser = cachedUsers.value.find { it.username == username }
+        if (cachedUser != null) {
+            return CompletableDeferred(cachedUser)
+        }*/
+        return CoroutineScope(Dispatchers.IO).async {
+            val response = TpuApi.retrofitService.getUserProfile(username).execute()
+            if (response.isSuccessful) {
+                val user = response.body()
+                if (user != null) {
+                    cachedUsers.value = cachedUsers.value.plus(user)
+                    return@async user
+                }
+            }
+            return@async null
+        }
     }
 }
