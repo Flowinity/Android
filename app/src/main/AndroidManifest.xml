@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -14,6 +15,22 @@
         android:theme="@style/Theme.PrivateUploader"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <service android:name=".ChatService"
+            android:exported="true"
+            android:stopWithTask="false"
+            android:permission="android.permission.POST_NOTIFICATIONS">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+        <receiver
+            android:name=".InlineNotificationActivity"
+            android:exported="true"
+            android:permission="android.permission.INTERNET">
+            <intent-filter>
+                <action android:name="QUICK_REPLY_ACTION" />
+            </intent-filter>
+        </receiver>
         <!-- Required: set your sentry.io project identifier (DSN) -->
         <meta-data android:name="io.sentry.dsn" android:value="https://0cca64a75090461e8ad88a57f3eb72f1@o444992.ingest.sentry.io/4505429578874880" />
 
@@ -41,5 +58,4 @@
             </intent-filter>
         </activity>
     </application>
-
 </manifest>

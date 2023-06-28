@@ -16,6 +16,7 @@ object ChatStore {
     private val _chats: MutableStateFlow<List<Chat>> = MutableStateFlow(emptyList())
     var associationId = MutableStateFlow(0)
     var typers = MutableStateFlow(emptyList<Typing>())
+    var jumpToMessage = MutableStateFlow(0)
 
     val chats: StateFlow<List<Chat>>
         get() = _chats

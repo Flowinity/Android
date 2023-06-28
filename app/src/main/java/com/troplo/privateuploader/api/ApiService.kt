@@ -13,6 +13,7 @@ import com.troplo.privateuploader.data.model.LoginRequest
 import com.troplo.privateuploader.data.model.LoginResponse
 import com.troplo.privateuploader.data.model.Message
 import com.troplo.privateuploader.data.model.MessageRequest
+import com.troplo.privateuploader.data.model.MessageSearchResponse
 import com.troplo.privateuploader.data.model.StarResponse
 import com.troplo.privateuploader.data.model.User
 import okhttp3.Interceptor
@@ -194,6 +195,13 @@ object TpuApi {
 
         @GET("user/friends")
         fun getFriends(): Call<List<Friend>>
+
+        @GET("chats/{chatId}/search")
+        fun searchMessages(
+            @Path("chatId") chatId: Int,
+            @Query("query") query: String = "",
+            @Query("page") page: Int = 1
+        ): Call<MessageSearchResponse>
     }
 
     val retrofitService: TpuApiService by lazy {

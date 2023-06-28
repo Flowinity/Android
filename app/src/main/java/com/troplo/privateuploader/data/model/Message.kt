@@ -91,3 +91,9 @@ data class EmbedFail(
     val data: EmbedResolutionEvent,
     val retries: Int,
 )
+
+@JsonClass(generateAdapter = true)
+data class MessageSearchResponse(
+    @field:Json(name = "messages") val messages: List<Message>,
+    @field:Json(name = "pager") val pager: Pager
+)

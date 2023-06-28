@@ -10,7 +10,7 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
-import java.util.Locale
+import java.util.Date
 import kotlin.math.ln
 import kotlin.math.pow
 
@@ -39,7 +39,6 @@ object TpuFunctions {
             chat.name
         }
     }
-
 
 
     fun formatDate(date: String?): CharSequence {
@@ -95,6 +94,16 @@ object TpuFunctions {
             "busy" -> Pair(0xFFF44336, "Do Not Disturb")
             "invisible" -> Pair(0xFF757575, "Invisible")
             else -> Pair(0xFF757575, "Offline")
+        }
+    }
+
+    fun getDate(date: String?): Date? {
+        return try {
+            val df1: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+            df1.parse(date)
+        } catch (e: Exception) {
+            println("Error formatting date (GD): $e")
+            null
         }
     }
 }

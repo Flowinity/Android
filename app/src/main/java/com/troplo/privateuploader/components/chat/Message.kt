@@ -45,7 +45,8 @@ fun Message(
     compact: String = "none",
     messageCtx: MutableState<Boolean>?,
     messageCtxMessage: MutableState<Message?>?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
     Column(
         modifier = Modifier.pointerInput(Unit) {
@@ -54,6 +55,9 @@ fun Message(
                     if(messageCtx == null || messageCtxMessage == null) return@detectTapGestures
                     messageCtxMessage.value = message
                     messageCtx.value = true
+                },
+                onPress = {
+                    if (onClick != null) onClick()
                 }
             )
         }.then(modifier)
@@ -137,6 +141,9 @@ fun Message(
                             if(messageCtx == null || messageCtxMessage == null) return@MarkdownText
                             messageCtxMessage.value = message
                             messageCtx.value = true
+                        },
+                        onClick = {
+                            if (onClick != null) onClick()
                         }
                     )
 

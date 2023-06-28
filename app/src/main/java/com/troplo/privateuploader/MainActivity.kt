@@ -1,5 +1,6 @@
 package com.troplo.privateuploader
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -35,6 +36,7 @@ class MainActivity : ComponentActivity() {
             }
         }
         super.onCreate(savedInstanceState)
+        startService(Intent(this, ChatService::class.java))
         /*
                 fun requestPermissions() {
                     val permissions = arrayOf(

@@ -31,20 +31,26 @@ object FriendStore {
             }
 
             val socket = SocketHandler.getSocket()
+
             socket?.on("userStatus") { it ->
                 val jsonArray = it[0] as JSONObject
                 val payload = jsonArray.toString()
                 val status = SocketHandler.gson.fromJson(payload, StatusPayload::class.java)
                 val friend = friends.value.find { it.otherUser?.id == status.id }
-                println("Friend: $friend, Status: $status, Id: ${status.id}")
+
                 if (friend != null) {
-                    println("FRIEND STATUS: ${friend.otherUser?.status} -> ${status.status}")
                     friends.value = friends.value.minus(friend).plus(
                         friend.copy(
                             otherUser = friend.otherUser?.copy(
-                                status = status.status
+                                status = status.status,
+                                platforms = status.platforms
                             )
                         )
+                    )
+                } else if(status.id == UserStore.user.value?.id) {
+                    UserStore.user.value = UserStore.user.value?.copy(
+                        status = status.status,
+                        platforms = status.platforms
                     )
                 }
             }

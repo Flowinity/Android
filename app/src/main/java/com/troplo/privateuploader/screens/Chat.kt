@@ -1,7 +1,6 @@
 package com.troplo.privateuploader.screens
 
 import android.content.Context
-import android.icu.text.SimpleDateFormat
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
@@ -12,14 +11,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,12 +36,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -92,6 +94,7 @@ fun ChatScreen(
     val messageCtx = remember { mutableStateOf(false) }
     val messageCtxMessage: MutableState<Message?> = remember { mutableStateOf(null) }
     val editId = remember { mutableIntStateOf(0) }
+    val jumpToMessage = ChatStore.jumpToMessage.collectAsState()
 
     if (associationId == 0 || associationId == null) {
         val lastChatId = SessionManager(context).getLastChatId()
@@ -103,8 +106,18 @@ fun ChatScreen(
     ChatStore.setAssociationId(associationId, context)
     chatViewModel.associationId = associationId
 
+    fun messagesReset() {
+        chatViewModel.messages.value = null
+        chatViewModel.getMessages(associationId)
+        chatViewModel.jumpToBottom.value = false
+        chatViewModel.newMessage.value = true
+    }
+
     LaunchedEffect(chatViewModel.newMessage.value) {
         chatViewModel.newMessage.value = false
+        if(chatViewModel.jumpToBottom.value) {
+            messagesReset()
+        }
         listState.animateScrollToItem(0)
     }
 
@@ -114,7 +127,14 @@ fun ChatScreen(
         }
     }
 
-
+    // Monitor jumpToMessage to jump to specific message contexts
+    LaunchedEffect(jumpToMessage.value) {
+        if (jumpToMessage.value != 0) {
+            chatViewModel.messages.value = null
+            chatViewModel.jumpToBottom.value = true
+            chatViewModel.getMessages(associationId, jumpToMessage.value + 20, listState)
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -203,7 +223,7 @@ fun ChatScreen(
 
                     // hide keyboard when sidebar is open
                     // TODO: fix
-                  /*  if (panelsState.isStartPanelOpen || panelsState.isEndPanelOpen) {
+                    /*  if (panelsState.isStartPanelOpen || panelsState.isEndPanelOpen) {
                         keyboardController?.hide()
                     }*/
 
@@ -268,11 +288,33 @@ fun ChatScreen(
                 }
             }
         }
+
+        if (chatViewModel.jumpToBottom.value) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = it.calculateBottomPadding())
+            ) {
+                FloatingActionButton(
+                    onClick = {
+                        messagesReset()
+                    },
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .align(Alignment.BottomEnd)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowDownward,
+                        contentDescription = "Jump to bottom"
+                    )
+                }
+            }
+        }
     }
 
     InfiniteListHandler(listState = listState) {
         println("Load more" + chatViewModel.messages.value?.size.toString())
-        if(chatViewModel.messages.value?.size == 0 || chatViewModel.messages.value?.size == null || chatViewModel.loading.value) return@InfiniteListHandler
+        if (chatViewModel.messages.value?.size == 0 || chatViewModel.messages.value?.size == null || chatViewModel.loading.value) return@InfiniteListHandler
         chatViewModel.getMessages(associationId)
     }
 
@@ -288,6 +330,7 @@ class ChatViewModel : ViewModel() {
     val messages = mutableStateOf<List<Message>?>(null)
     val loading = mutableStateOf(false)
     val newMessage = mutableStateOf(false)
+    val jumpToBottom = mutableStateOf(false)
 
     init {
         println("Route Param: ${NavRoute.Chat}}")
@@ -428,14 +471,24 @@ class ChatViewModel : ViewModel() {
             }
         }
     }
-    fun getMessages(associationId: Int) {
+    fun getMessages(associationId: Int, offset: Int? = null, listState: LazyListState? = null) {
         if(loading.value) return
         viewModelScope.launch(Dispatchers.IO) {
             loading.value = true
-            val response = TpuApi.retrofitService.getMessages(associationId, offset = messages.value?.last()?.id).execute()
+            val response = TpuApi.retrofitService.getMessages(associationId, offset = offset ?: messages.value?.last()?.id?.minus(1)).execute()
             withContext(Dispatchers.Main) {
-                if(messages.value?.last()?.id == response.body()?.last()?.id) return@withContext
                 messages.value = messages.value.orEmpty() + response.body().orEmpty()
+                if(messages.value?.size!! >= 200) {
+                    messages.value = messages.value?.takeLast(50)
+                    jumpToBottom.value = true
+                }
+                if(offset !== null) {
+                    val index = messages.value?.indexOfFirst { it.id == ChatStore.jumpToMessage.value } ?: 0
+                    if(index != -1) {
+                        listState?.scrollToItem(index)
+                        ChatStore.jumpToMessage.value = 0
+                    }
+                }
             }
             loading.value = false
         }
@@ -543,7 +596,6 @@ class ChatViewModel : ViewModel() {
     }
 }
 
-// returns "compact", "separator", or "none"
 private fun compact(message: Message, messages: List<Message>): String {
     val index = messages.indexOf(message)
     if (index == messages.size - 1) return "none"

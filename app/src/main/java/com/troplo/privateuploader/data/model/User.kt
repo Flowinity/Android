@@ -2,6 +2,7 @@ package com.troplo.privateuploader.data.model
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
+import com.troplo.privateuploader.api.TpuFunctions
 
 @JsonClass(generateAdapter = true)
 data class User(
@@ -54,10 +55,10 @@ data class User(
 )
 
 @JsonClass(generateAdapter = true)
-data class Platform (
+data class Platform(
     @field:Json(name = "platform") val platform: String,
     @field:Json(name = "id") val id: String,
-    @field:Json(name = "lastSeen") val userId: String,
+    @field:Json(name = "lastSeen") val lastSeen: String,
     @field:Json(name = "status") val status: String
 )
 
@@ -142,7 +143,7 @@ data class Notification(
     @field:Json(name = "updatedAt") val updatedAt: String,
 )
 
-// default new uwser
+// default new user
 fun defaultUser() = User(
     id = 1,
     username = "Test",
@@ -264,7 +265,8 @@ fun defaultUser() = User(
 @JsonClass(generateAdapter = true)
 data class StatusPayload(
     @field:Json(name = "status") val status: String,
-    @field:Json(name = "id") val id: Int
+    @field:Json(name = "id") val id: Int,
+    @field:Json(name = "platforms") val platforms: List<Platform>
 )
 
 @JsonClass(generateAdapter = true)
@@ -277,7 +279,9 @@ data class PartialUser(
     @field:Json(name = "plan") val plan: Plan?,
     @field:Json(name = "platforms") val platforms: List<Platform>?,
     @field:Json(name = "status") val status: String?,
-    @field:Json(name = "username") val username: String
+    @field:Json(name = "username") val username: String,
+    @field:Json(name = "administrator") val administrator: Boolean?,
+    @field:Json(name = "moderator") val moderator: Boolean?,
 )
 
 @JsonClass(generateAdapter = true)
@@ -290,4 +294,56 @@ data class Nickname(
     @field:Json(name = "user") val user: PartialUser?,
     @field:Json(name = "friend") val friend: PartialUser?,
     @field:Json(name = "friendId") val friendId: Int?
+)
+
+fun defaultPartialUser(username: String? = "Troplo", avatar: String? = "50ba79e4.png", id: Int? = 1) = PartialUser(
+    id = id ?: 1,
+    username = username ?: "Troplo",
+    description = "Hey, I'm Troplo, owner of TPU!\nDiscord: Troplo#8495",
+    administrator = true,
+    avatar = avatar ?: "50ba79e4.png",
+    moderator = false,
+    banner = "b.png",
+    status = "online",
+    plan = Plan(
+        id = 6,
+        name = "Gold",
+        quotaMax = 75866302316544,
+        price = 0,
+        features = "[\"Unlimited Storage\", \"Unlimited File Size Limit\", \"4 invites per wave\"]",
+        color = "#FFD700",
+        internalName = "GOLD",
+        purchasable = false,
+        internalFeatures = "{\"maxFileSize\": 9223372036854775805, \"invites\": 4}",
+        icon = "mdi-plus",
+        createdAt = "2021-08-30T15:39:23.000Z",
+        updatedAt = "2021-08-30T15:39:23.000Z"
+    ),
+    platforms = listOf(
+        Platform(
+            platform = "android_kotlin",
+            id = "test",
+            lastSeen = TpuFunctions.currentISODate(),
+            status = "online"
+        )
+    ),
+    nickname = null
+)
+
+@JsonClass(generateAdapter = true)
+data class SettingsPayload(
+    @field:Json(name = "description") val description: String?,
+    @field:Json(name = "discordPrecache") val discordPrecache: Boolean?,
+    @field:Json(name = "email") val email: String?,
+    @field:Json(name = "excludedCollections") val excludedCollections: List<Int>?,
+    @field:Json(name = "insights") val insights: String?,
+    @field:Json(name = "itemsPerPage") val itemsPerPage: Int?,
+    @field:Json(name = "language") val language: String?,
+    // TODO: Profile Layout type, not currently parsed or used by Kotlin
+    @field:Json(name = "profileLayout") val profileLayout: Any?,
+    @field:Json(name = "publicProfile") val publicProfile: Boolean?,
+    @field:Json(name = "storedStatus") val storedStatus: String?,
+    // TODO: Theme Engine type, not currently parsed or used by Kotlin
+    @field:Json(name = "themeEngine") val themeEngine: Any?,
+    @field:Json(name = "weatherUnit") val weatherUnit: String?
 )

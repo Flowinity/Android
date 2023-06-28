@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.troplo.privateuploader"
-        minSdk = 26
+        minSdk = 28
         targetSdk = 34
         versionCode = 2
         versionName = "1.0.2"
@@ -104,6 +104,7 @@ dependencies {
 
     // Android Studio Preview support
     implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation(libs.androidx.appcompat)
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     // UI Tests
