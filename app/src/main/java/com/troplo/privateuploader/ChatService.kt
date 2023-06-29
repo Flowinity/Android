@@ -16,6 +16,7 @@ import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -46,7 +47,7 @@ class ChatService : Service() {
     override fun onCreate() {
         super.onCreate()
         try {
-            println("[ChatService] Started")
+            Log.d("TPU.Untagged", "[ChatService] Started")
             if(socket == null || !socket!!.connected()) {
                 val token = SessionManager(this).getAuthToken()
                 if(!token.isNullOrBlank()) {
@@ -68,14 +69,14 @@ class ChatService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        println("[ChatService] Stopped")
+        Log.d("TPU.Untagged", "[ChatService] Stopped")
         socket?.disconnect()
         socket?.off("message", onNewMessage)
     }
 
     private val onNewMessage: Emitter.Listener = object : Emitter.Listener {
         override fun call(vararg args: Any?) {
-            println("[ChatService] Message received")
+            Log.d("TPU.Untagged", "[ChatService] Message received")
 
             // Process the new message
             val jsonArray = args[0] as JSONObject
@@ -90,7 +91,7 @@ class ChatService : Service() {
     }
 
     private fun sendNotification(message: Message?) {
-        println("[ChatService] Sending notification, ${message == null || message.userId == UserStore.getUser()?.id}")
+        Log.d("TPU.Untagged", "[ChatService] Sending notification, ${message == null || message.userId == UserStore.getUser()?.id}")
         if(message == null) return
 
         // Add any additional configuration to the notification builder as needed
@@ -99,7 +100,7 @@ class ChatService : Service() {
                 Manifest.permission.POST_NOTIFICATIONS
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            println("[ChatService] No permission to post notifications")
+            Log.d("TPU.Untagged", "[ChatService] No permission to post notifications")
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
@@ -111,7 +112,7 @@ class ChatService : Service() {
         }
         asyncLoadIcon(message.user?.avatar, this) {
             try {
-                println("[ChatService] Loaded icon")
+                Log.d("TPU.Untagged", "[ChatService] Loaded icon")
                 val chatPartner = Person.Builder().apply {
                     setName(message.user?.username)
                     setKey(message.user?.id.toString())
@@ -168,9 +169,9 @@ class ChatService : Service() {
                     .setWhen(TpuFunctions.getDate(message.createdAt)?.time ?: 0)
                     .addAction(replyAction)
                 val res = notificationManager.notify(message.chatId, builder.build())
-                println("[ChatService] Notification sent, $res")
+                Log.d("TPU.Untagged", "[ChatService] Notification sent, $res")
             } catch (e: Exception) {
-                println("[ChatService] Error sending notification, ${e.printStackTrace()}")
+                Log.d("TPU.Untagged", "[ChatService] Error sending notification, ${e.printStackTrace()}")
             }
         }
     }
@@ -199,7 +200,7 @@ fun asyncLoadIcon(avatar: String?, context: Context, setIcon: (IconCompat?) -> U
 
                     setIcon(roundedIcon)
                 } catch (e: Exception) {
-                    println(e)
+                    Log.d("TPU.Untagged", e.toString())
                     setIcon(null)
                 }
             }

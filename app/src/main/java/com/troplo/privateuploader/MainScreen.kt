@@ -24,7 +24,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.troplo.privateuploader.api.ChatStore
-import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.components.chat.MemberSidebar
@@ -36,13 +35,13 @@ import com.troplo.privateuploader.components.core.OverlappingPanels
 import com.troplo.privateuploader.components.core.PanelSurface
 import com.troplo.privateuploader.components.core.TopBarNav
 import com.troplo.privateuploader.components.core.rememberOverlappingPanelsState
-import com.troplo.privateuploader.data.model.User
 import com.troplo.privateuploader.screens.HomeScreen
 import io.sentry.compose.SentryTraced
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
     ExperimentalComposeUiApi::class
 )
+
 @Composable
 fun MainScreen() {
     SentryTraced("main") {
@@ -51,15 +50,34 @@ fun MainScreen() {
         val navController = rememberNavController()
         val panelState = rememberOverlappingPanelsState()
         var closePanels by remember { mutableStateOf(false) }
+        var openPanel by remember { mutableStateOf(false) }
+
         val closePanelsFunc = {
             closePanels = true
         }
+
+        val openPanelFunc = {
+            openPanel = true
+        }
+
         if (closePanels) {
             LaunchedEffect(Unit) {
                 panelState.closePanels()
                 closePanels = false
             }
         }
+
+        if (openPanel) {
+            LaunchedEffect(Unit) {
+                if(!panelState.isPanelsClosed) {
+                    panelState.closePanels()
+                } else {
+                    panelState.openStartPanel()
+                }
+                openPanel = false
+            }
+        }
+
         Scaffold(
             topBar = {
                 if (!SocketHandler.connected.value && user.value != null) {
@@ -67,8 +85,7 @@ fun MainScreen() {
                 } else {
                     TopBarNav(
                         navController = navController,
-                        user = user.value,
-                        panelState = panelState
+                        openPanelFunc
                     )
                 }
             },
@@ -83,7 +100,7 @@ fun MainScreen() {
             OverlappingPanels(
                 modifier = Modifier.fillMaxSize(),
                 panelsState = panelState,
-                gesturesEnabled = navController.currentDestination?.route?.startsWith("chat/") == true,
+                gesturesEnabled = navController.currentDestination?.route?.startsWith("chat/") == true || !panelState.isPanelsClosed,
                 panelStart = {
                     PanelSurface {
                         ModalDrawerSheet(

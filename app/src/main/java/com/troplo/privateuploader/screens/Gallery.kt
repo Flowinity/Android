@@ -1,5 +1,6 @@
 package com.troplo.privateuploader.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -100,7 +101,7 @@ class GalleryViewModel : ViewModel() {
     fun getGalleryItems(token: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val response = TpuApi.retrofitService.getGallery(search = search.value).execute()
-            println(response.body())
+            Log.d("TPU.Untagged", response.body().toString())
             withContext(Dispatchers.Main) {
                 gallery.value = response.body()
             }

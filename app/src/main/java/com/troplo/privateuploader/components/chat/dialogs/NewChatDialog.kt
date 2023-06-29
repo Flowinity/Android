@@ -47,6 +47,7 @@ import com.troplo.privateuploader.api.ChatStore
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.stores.FriendStore
 import com.troplo.privateuploader.components.chat.Message
+import com.troplo.privateuploader.components.core.InteractionDialog
 import com.troplo.privateuploader.components.core.Paginate
 import com.troplo.privateuploader.components.core.UserAvatar
 import com.troplo.privateuploader.data.model.ChatCreateRequest
@@ -65,103 +66,87 @@ fun NewChatDialog(open: MutableState<Boolean>, navController: NavController) {
     val chatViewModel = remember { NewChatViewModel() }
     val selected = remember { mutableStateListOf<Int>() }
 
-    Dialog(
-        properties = DialogProperties(usePlatformDefaultWidth = false),
-        content = {
-            Scaffold(
-                modifier = Modifier
-                    .fillMaxSize(),
-                topBar = {
-                    TopAppBar(
-                        title = {
-                            Text("Create a new chat")
-                        },
-                        navigationIcon = {
-                            IconButton(onClick = { open.value = false }) {
-                                Icon(Icons.Filled.ArrowBack, contentDescription = "Close")
-                            }
-                        }
-                    )
+    InteractionDialog(
+        button = {
+            Button(
+                onClick = {
+                    chatViewModel.createChat(selected, navController)
+                    open.value = false
                 },
-                bottomBar = {
-                    // button to create a new chat on the right
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
-                        Button(
-                            onClick = {
-                                chatViewModel.createChat(selected, navController)
-                                open.value = false
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .align(Alignment.CenterEnd),
-                            enabled = selected.isNotEmpty()
-                        ) {
-                            Text("Create ${
-                                if (selected.size <= 1) {
-                                    "DM"
-                                } else {
-                                    "Group"
-                                }
-                            }")
-                        }
+                modifier = Modifier
+                    .fillMaxWidth(),
+                enabled = selected.isNotEmpty()
+            ) {
+                Text("Create ${
+                    if (selected.size <= 1) {
+                        "DM"
+                    } else {
+                        "Group"
+                    }
+                }")
+            }
+        },
+        header = {
+            TopAppBar(
+                title = {
+                    Text("Create a new chat")
+                },
+                navigationIcon = {
+                    IconButton(onClick = { open.value = false }) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Close")
                     }
                 }
-            ) { paddingValues ->
-                // select friends to add to the chat
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = paddingValues.calculateTopPadding())
-                ) {
-                    friends.value.forEach {
-                        item(
-                            key = it.id,
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp, horizontal = 16.dp)
-                                    .clickable {
-                                        if (selected.contains(it.otherUser?.id ?: 0)) {
-                                            selected.remove(it.otherUser?.id ?: 0)
-                                        } else {
-                                            selected.add(it.otherUser?.id ?: 0)
-                                        }
-                                    },
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                UserAvatar(
-                                    avatar = it.otherUser?.avatar,
-                                    username = it.otherUser?.username ?: "Deleted User"
-                                )
-                                Text(
-                                    text = it.otherUser?.username ?: "Deleted User",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .padding(start = 8.dp)
-                                )
-                                Checkbox(
-                                    checked = selected.contains(it.otherUser?.id ?: 0),
-                                    onCheckedChange = { checked ->
-                                        if (checked) {
-                                            selected.remove(it.otherUser?.id ?: 0)
-                                        } else {
-                                            selected.add(it.otherUser?.id ?: 0)
-                                        }
+            )
+        },
+        content = {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                friends.value.forEach {
+                    item(
+                        key = it.id,
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp, horizontal = 16.dp)
+                                .clickable {
+                                    if (selected.contains(it.otherUser?.id ?: 0)) {
+                                        selected.remove(it.otherUser?.id ?: 0)
+                                    } else {
+                                        selected.add(it.otherUser?.id ?: 0)
                                     }
-                                )
-                            }
+                                },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            UserAvatar(
+                                avatar = it.otherUser?.avatar,
+                                username = it.otherUser?.username ?: "Deleted User"
+                            )
+                            Text(
+                                text = it.otherUser?.username ?: "Deleted User",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 8.dp)
+                            )
+                            Checkbox(
+                                checked = selected.contains(it.otherUser?.id ?: 0),
+                                onCheckedChange = { checked ->
+                                    if (checked) {
+                                        selected.remove(it.otherUser?.id ?: 0)
+                                    } else {
+                                        selected.add(it.otherUser?.id ?: 0)
+                                    }
+                                }
+                            )
                         }
                     }
                 }
             }
         },
-        onDismissRequest = { open.value = false }
+        open = open
     )
 }
 

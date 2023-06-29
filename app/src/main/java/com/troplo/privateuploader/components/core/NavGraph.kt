@@ -1,6 +1,7 @@
 package com.troplo.privateuploader.components.core
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -64,7 +65,7 @@ private fun addLoginScreen(
     navGraphBuilder.composable(route = NavRoute.Login.path) {
         LoginScreen(
             onLoginSuccess = {
-                println("LoginScreen: onLoginSuccess")
+                Log.d("TPU.Untagged", "LoginScreen: onLoginSuccess")
                 navController.navigate(NavRoute.Home.path)
             }
         )
@@ -106,7 +107,7 @@ private fun addSettingsScreen(
     navGraphBuilder.composable(route = NavRoute.Settings.path) {
         SettingsScreen(
             navigate = { subItem ->
-                navController.navigate("${NavRoute.Settings.path}/$subItem")
+                navController.navigate(subItem)
             },
         )
     }

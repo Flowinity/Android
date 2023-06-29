@@ -1,6 +1,7 @@
 package com.troplo.privateuploader.api
 
 import android.content.Context
+import android.util.Log
 import com.troplo.privateuploader.data.model.Chat
 import com.troplo.privateuploader.data.model.SettingsPayload
 import com.troplo.privateuploader.data.model.Typing
@@ -41,7 +42,7 @@ object ChatStore {
                     _chats.value = listOf(chat).plus(_chats.value)
                 }
             } else {
-                println("Socket is null")
+                Log.d("TPU.Untagged", "Socket is null")
             }
         } catch (e: URISyntaxException) {
             e.printStackTrace()

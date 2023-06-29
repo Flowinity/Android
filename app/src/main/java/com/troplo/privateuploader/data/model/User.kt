@@ -264,9 +264,9 @@ fun defaultUser() = User(
 
 @JsonClass(generateAdapter = true)
 data class StatusPayload(
-    @field:Json(name = "status") val status: String,
+    @field:Json(name = "status") val status: String?,
     @field:Json(name = "id") val id: Int,
-    @field:Json(name = "platforms") val platforms: List<Platform>
+    @field:Json(name = "platforms") val platforms: List<Platform>?
 )
 
 @JsonClass(generateAdapter = true)

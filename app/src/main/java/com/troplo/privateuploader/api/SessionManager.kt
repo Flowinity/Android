@@ -3,6 +3,7 @@ package com.troplo.privateuploader.api
 import android.content.Context
 import android.content.SharedPreferences
 import com.google.gson.Gson
+import com.troplo.privateuploader.BuildConfig
 import com.troplo.privateuploader.R
 import com.troplo.privateuploader.data.model.User
 
@@ -53,5 +54,15 @@ class SessionManager(context: Context) {
         } else {
             null
         }
+    }
+
+    fun getInstanceURL(): String {
+        return prefs.getString("instanceURL", BuildConfig.SERVER_URL) ?: BuildConfig.SERVER_URL
+    }
+
+    fun setInstanceURL(url: String) {
+        val editor = prefs.edit()
+        editor.putString("instanceURL", url)
+        editor.apply()
     }
 }

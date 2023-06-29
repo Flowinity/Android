@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
 import com.troplo.privateuploader.BuildConfig
+import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.data.model.Chat
 import com.troplo.privateuploader.data.model.ChatCreateRequest
 import com.troplo.privateuploader.data.model.EditRequest
@@ -16,6 +17,7 @@ import com.troplo.privateuploader.data.model.Message
 import com.troplo.privateuploader.data.model.MessageRequest
 import com.troplo.privateuploader.data.model.MessageSearchResponse
 import com.troplo.privateuploader.data.model.StarResponse
+import com.troplo.privateuploader.data.model.State
 import com.troplo.privateuploader.data.model.User
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -37,14 +39,15 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 import java.io.IOException
 import java.net.SocketTimeoutException
+import java.net.URL
 import java.net.UnknownHostException
-
-private const val BASE_URL = "${BuildConfig.SERVER_URL}/api/v3/"
 
 object TpuApi {
     private lateinit var token: String
     private lateinit var client: OkHttpClient
     private lateinit var retrofit: Retrofit
+    private var baseUrl = "${BuildConfig.SERVER_URL}/api/v3/"
+    var instance = BuildConfig.SERVER_URL
 
     fun init(token: String, context: Context) {
         this.token = token
@@ -54,13 +57,33 @@ object TpuApi {
                 level = HttpLoggingInterceptor.Level.BODY
             })
             .addInterceptor(AuthorizationInterceptor())
+            .addInterceptor(hostInterceptor)
             .build()
 
         retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+    }
+
+    // replace BuildConfig.SERVER_URL with baseUrl for multiple TPU instances
+    private val hostInterceptor = Interceptor { chain ->
+        val url = URL(instance)
+        val port = if(url.port == -1) url.defaultPort else url.port
+        val scheme = url.protocol
+        val host = url.host
+
+        val request = chain.request()
+        val newUrl = request.url.newBuilder()
+            .host(host)
+            .scheme(scheme)
+            .port(port)
+            .build()
+        val newRequest = request.newBuilder()
+            .url(newUrl)
+            .build()
+        chain.proceed(newRequest)
     }
 
 
@@ -72,9 +95,16 @@ object TpuApi {
 
                 if (!response.isSuccessful) {
                     val error: JSONObject = JSONObject(response.body?.string() ?: "{}")
-                    val errorMessage =
-                        error.getJSONArray("errors").getJSONObject(0).getString("message")
-                    showToast(errorMessage)
+                    val errorType = error.getJSONArray("errors").getJSONObject(0).getString("name")
+                    if(errorType == "INVALID_TOKEN") {
+                        UserStore.resetUser()
+                        SessionManager(context).setUserCache(null)
+                        SessionManager(context).saveAuthToken(null)
+                    } else {
+                        val errorMessage =
+                            error.getJSONArray("errors").getJSONObject(0).getString("message")
+                        showToast(errorMessage)
+                    }
                     return Response.Builder()
                         .request(request)
                         .protocol(Protocol.HTTP_2)
@@ -208,6 +238,15 @@ object TpuApi {
         fun createChat(
             @Body members: ChatCreateRequest
         ): Call<Chat>
+
+        @GET("/api/v3/core")
+        fun getInstanceInfo(): Call<State>
+
+        @POST("user/friends/username/{username}/{type}")
+        fun addFriend(
+            @Path("username") username: String,
+            @Path("type") type: String
+        ): Call<Unit>
     }
 
     val retrofitService: TpuApiService by lazy {

@@ -1,6 +1,7 @@
 package com.troplo.privateuploader.api.stores
 
 import android.content.Context
+import android.util.Log
 import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.TpuApi
@@ -25,7 +26,7 @@ object UserStore {
     fun initializeUser(context: Context) {
         try {
             if (SessionManager(context).getUserCache() != null) {
-                println("User cache ${SessionManager(context).getUserCache()}")
+                Log.d("TPU.Untagged", "User cache ${SessionManager(context).getUserCache()}")
                 user.value = SessionManager(context).getUserCache()
             }
             CoroutineScope(
@@ -64,6 +65,8 @@ object UserStore {
 
     fun resetUser() {
         user.value = null
+        val socket = SocketHandler.getSocket()
+        socket?.off("userSettingsUpdate")
     }
 
     fun getUserProfile(username: String): Deferred<User?> {

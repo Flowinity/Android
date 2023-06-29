@@ -14,3 +14,13 @@ data class Friend(
     @field:Json(name = "updatedAt") val updatedAt: String,
     @field:Json(name = "id") val id: Int
 )
+
+@JsonClass(generateAdapter = true)
+data class FriendRequest(
+    @Json(name = "friend")
+    val friend: Friend?,
+    @Json(name = "id")
+    val id: Int,
+    @Json(name = "status")
+    val status: String
+)

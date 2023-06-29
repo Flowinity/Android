@@ -1,5 +1,6 @@
 package com.troplo.privateuploader.api
 
+import android.util.Log
 import com.troplo.privateuploader.data.model.Chat
 import com.troplo.privateuploader.data.model.User
 import java.text.DateFormat
@@ -56,7 +57,7 @@ object TpuFunctions {
 
             return localDateTime.format(formatter)
         } catch (e: Exception) {
-            println("Error formatting date (FD): $e")
+            Log.d("TPU.Untagged", "Error formatting date (FD): $e")
             return "Check logcat"
         }
     }
@@ -70,7 +71,7 @@ object TpuFunctions {
 
             return localDateTime.format(formatter)
         } catch (e: Exception) {
-            println("Error formatting date (FDD): $e")
+            Log.d("TPU.Untagged", "Error formatting date (FDD): $e")
             return "Check logcat"
         }
     }
@@ -103,7 +104,7 @@ object TpuFunctions {
             val df1: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
             df1.parse(date)
         } catch (e: Exception) {
-            println("Error formatting date (GD): $e")
+            Log.d("TPU.Untagged", "Error formatting date (GD): $e")
             null
         }
     }

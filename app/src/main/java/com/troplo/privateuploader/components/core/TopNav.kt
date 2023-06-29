@@ -1,17 +1,8 @@
 package com.troplo.privateuploader.components.core
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,7 +11,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -30,18 +20,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.troplo.privateuploader.api.ChatStore
 import com.troplo.privateuploader.api.TpuFunctions
+import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.components.chat.dialogs.SearchDialog
-import com.troplo.privateuploader.data.model.User
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
-fun TopBarNav(navController: NavController, user: User?, panelState: OverlappingPanelsState) {
+fun TopBarNav(navController: NavController, openPanel: () -> Unit) {
     val chatSearch = remember { mutableStateOf(false) }
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -51,29 +40,17 @@ fun TopBarNav(navController: NavController, user: User?, panelState: Overlapping
     val chats = ChatStore.chats.collectAsState()
     val chat =
         remember { derivedStateOf { chats.value.find { it.association?.id == ChatStore.associationId.value } } }
-
-    val openPanel = remember { mutableStateOf(false) }
+    val user = UserStore.user.collectAsState()
 
     if(chatSearch.value) {
         SearchDialog(chatSearch)
-    }
-
-    if(openPanel.value) {
-        LaunchedEffect(Unit) {
-            openPanel.value = false
-            if(panelState.isStartPanelOpen) {
-                panelState.closePanels()
-            } else {
-                panelState.openStartPanel()
-            }
-        }
     }
 
     TopAppBar(
         navigationIcon = {
             if (currentRoute != NavRoute.Home.path) {
                 IconButton(onClick = {
-                    openPanel.value = true
+                    openPanel()
                 }) {
                     Icon(
                         imageVector = Icons.Filled.Menu,
@@ -96,7 +73,9 @@ fun TopBarNav(navController: NavController, user: User?, panelState: Overlapping
                         TpuFunctions.getChatName(ChatStore.getChat()),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(start = 48.dp).align(Alignment.Center)
+                        modifier = Modifier
+                            .padding(start = 48.dp)
+                            .align(Alignment.Center)
                     )
                 }
             } else {
@@ -116,8 +95,8 @@ fun TopBarNav(navController: NavController, user: User?, panelState: Overlapping
             }
             IconButton(onClick = { /* doSomething() */ }, modifier = Modifier.padding(2.dp)) {
                 UserAvatar(
-                    avatar = user?.avatar,
-                    username = user?.username ?: "Deleted User",
+                    avatar = user.value?.avatar,
+                    username = user.value?.username ?: "Deleted User",
                     showStatus = false
                 )
             }

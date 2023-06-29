@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
@@ -17,14 +19,14 @@ import com.troplo.privateuploader.data.model.User
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 @Preview
-fun UserBanner(user: User? = UserStore.getUser()) {
+fun UserBanner(user: State<User?> = UserStore.user.collectAsState()) {
     Box {
         GlideImage(
-            model = TpuFunctions.image(user?.banner, null),
+            model = if(user.value?.banner != null) TpuFunctions.image(user.value?.banner, null) else "https://i.troplo.com/i/a050d6f271c3.png",
             contentScale = ContentScale.Crop,
             modifier = Modifier
-              .fillMaxWidth()
-              .height(200.dp),
+                .fillMaxWidth()
+                .height(200.dp),
             contentDescription = null
         )
     }

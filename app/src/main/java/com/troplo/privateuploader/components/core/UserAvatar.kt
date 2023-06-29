@@ -134,7 +134,7 @@ fun UserAvatar(
             }
         }
 
-        if(friend != null && showStatus) {
+        if(friend != null && showStatus && friend?.otherUser?.status !== null) {
             BoxWithConstraints(modifier = Modifier.matchParentSize()) {
                 Row(
                     modifier = Modifier

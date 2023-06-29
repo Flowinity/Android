@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
@@ -20,7 +21,7 @@ import java.io.Serializable
 
 class InlineNotificationActivity: BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        println("[ChatService] InlineNotificationActivity onCreate, intent: $intent, extras: ${intent.extras}")
+        Log.d("TPU.Untagged", "[ChatService] InlineNotificationActivity onCreate, intent: $intent, extras: ${intent.extras}")
 
         val chatId = intent.getIntExtra("chatId", 0)
         val remoteInput = RemoteInput.getResultsFromIntent(intent)
@@ -31,7 +32,7 @@ class InlineNotificationActivity: BroadcastReceiver() {
 
     private fun sendReply(chatId: Int, content: String?, context: Context) {
         if(chatId == 0) return
-        println("Sending reply to chatId: $chatId")
+        Log.d("TPU.Untagged", "Sending reply to chatId: $chatId")
         CoroutineScope(Dispatchers.IO).launch {
             val response = TpuApi.retrofitService.sendMessage(id = chatId, messageRequest = MessageRequest(
                 content = content ?: ""

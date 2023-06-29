@@ -1,27 +1,13 @@
 package com.troplo.privateuploader.components.user
 
-import com.troplo.privateuploader.components.chat.Message
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Reply
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -32,14 +18,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.troplo.privateuploader.api.ChatStore
 import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.components.core.UserAvatar
@@ -47,7 +31,6 @@ import com.troplo.privateuploader.data.model.User
 import com.troplo.privateuploader.data.model.defaultUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,7 +55,7 @@ fun UserPopup(
             windowInsets = windowInsets,
             dragHandle = { }
         ) {
-            UserBanner(user = viewModel.user.value!!)
+            UserBanner(user = viewModel.user)
             Column(modifier = Modifier.padding(16.dp)) {
                 Row {
                     UserAvatar(avatar = viewModel.user.value?.avatar,

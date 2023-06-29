@@ -2,6 +2,7 @@ package com.troplo.privateuploader.api
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import com.google.gson.Gson
 import com.troplo.privateuploader.BuildConfig
@@ -18,11 +19,10 @@ import java.util.Collections
 import java.util.concurrent.Executors
 
 object SocketHandlerService {
-    private const val SERVER_URL = BuildConfig.SERVER_URL
-
     private var socket: Socket? = null
     val gson = Gson()
     var connected = mutableStateOf(false)
+    var baseUrl = BuildConfig.SERVER_URL
 
     fun initializeSocket(token: String, context: Context, platform: String = "android_kotlin") {
         try {
@@ -30,17 +30,17 @@ object SocketHandlerService {
             options.forceNew = true
             options.reconnection = true
             options.auth = Collections.singletonMap("token", token)
-            options.query = "platform=$platform"
+            options.query = "platform=$platform&version=3"
             options.transports = arrayOf("websocket")
             options.reconnectionDelay = 1000
             options.reconnectionDelayMax = 5000
             options.reconnectionAttempts = 99999
-            socket = IO.socket(SERVER_URL, options)
+            socket = IO.socket(baseUrl, options)
             if (socket != null) {
                 socket?.open()
-                println("Socket connected ${socket?.isActive}")
+                Log.d("TPU.Untagged", "Socket connected ${socket?.isActive}")
             } else {
-                println("Socket is null")
+                Log.d("TPU.Untagged", "Socket is null")
             }
         } catch (e: URISyntaxException) {
             e.printStackTrace()

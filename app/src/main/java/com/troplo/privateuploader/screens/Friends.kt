@@ -11,6 +11,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -35,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.api.stores.FriendStore
 import com.troplo.privateuploader.components.core.UserAvatar
+import com.troplo.privateuploader.components.friends.dialogs.AddFriendDialog
 import com.troplo.privateuploader.data.model.Friend
 import com.troplo.privateuploader.data.model.defaultPartialUser
 import com.troplo.privateuploader.data.model.defaultUser
@@ -43,8 +46,32 @@ import kotlinx.coroutines.delay
 @Composable
 fun Friends() {
     val friends = FriendStore.friends.collectAsState()
+    val addFriend = remember { mutableStateOf(false) }
+
+    if(addFriend.value) {
+        AddFriendDialog(addFriend)
+    }
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {
+        item {
+            ListItem(
+                headlineContent = {
+                    Text("Friends")
+                },
+                trailingContent = {
+                    IconButton(
+                        onClick = {
+                            addFriend.value = true
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PersonAdd,
+                            contentDescription = "Add Friend"
+                        )
+                    }
+                }
+            )
+        }
         if(friends.value.filter { it.status == "incoming" }.isNotEmpty()) {
             item {
                 ListItem(

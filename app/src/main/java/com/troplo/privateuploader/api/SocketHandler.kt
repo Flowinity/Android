@@ -2,6 +2,7 @@ package com.troplo.privateuploader.api
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import com.google.gson.Gson
 import com.troplo.privateuploader.BuildConfig
@@ -18,7 +19,7 @@ import java.util.Collections
 import java.util.concurrent.Executors
 
 object SocketHandler {
-    private const val SERVER_URL = BuildConfig.SERVER_URL
+    var baseUrl = BuildConfig.SERVER_URL
 
     private var socket: Socket? = null
     val gson = Gson()
@@ -30,27 +31,27 @@ object SocketHandler {
             options.forceNew = true
             options.reconnection = true
             options.auth = Collections.singletonMap("token", token)
-            options.query = "platform=$platform"
+            options.query = "platform=$platform&version=3"
             options.transports = arrayOf("websocket")
             options.reconnectionDelay = 1000
             options.reconnectionDelayMax = 5000
             options.reconnectionAttempts = 99999
-            socket = IO.socket(SERVER_URL, options)
+            socket = IO.socket(baseUrl, options)
             if (socket != null) {
                 socket?.open()
                 if(platform !== "android_kotlin_background_service") {
                     socket?.on(Socket.EVENT_CONNECT) {
                         this.connected.value = true
-                        println("Socket connected ${socket?.isActive}, Connected: ${this.connected.value}")
+                        Log.d("TPU.Untagged", "Socket connected ${socket?.isActive}, Connected: ${this.connected.value}")
                     }
                     socket?.on(Socket.EVENT_DISCONNECT) {
                         this.connected.value = false
-                        println("Socket disconnected ${socket?.isActive}, Connected: ${this.connected.value}")
+                        Log.d("TPU.Untagged", "Socket disconnected ${socket?.isActive}, Connected: ${this.connected.value}")
                     }
                     socket?.on(Socket.EVENT_CONNECT_ERROR) {
                         try {
                             this.connected.value = false
-                            println("Socket connect error ${socket?.isActive}, Connected: ${this.connected.value}, Error: ${it[0]}")
+                            Log.d("TPU.Untagged", "Socket connect error ${socket?.isActive}, Connected: ${this.connected.value}, Error: ${it[0]}")
                         } catch (e: Exception) {
                             //
                         }
@@ -61,12 +62,12 @@ object SocketHandler {
                         val messageEvent = gson.fromJson(payload, MessageEvent::class.java)
 
                         val message = messageEvent.message
-                        println("Message received (SocketHandler): $message")
+                        Log.d("TPU.Untagged", "Message received (SocketHandler): $message")
                         if (messageEvent.association.id != ChatStore.associationId.value) {
                             // increase unread count
                             val chat =
                                 ChatStore.chats.value.find { it.association?.id == messageEvent.association.id }
-                            println(chat)
+                            Log.d("TPU.Untagged", chat.toString())
                             if (chat != null) {
                                 chat.unread = chat.unread?.plus(1)
                                 ChatStore.setChats(listOf(chat) + ChatStore.chats.value.filter { it.association?.id != messageEvent.association.id })
@@ -81,7 +82,7 @@ object SocketHandler {
                             val jsonArray = it[0] as JSONObject
                             val payload = jsonArray.toString()
                             val typeEvent = gson.fromJson(payload, Typing::class.java)
-                            println("TYPING EVENT: $typeEvent")
+                            Log.d("TPU.Untagged", "TYPING EVENT: $typeEvent")
                             val find = ChatStore.typers.value.find { it.userId == typeEvent.userId }
                             if (find == null) {
                                 ChatStore.typers.value = ChatStore.typers.value + typeEvent
@@ -101,9 +102,9 @@ object SocketHandler {
                         }
                     }
                 }
-                println("Socket connected ${socket?.isActive}")
+                Log.d("TPU.Untagged", "Socket connected ${socket?.isActive}")
             } else {
-                println("Socket is null")
+                Log.d("TPU.Untagged", "Socket is null")
             }
         } catch (e: URISyntaxException) {
             e.printStackTrace()

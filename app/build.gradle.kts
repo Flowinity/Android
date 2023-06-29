@@ -18,7 +18,7 @@ android {
         multiDexEnabled = true
         buildConfigField("String", "SERVER_URL", "\"https://privateuploader.com\"")
         buildConfigField("String", "BUILD_TIME", "\"${System.currentTimeMillis()}\"")
-        buildConfigField("Integer", "BETA_VERSION", "2")
+        buildConfigField("Integer", "BETA_VERSION", "3")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -63,6 +63,7 @@ android {
 
 dependencies {
     // TPU
+    implementation("com.google.accompanist:accompanist-insets:0.22.0-rc")
     implementation("io.noties.markwon:core:4.6.2")
     implementation("io.noties.markwon:ext-strikethrough:4.6.2")
     implementation("io.noties.markwon:ext-tables:4.6.2")

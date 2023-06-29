@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.MoreTime
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.Card
@@ -23,11 +25,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.troplo.privateuploader.BuildConfig
-import com.troplo.privateuploader.api.TpuFunctions
+import com.troplo.privateuploader.api.SessionManager
+import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.components.user.UserBanner
 import com.troplo.privateuploader.ui.theme.Primary
 
@@ -38,84 +42,109 @@ fun SettingsScreen(
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         UserBanner()
+        val context = LocalContext.current
 
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 208.dp)
         ) {
-            SettingsItem(Icons.Default.AccountBox, "My TPU", "Your TPU account settings")
-            SettingsItem(
-                Icons.Default.Upload,
-                "Auto-Upload",
-                "Options to automatically upload to TPU",
-                onClick = { navigate("upload") }
-            )
-            SettingsItem(
-                Icons.Default.MoreTime,
-                "Changelog",
-                "Recent updates to TPU Mobile",
-                onClick = { navigate("changelog") }
-            )
+            item {
+                SettingsItem(Icons.Default.AccountBox, "My TPU", "Your TPU account settings")
+            }
 
-            Card(
-                modifier = Modifier
-                    .padding(8.dp)
-            ) {
-                Row(
+            item {
+                SettingsItem(
+                    Icons.Default.Upload,
+                    "Auto-Upload",
+                    "Options to automatically upload to TPU",
+                    onClick = { navigate("settings/upload") }
+                )
+            }
+
+            item {
+                SettingsItem(
+                    Icons.Default.MoreTime,
+                    "Changelog",
+                    "Recent updates to TPU Mobile",
+                    onClick = { navigate("settings/changelog") }
+                )
+            }
+
+            item {
+                SettingsItem(
+                    Icons.Default.Logout,
+                    "Logout",
+                    "Logout of TPU",
+                    onClick = {
+                        SessionManager(context).setUserCache(null)
+                        SessionManager(context).saveAuthToken(null)
+                        UserStore.resetUser()
+                        navigate("login")
+                    }
+                )
+            }
+
+            item {
+                Card(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                        .padding(8.dp)
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
                     ) {
-                        Text(
-                            text = "TPU",
-                            style = MaterialTheme.typography.displayMedium,
-                            color = Primary
-                        )
-                        Text(
-                            text = "Mobile Beta ${BuildConfig.BETA_VERSION}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = Primary
-                        )
-                        Divider(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 2.dp)
-                        )
-                        Text(
-                            text = "Product name: TPUvNATIVE (android_kotlin)",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            text = "Version: ${
-                                BuildConfig.VERSION_NAME
-                            }", style = MaterialTheme.typography.bodySmall
-                        )
-                        Text(
-                            text = "Build type: ${
-                                BuildConfig.BUILD_TYPE.uppercase()
-                            }", style = MaterialTheme.typography.bodySmall
-                        )
-                        Text(
-                            text = "TPU Server: ${
-                                BuildConfig.SERVER_URL
-                            }", style = MaterialTheme.typography.bodySmall
-                        )
-                        Text(
-                            text = "App ID: ${
-                                BuildConfig.APPLICATION_ID
-                            }", style = MaterialTheme.typography.bodySmall
-                        )
-                        Text(
-                            text = "Build time: ${
-                                BuildConfig.BUILD_TIME
-                            }", style = MaterialTheme.typography.bodySmall
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "TPU",
+                                style = MaterialTheme.typography.displayMedium,
+                                color = Primary
+                            )
+                            Text(
+                                text = "Mobile Beta ${BuildConfig.BETA_VERSION}",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Primary
+                            )
+                            Divider(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 2.dp)
+                            )
+                            Text(
+                                text = "Product name: TPUvNATIVE (android_kotlin)",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = "Version: ${
+                                    BuildConfig.VERSION_NAME
+                                }", style = MaterialTheme.typography.bodySmall
+                            )
+                            Text(
+                                text = "Build type: ${
+                                    BuildConfig.BUILD_TYPE.uppercase()
+                                }", style = MaterialTheme.typography.bodySmall
+                            )
+                            Text(
+                                text = "TPU Server: ${
+                                    BuildConfig.SERVER_URL
+                                }", style = MaterialTheme.typography.bodySmall
+                            )
+                            Text(
+                                text = "App ID: ${
+                                    BuildConfig.APPLICATION_ID
+                                }", style = MaterialTheme.typography.bodySmall
+                            )
+                            Text(
+                                text = "Build time: ${
+                                    BuildConfig.BUILD_TIME
+                                }", style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                     }
                 }
             }

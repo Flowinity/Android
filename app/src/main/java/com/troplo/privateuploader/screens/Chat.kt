@@ -3,6 +3,7 @@ package com.troplo.privateuploader.screens
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -321,7 +322,7 @@ fun ChatScreen(
     }
 
     InfiniteListHandler(listState = listState) {
-        println("Load more" + chatViewModel.messages.value?.size.toString())
+        Log.d("TPU.Untagged", "Load more" + chatViewModel.messages.value?.size.toString())
         if (chatViewModel.messages.value?.size == 0 || chatViewModel.messages.value?.size == null || chatViewModel.loading.value) return@InfiniteListHandler
         chatViewModel.getMessages(associationId)
     }
@@ -341,10 +342,10 @@ class ChatViewModel : ViewModel() {
     val jumpToBottom = mutableStateOf(false)
 
     init {
-        println("Route Param: ${NavRoute.Chat}}")
+        Log.d("TPU.Untagged", "Route Param: ${NavRoute.Chat}}")
         val gson = Gson()
         socket?.on("message") {
-            println("Message received" + it[0])
+            Log.d("TPU.Untagged", "Message received" + it[0])
 
             val jsonArray = it[0] as JSONObject
             val payload = jsonArray.toString()
@@ -353,13 +354,13 @@ class ChatViewModel : ViewModel() {
             val message = messageEvent.message
 
             if (associationId != messageEvent.association.id) {
-                println("Message not for this association, ${messageEvent.association.id} != $associationId")
+                Log.d("TPU.Untagged", "Message not for this association, ${messageEvent.association.id} != $associationId")
                 return@on
             }
             // see if the message is already in the list
             val existingMessage =
                 messages.value?.find { e -> e.id == message.id || (e.content == message.content && e.pending == true && e.userId == message.userId) }
-            println("Message for this association, ${messageEvent.association.id} == $associationId, $existingMessage")
+            Log.d("TPU.Untagged", "Message for this association, ${messageEvent.association.id} == $associationId, $existingMessage")
             if (existingMessage == null) {
                 // add to start of list
                 messages.value = listOf(message, *messages.value.orEmpty().toTypedArray())
@@ -386,7 +387,7 @@ class ChatViewModel : ViewModel() {
             val payload = jsonArray.toString()
             val embed = gson.fromJson(payload, EmbedResolutionEvent::class.java)
             if (chatId != embed.chatId) {
-                println("Embed not for this chat, ${embed.chatId} != $chatId")
+                Log.d("TPU.Untagged", "Embed not for this chat, ${embed.chatId} != $chatId")
                 return
             }
 
@@ -402,7 +403,7 @@ class ChatViewModel : ViewModel() {
             } else {
                 // find in embedFails
                 val index = embedFails.indexOfFirst { e -> e.data.id == embed.id }
-                println("Embed not found in messages, ${embed.id}, $index")
+                Log.d("TPU.Untagged", "Embed not found in messages, ${embed.id}, $index")
                 if (index == -1) {
                     // add to embedFails
                     embedFails += EmbedFail(
@@ -411,7 +412,7 @@ class ChatViewModel : ViewModel() {
                     )
                 } else {
                     val count = embedFails[index].retries
-                    if (count !== null && count > 5) {
+                    if (count > 5) {
                         embedFails = embedFails.filterIndexed { i, _ -> i != index }.toTypedArray()
                         return
                     }
@@ -429,19 +430,19 @@ class ChatViewModel : ViewModel() {
         }
 
         socket?.on("embedResolution") { it ->
-            println("Embed resolution received " + it[0])
+            Log.d("TPU.Untagged", "Embed resolution received " + it[0])
             embedResolution(it)
         }
 
         socket?.on("messageDelete") { it ->
-            println("Message delete received " + it[0])
+            Log.d("TPU.Untagged", "Message delete received " + it[0])
             val jsonArray = it[0] as JSONObject
             val payload = jsonArray.toString()
             val message = gson.fromJson(payload, DeleteEvent::class.java)
 
             val chatId = ChatStore.getChat()?.id
             if (chatId != message.chatId) {
-                println("Message delete not for this chat, ${message.chatId} != $chatId")
+                Log.d("TPU.Untagged", "Message delete not for this chat, ${message.chatId} != $chatId")
                 return@on
             }
 
@@ -455,14 +456,14 @@ class ChatViewModel : ViewModel() {
         }
 
         socket?.on("edit") { it ->
-            println("Message edit received " + it[0])
+            Log.d("TPU.Untagged", "Message edit received " + it[0])
             val jsonArray = it[0] as JSONObject
             val payload = jsonArray.toString()
             val editEvent = gson.fromJson(payload, EditEvent::class.java)
 
             val chatId = ChatStore.getChat()?.id
             if (chatId != editEvent.chatId) {
-                println("Message edit not for this chat, ${editEvent.chatId} != $chatId")
+                Log.d("TPU.Untagged", "Message edit not for this chat, ${editEvent.chatId} != $chatId")
                 return@on
             }
 
