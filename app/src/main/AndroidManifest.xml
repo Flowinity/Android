@@ -36,7 +36,7 @@
         </service>-->
         <receiver
             android:name=".InlineNotificationActivity"
-            android:exported="false"
+            android:exported="true"
             android:permission="android.permission.INTERNET">
             <intent-filter>
                 <action android:name="QUICK_REPLY_ACTION" />

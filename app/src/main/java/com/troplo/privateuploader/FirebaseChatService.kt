@@ -9,20 +9,32 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapShader
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.RectF
+import android.graphics.Shader
+import android.graphics.drawable.BitmapDrawable
+import android.os.Bundle
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
+import androidx.core.graphics.drawable.IconCompat
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import coil.request.ImageRequest
+import coil.size.Size
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.TpuFunctions
+import com.troplo.privateuploader.api.imageLoader
 import com.troplo.privateuploader.data.model.FCMTokenRequest
 import com.troplo.privateuploader.data.model.MessageEventFirebase
 import kotlinx.coroutines.CoroutineScope
@@ -108,6 +120,7 @@ class FirebaseChatService : FirebaseMessagingService() {
     }
 
     private fun sendNotification(message: MessageEventFirebase) {
+        Log.d("Message", message.toString())
         Log.d("TPU.Untagged", "[ChatService] Sending notification")
 
         // Add any additional configuration to the notification builder as needed
@@ -159,9 +172,10 @@ class FirebaseChatService : FirebaseMessagingService() {
                     style.addMessage(msg)
                 }
 
-                val replyIntent = Intent(this, InlineNotificationActivity::class.java)
-                replyIntent.putExtra("chatId", 69)
-                val replyPendingIntent = PendingIntent.getBroadcast(this, 0, replyIntent, PendingIntent.FLAG_MUTABLE)
+                    val rep = Intent(this, InlineNotificationActivity::class.java)
+                    rep.replaceExtras(Bundle())
+                    rep.putExtra("chatId", message.associationId)
+                    val replyPendingIntent = PendingIntent.getBroadcast(this, message.associationId, rep, PendingIntent.FLAG_MUTABLE)
 
                 val remoteInput = RemoteInput.Builder("content")
                     .setLabel("Reply")
@@ -184,6 +198,16 @@ class FirebaseChatService : FirebaseMessagingService() {
                     .setSmallIcon(R.drawable.tpu_logo)
                     .setWhen(TpuFunctions.getDate(message.createdAt)?.time ?: 0)
                     .addAction(replyAction)
+                    .setContentIntent(
+                        PendingIntent.getActivity(
+                            this,
+                            message.associationId,
+                            Intent(this, MainActivity::class.java).apply {
+                                putExtra("chatId", message.associationId)
+                            },
+                            PendingIntent.FLAG_MUTABLE
+                        )
+                    )
                 val res = notificationManager.notify(message.associationId, builder.build())
                 Log.d("TPU.Untagged", "[ChatService] Notification sent, $res")
             } catch (e: Exception) {
@@ -201,5 +225,51 @@ class FirebaseChatService : FirebaseMessagingService() {
             // TODO(developer): add long running task here.
             return Result.success()
         }
+    }
+}
+
+fun asyncLoadIcon(avatar: String?, context: Context, setIcon: (IconCompat?) -> Unit) {
+    if (avatar.isNullOrEmpty())
+        setIcon(null)
+    else {
+        val request = ImageRequest.Builder(context)
+            .dispatcher(Dispatchers.IO)
+            .data(data = TpuFunctions.image(avatar, null))
+            .apply {
+                size(Size.ORIGINAL)
+            }
+            .target { drawable ->
+                try {
+                    val bitmap = (drawable as BitmapDrawable).bitmap
+                    val roundedBitmap = createRoundedBitmap(bitmap)
+
+                    val roundedIcon = IconCompat.createWithBitmap(roundedBitmap)
+
+                    setIcon(roundedIcon)
+                } catch (e: Exception) {
+                    Log.d("TPU.Untagged", e.toString())
+                    setIcon(null)
+                }
+            }
+            .build()
+        imageLoader(context).enqueue(request)
+    }
+}
+
+private fun createRoundedBitmap(bitmap: Bitmap): Bitmap {
+    return try {
+        val output = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(output)
+
+        val paint = Paint()
+        paint.isAntiAlias = true
+        paint.shader = BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+
+        val rect = RectF(0f, 0f, bitmap.width.toFloat(), bitmap.height.toFloat())
+        canvas.drawRoundRect(rect, bitmap.width.toFloat(), bitmap.height.toFloat(), paint)
+
+        output
+    } catch (e: Exception) {
+        bitmap
     }
 }
