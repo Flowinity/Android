@@ -142,7 +142,7 @@ fun UserAvatar(
                         .align(Alignment.BottomEnd)
                 ) {
                     Text(text = "", modifier = Modifier.width(28.dp))
-                    if(friend.otherUser?.platforms?.get(0)?.platform !== "android_kotlin") {
+                    if(friend.otherUser?.platforms == null || friend.otherUser?.platforms!!.isEmpty() || friend.otherUser?.platforms?.get(0)?.platform !== "android_kotlin") {
                         Box(
                             modifier = Modifier
                                 .size(dotSize)
