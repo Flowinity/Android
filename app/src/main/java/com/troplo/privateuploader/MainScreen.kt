@@ -38,8 +38,8 @@ import com.troplo.privateuploader.components.core.rememberOverlappingPanelsState
 import com.troplo.privateuploader.screens.HomeScreen
 import io.sentry.compose.SentryTraced
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
-    ExperimentalComposeUiApi::class
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class,
+    ExperimentalMaterialApi::class
 )
 
 @Composable
