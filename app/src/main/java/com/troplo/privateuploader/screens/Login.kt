@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.troplo.privateuploader.api.SessionManager
+import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.data.model.LoginRequest
 import com.troplo.privateuploader.ui.theme.Primary
@@ -143,18 +144,13 @@ class LoginViewModel : ViewModel() {
                 loading = false
                 if (data.isSuccessful) {
                     // set the token
-                    SessionManager(context).saveAuthToken(data.body()!!.token)
+                    val token = data.body()!!.token
+                    SessionManager(context).saveAuthToken(token)
                     // go to the main screen
-                    onLoginSuccess()
                     TpuApi.init(data.body()!!.token, context)
-                } else {
-                    // show Toast
-                    val error: JSONObject = JSONObject(data.errorBody()?.string() ?: "{}")
-                    Toast.makeText(
-                        context,
-                        error.getJSONArray("errors").getJSONObject(0).getString("message"),
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    SocketHandler.closeSocket()
+                    SocketHandler.initializeSocket(token, context)
+                    onLoginSuccess()
                 }
             }
         }

@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.Close
@@ -43,6 +44,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -186,6 +190,10 @@ fun ChatScreen(
                         onValueChange = { message.value = it },
                         label = { Text("Message") },
                         placeholder = { Text("Keep it civil") },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            capitalization = KeyboardCapitalization.Sentences
+                        ),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp)
@@ -223,18 +231,18 @@ fun ChatScreen(
 
                     // hide keyboard when sidebar is open
                     // TODO: fix
-                    /*  if (panelsState.isStartPanelOpen || panelsState.isEndPanelOpen) {
+                      if (panelsState.offset.value > 5 || panelsState.offset.value < -5) {
                         keyboardController?.hide()
-                    }*/
+                    }
 
                     // Autofocus the input on mount
-                    if (!initialLoad.value) {
+                   /* if (!initialLoad.value) {
                         DisposableEffect(Unit) {
                             focusRequester.requestFocus()
                             onDispose { }
                         }
                         initialLoad.value = true
-                    }
+                    }*/
                 }
 
                 Box(

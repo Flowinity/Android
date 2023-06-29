@@ -10,9 +10,11 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -20,11 +22,14 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.troplo.privateuploader.api.ChatStore
+import com.troplo.privateuploader.api.stores.UserStore
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,6 +43,7 @@ fun BottomBarNav(
     if (currentRoute == null || currentRoute == NavRoute.Login.path) {
         return
     }
+    val user = UserStore.user.collectAsState()
 
     AnimatedVisibility(
         visible = panelState.offset.value > 200 || !currentRoute.contains("chat/"),
@@ -99,8 +105,30 @@ fun BottomBarNav(
                 NavigationBarItem(
                     icon = {
                         Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = NavRoute.Settings.path
+                            imageVector = Icons.Default.People,
+                            contentDescription = NavRoute.Friends.path
+                        )
+                    },
+                    selected = currentRoute == NavRoute.Friends.path,
+                    onClick = {
+                        closePanels()
+                        if (currentRoute != NavRoute.Friends.path) {
+                            navController.navigate(NavRoute.Friends.path) {
+                                popUpTo(NavRoute.Friends.path) { inclusive = true }
+                            }
+                        }
+                    },
+                    // TO LOCALIZE
+                    label = { Text("Friends") }
+                )
+
+                NavigationBarItem(
+                    icon = {
+                        UserAvatar(
+                            avatar = user.value?.avatar,
+                            username = user.value?.username ?: "Deleted User",
+                            modifier = Modifier.size(28.dp),
+                            showStatus = false
                         )
                     },
                     selected = currentRoute == NavRoute.Settings.path,

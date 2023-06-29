@@ -15,6 +15,7 @@ import com.troplo.privateuploader.api.ChatStore
 import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.data.model.User
 import com.troplo.privateuploader.screens.ChatScreen
+import com.troplo.privateuploader.screens.Friends
 import com.troplo.privateuploader.screens.GalleryScreen
 import com.troplo.privateuploader.screens.HomeScreen
 import com.troplo.privateuploader.screens.LoginScreen
@@ -52,6 +53,7 @@ fun NavGraph(
         addChatScreen(navController, this, context, panelsState)
         addSettingsUploadScreen(navController, this)
         addSettingsChangelogScreen(navController, this)
+        addFriendsScreen(navController, this)
     }
 }
 
@@ -81,7 +83,8 @@ private fun addHomeScreen(
                 ChatStore.setAssociationId(chatId, context)
                 navController.navigate("${NavRoute.Chat.path}/$chatId")
             },
-            panelState = null
+            panelState = null,
+            navController = navController,
         )
     }
 }
@@ -152,5 +155,15 @@ private fun addSettingsChangelogScreen(
 ) {
     navGraphBuilder.composable(route = NavRoute.SettingsChangelog.path) {
         ChangelogLayout()
+    }
+}
+
+
+private fun addFriendsScreen(
+    navController: NavHostController,
+    navGraphBuilder: NavGraphBuilder,
+) {
+    navGraphBuilder.composable(route = NavRoute.Friends.path) {
+        Friends()
     }
 }

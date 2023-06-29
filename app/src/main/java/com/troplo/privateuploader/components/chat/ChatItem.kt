@@ -1,5 +1,7 @@
 package com.troplo.privateuploader.components.chat
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Badge
@@ -8,10 +10,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.troplo.privateuploader.api.ChatStore
@@ -24,6 +28,8 @@ import com.troplo.privateuploader.data.model.Chat
 fun ChatItem(
     chat: Chat,
     openChat: (Int) -> Unit,
+    chatActions: MutableState<Boolean>,
+    chatCtx: MutableState<Chat?>
 ) {
     val chatName = TpuFunctions.getChatName(chat)
     // track ChatStore.associationId, is mutableStateOf<Int>(0)
@@ -33,11 +39,6 @@ fun ChatItem(
         unread.value = 0
     }
     NavigationDrawerItem(
-        onClick = {
-            chat.association?.let {
-                openChat(it.id)
-            }
-        },
         badge = {
             if (unread.value!! > 0) {
                 Badge(
@@ -54,7 +55,20 @@ fun ChatItem(
         },
         modifier = Modifier
           .padding(8.dp)
-          .fillMaxWidth(),
+          .fillMaxWidth()
+          .pointerInput(Unit) {
+              detectTapGestures(
+                  onLongPress = {
+                      chatCtx.value = chat
+                      chatActions.value = true
+                  }
+              )
+          },
+        onClick = {
+            chat.association?.let {
+                openChat(it.id)
+            }
+        },
         label = {
             Text(
                 text = chatName,

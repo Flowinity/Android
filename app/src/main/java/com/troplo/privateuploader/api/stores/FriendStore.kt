@@ -27,7 +27,10 @@ object FriendStore {
             CoroutineScope(
                 Dispatchers.IO
             ).launch {
-                friends.value = TpuApi.retrofitService.getFriends().execute().body()!!
+                val response = TpuApi.retrofitService.getFriends().execute()
+                if(response.isSuccessful) {
+                    friends.value = response.body()!!
+                }
             }
 
             val socket = SocketHandler.getSocket()
@@ -35,6 +38,7 @@ object FriendStore {
             socket?.on("userStatus") { it ->
                 val jsonArray = it[0] as JSONObject
                 val payload = jsonArray.toString()
+                println(payload)
                 val status = SocketHandler.gson.fromJson(payload, StatusPayload::class.java)
                 val friend = friends.value.find { it.otherUser?.id == status.id }
 

@@ -13,8 +13,8 @@ android {
         applicationId = "com.troplo.privateuploader"
         minSdk = 28
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.0.2"
+        versionCode = 3
+        versionName = "1.0.3"
         multiDexEnabled = true
         buildConfigField("String", "SERVER_URL", "\"https://privateuploader.com\"")
         buildConfigField("String", "BUILD_TIME", "\"${System.currentTimeMillis()}\"")
@@ -63,7 +63,6 @@ android {
 
 dependencies {
     // TPU
-
     implementation("io.noties.markwon:core:4.6.2")
     implementation("io.noties.markwon:ext-strikethrough:4.6.2")
     implementation("io.noties.markwon:ext-tables:4.6.2")

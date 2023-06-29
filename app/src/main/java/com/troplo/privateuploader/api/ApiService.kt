@@ -6,6 +6,7 @@ import android.os.Looper
 import android.widget.Toast
 import com.troplo.privateuploader.BuildConfig
 import com.troplo.privateuploader.data.model.Chat
+import com.troplo.privateuploader.data.model.ChatCreateRequest
 import com.troplo.privateuploader.data.model.EditRequest
 import com.troplo.privateuploader.data.model.Friend
 import com.troplo.privateuploader.data.model.Gallery
@@ -202,6 +203,11 @@ object TpuApi {
             @Query("query") query: String = "",
             @Query("page") page: Int = 1
         ): Call<MessageSearchResponse>
+
+        @POST("chats")
+        fun createChat(
+            @Body members: ChatCreateRequest
+        ): Call<Chat>
     }
 
     val retrofitService: TpuApiService by lazy {

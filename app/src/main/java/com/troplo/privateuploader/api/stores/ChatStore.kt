@@ -2,6 +2,7 @@ package com.troplo.privateuploader.api
 
 import android.content.Context
 import com.troplo.privateuploader.data.model.Chat
+import com.troplo.privateuploader.data.model.SettingsPayload
 import com.troplo.privateuploader.data.model.Typing
 import io.socket.client.Socket
 import kotlinx.coroutines.CoroutineScope
@@ -9,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import java.net.URISyntaxException
 
 
@@ -32,7 +34,11 @@ object ChatStore {
             val socket: Socket? = SocketHandler.getSocket()
             if (socket != null) {
                 socket.on("chatCreated") {
-                    _chats.value = _chats.value + it[0] as Chat
+                    val jsonArray = it[0] as JSONObject
+                    val payload = jsonArray.toString()
+                    val chat = SocketHandler.gson.fromJson(payload, Chat::class.java)
+                    // add it to the top
+                    _chats.value = listOf(chat).plus(_chats.value)
                 }
             } else {
                 println("Socket is null")

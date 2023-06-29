@@ -32,6 +32,9 @@ object SocketHandler {
             options.auth = Collections.singletonMap("token", token)
             options.query = "platform=$platform"
             options.transports = arrayOf("websocket")
+            options.reconnectionDelay = 1000
+            options.reconnectionDelayMax = 5000
+            options.reconnectionAttempts = 99999
             socket = IO.socket(SERVER_URL, options)
             if (socket != null) {
                 socket?.open()

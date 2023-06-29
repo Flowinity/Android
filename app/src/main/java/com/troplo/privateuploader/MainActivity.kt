@@ -4,15 +4,28 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.ui.platform.LocalContext
 import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.stores.UserStore
-import com.troplo.privateuploader.data.model.User
 import com.troplo.privateuploader.ui.theme.PrivateUploaderTheme
 
 class MainActivity : ComponentActivity() {
+
+    override fun onStart() {
+        super.onStart()
+        stopService(Intent(this, ChatService::class.java))
+        val socket = SocketHandler.getSocket()
+        if (socket != null && !socket.connected()) {
+            socket.connect()
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        startService(Intent(this, ChatService::class.java))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // if(BuildConfig.DEBUG) StrictMode.enableDefaults();
         val token = SessionManager(this).getAuthToken()
@@ -36,7 +49,6 @@ class MainActivity : ComponentActivity() {
             }
         }
         super.onCreate(savedInstanceState)
-        startService(Intent(this, ChatService::class.java))
         /*
                 fun requestPermissions() {
                     val permissions = arrayOf(

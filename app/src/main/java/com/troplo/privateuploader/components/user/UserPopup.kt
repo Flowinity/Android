@@ -77,7 +77,7 @@ fun UserPopup(
                 Row {
                     UserAvatar(avatar = viewModel.user.value?.avatar,
                         username = viewModel.user.value?.username ?: "",
-                        modifier = Modifier.size(128.dp).align(alignment = Alignment.CenterVertically)
+                        modifier = Modifier.align(alignment = Alignment.CenterVertically)
                     )
                     Text(
                         text = viewModel.user.value?.username ?: "",

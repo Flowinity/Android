@@ -62,7 +62,7 @@ fun MainScreen() {
         }
         Scaffold(
             topBar = {
-                if (!SocketHandler.connected.value) {
+                if (!SocketHandler.connected.value && user.value != null) {
                     ConnectingBanner()
                 } else {
                     TopBarNav(
@@ -99,7 +99,8 @@ fun MainScreen() {
                                     navController.navigate("${NavRoute.Chat.path}/$chatId")
                                     closePanels = true
                                 },
-                                panelState = panelState
+                                panelState = panelState,
+                                navController = navController
                             )
                         }
                     }

@@ -69,7 +69,8 @@ fun UserAvatar(
                 updatedAt = TpuFunctions.currentISODate(),
                 userId = 1,
                 otherUserId = 2,
-                status = "online"
+                status = "online",
+                id = -1
             )
         } else if(friend == null && currentUser.value?.username == username) {
             friend = Friend(
@@ -91,7 +92,8 @@ fun UserAvatar(
                 updatedAt = TpuFunctions.currentISODate(),
                 userId = 2,
                 otherUserId = 1,
-                status = "online"
+                status = "online",
+                id = -1
             )
         }
         if (avatar != null) {
@@ -108,19 +110,20 @@ fun UserAvatar(
                     imageLoader = imageLoader(LocalContext.current)
                 ),
                 modifier = Modifier
-                    .size(imageSize)
                     .clip(CircleShape)
                     .background(if(fake) MaterialTheme.colorScheme.surface else Color.Transparent)
+                    .then(modifier)
+                    .size(imageSize)
             )
         } else {
             Column(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
-                    .size(40.dp)
                     .background(MaterialTheme.colorScheme.primary, CircleShape)
                     .clip(CircleShape)
                     .then(modifier)
+                    .size(40.dp)
             ) {
                 Text(
                     text = username.first().toString(),
@@ -191,7 +194,8 @@ fun PreviewUserAvatar() {
             updatedAt = TpuFunctions.currentISODate(),
             userId = 1,
             otherUserId = 2,
-            status = "online"
+            status = "online",
+            id = 1
         )
     })
     UserAvatar(avatar = "50ba79e4.png", username = "Troplo", fake = true)

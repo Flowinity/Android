@@ -26,6 +26,7 @@ import coil.request.ImageRequest
 import coil.size.Size
 import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.SocketHandler
+import com.troplo.privateuploader.api.SocketHandlerService
 import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.api.imageLoader
 import com.troplo.privateuploader.api.stores.UserStore
@@ -39,7 +40,7 @@ import java.net.URISyntaxException
 
 
 class ChatService : Service() {
-    private var socket: Socket? = SocketHandler.getSocket()
+    private var socket: Socket? = SocketHandlerService.getSocket()
     private val messages = mutableMapOf<Int, MutableList<NotificationCompat.MessagingStyle.Message>>()
 
     override fun onCreate() {
@@ -49,8 +50,8 @@ class ChatService : Service() {
             if(socket == null || !socket!!.connected()) {
                 val token = SessionManager(this).getAuthToken()
                 if(!token.isNullOrBlank()) {
-                    SocketHandler.initializeSocket(token, this, "android_kotlin_background_service")
-                    socket = SocketHandler.getSocket()
+                    SocketHandlerService.initializeSocket(token, this, "android_kotlin_background_service")
+                    socket = SocketHandlerService.getSocket()
                 }
             }
         } catch (e: URISyntaxException) {
@@ -75,6 +76,7 @@ class ChatService : Service() {
     private val onNewMessage: Emitter.Listener = object : Emitter.Listener {
         override fun call(vararg args: Any?) {
             println("[ChatService] Message received")
+
             // Process the new message
             val jsonArray = args[0] as JSONObject
             val payload = jsonArray.toString()

@@ -56,7 +56,7 @@ fun Message(
                     messageCtxMessage.value = message
                     messageCtx.value = true
                 },
-                onPress = {
+                onTap = {
                     if (onClick != null) onClick()
                 }
             )

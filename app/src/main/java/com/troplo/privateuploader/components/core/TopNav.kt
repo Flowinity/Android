@@ -114,10 +114,11 @@ fun TopBarNav(navController: NavController, user: User?, panelState: Overlapping
                     )
                 }
             }
-            IconButton(onClick = { /* doSomething() */ }) {
+            IconButton(onClick = { /* doSomething() */ }, modifier = Modifier.padding(2.dp)) {
                 UserAvatar(
                     avatar = user?.avatar,
-                    username = user?.username ?: "Deleted User"
+                    username = user?.username ?: "Deleted User",
+                    showStatus = false
                 )
             }
         }

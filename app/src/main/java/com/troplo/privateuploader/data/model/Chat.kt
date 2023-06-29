@@ -24,3 +24,8 @@ data class Chat(
         emptyList()
     ),
 )
+
+@JsonClass(generateAdapter = true)
+data class ChatCreateRequest(
+    @field:Json(name = "users") val users: List<Int>
+)

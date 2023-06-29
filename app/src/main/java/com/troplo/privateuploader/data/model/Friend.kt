@@ -11,5 +11,6 @@ data class Friend(
     @field:Json(name = "userId") val userId: Int,
     @field:Json(name = "otherUserId") val otherUserId: Int,
     @field:Json(name = "createdAt") val createdAt: String,
-    @field:Json(name = "updatedAt") val updatedAt: String
+    @field:Json(name = "updatedAt") val updatedAt: String,
+    @field:Json(name = "id") val id: Int
 )

@@ -19,6 +19,7 @@ sealed class NavRoute(val path: String) {
     object Settings : NavRoute("settings")
     object SettingsUpload : NavRoute("settings/upload")
     object SettingsChangelog : NavRoute("settings/changelog")
+    object Friends : NavRoute("friends")
 
     object Chat : NavRoute("chat") {
         fun withArgs(chatId: Int): String {
