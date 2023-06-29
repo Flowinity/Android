@@ -28,7 +28,9 @@ fun LoadingButton(
 ) {
     Button(
         onClick = {
-            onClick()
+          if(!loading) {
+              onClick()
+          }
         },
         modifier = modifier,
         enabled = enabled

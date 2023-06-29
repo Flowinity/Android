@@ -176,13 +176,13 @@ class LoginViewModel : ViewModel() {
                 loading = false
                 if (data.isSuccessful) {
                     // set the token
+                    UserStore.logout(context)
                     val token = data.body()!!.token
                     SessionManager(context).saveAuthToken(token)
                     // go to the main screen
                     TpuApi.init(data.body()!!.token, context)
                     SocketHandler.closeSocket()
                     SocketHandler.initializeSocket(token, context)
-                    UserStore.resetUser()
                     UserStore.initializeUser(context)
                     onLoginSuccess()
                 }

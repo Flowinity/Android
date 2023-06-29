@@ -2,9 +2,13 @@ package com.troplo.privateuploader.api.stores
 
 import android.content.Context
 import android.util.Log
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.BuildConfig
+import com.google.firebase.messaging.FirebaseMessaging
 import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.TpuApi
+import com.troplo.privateuploader.data.model.FCMTokenRequest
 import com.troplo.privateuploader.data.model.SettingsPayload
 import com.troplo.privateuploader.data.model.StatusPayload
 import com.troplo.privateuploader.data.model.User
@@ -22,9 +26,27 @@ import java.net.URISyntaxException
 object UserStore {
     var user: MutableStateFlow<User?> = MutableStateFlow(null)
     var cachedUsers: MutableStateFlow<List<User>> = MutableStateFlow(listOf())
+    var debug = BuildConfig.DEBUG
+
+    fun registerFCMToken() {
+        if(this.user.value == null) return
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("UserStore", "Fetching FCM registration token failed", task.exception)
+                return@OnCompleteListener
+            }
+
+            val token = task.result ?: return@OnCompleteListener
+
+            CoroutineScope(Dispatchers.IO).launch {
+                TpuApi.retrofitService.registerFcmToken(FCMTokenRequest(token)).execute()
+            }
+        })
+    }
 
     fun initializeUser(context: Context) {
         try {
+            debug = SessionManager(context).getDebugMode()
             if (SessionManager(context).getUserCache() != null) {
                 Log.d("TPU.Untagged", "User cache ${SessionManager(context).getUserCache()}")
                 user.value = SessionManager(context).getUserCache()
@@ -35,6 +57,14 @@ object UserStore {
                 user.value = TpuApi.retrofitService.getUser().execute().body()
                 SessionManager(context).setUserCache(user.value)
                 FriendStore.initializeFriends()
+
+                if(user.value !== null) {
+                    val token = SessionManager(context).getFCMToken()
+
+                    if (token == null) {
+                        registerFCMToken()
+                    }
+                }
             }
 
             val socket = SocketHandler.getSocket()
@@ -63,10 +93,13 @@ object UserStore {
         return user.value
     }
 
-    fun resetUser() {
+    fun logout(context: Context) {
         user.value = null
         val socket = SocketHandler.getSocket()
         socket?.off("userSettingsUpdate")
+        SessionManager(context).setUserCache(null)
+        SessionManager(context).setFCMToken(null)
+        SessionManager(context).saveAuthToken(null)
     }
 
     fun getUserProfile(username: String): Deferred<User?> {

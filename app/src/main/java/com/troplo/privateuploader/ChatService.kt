@@ -1,3 +1,5 @@
+// NO LONGER USED, REPLACED BY FirebaseChatService.kt
+
 package com.troplo.privateuploader
 
 import android.Manifest

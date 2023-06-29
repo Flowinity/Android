@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Send
@@ -100,6 +101,7 @@ fun ChatScreen(
     val messageCtxMessage: MutableState<Message?> = remember { mutableStateOf(null) }
     val editId = remember { mutableIntStateOf(0) }
     val jumpToMessage = ChatStore.jumpToMessage.collectAsState()
+    val attachment = remember { mutableStateOf(false) }
 
     if (associationId == 0 || associationId == null) {
         val lastChatId = SessionManager(context).getLastChatId()
@@ -228,6 +230,38 @@ fun ChatScreen(
                                 chatViewModel.typing(associationId)
                             }
                         ),
+                        trailingIcon = {
+                            IconButton(
+                                onClick = {
+                                    chatViewModel.sendMessage(
+                                        token,
+                                        associationId,
+                                        message.value,
+                                        context,
+                                        editId.value
+                                    )
+                                    message.value = ""
+                                    editId.value = 0
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Send,
+                                    contentDescription = "Send message"
+                                )
+                            }
+                        },
+                        leadingIcon = {
+                            IconButton(
+                                onClick = {
+                                    attachment.value = !attachment.value
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Add,
+                                    contentDescription = "Add attachment"
+                                )
+                            }
+                        }
                     )
 
                     // hide keyboard when sidebar is open
@@ -244,30 +278,6 @@ fun ChatScreen(
                         }
                         initialLoad.value = true
                     }*/
-                }
-
-                Box(
-                    modifier = Modifier
-                        .padding(top = 32.dp, end = 8.dp)
-                ) {
-                    IconButton(
-                        onClick = {
-                            chatViewModel.sendMessage(
-                                token,
-                                associationId,
-                                message.value,
-                                context,
-                                editId.value
-                            )
-                            message.value = ""
-                            editId.value = 0
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Send,
-                            contentDescription = "Send message"
-                        )
-                    }
                 }
             }
         }

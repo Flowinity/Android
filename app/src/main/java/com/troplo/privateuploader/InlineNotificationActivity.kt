@@ -21,22 +21,35 @@ import java.io.Serializable
 
 class InlineNotificationActivity: BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d("TPU.Untagged", "[ChatService] InlineNotificationActivity onCreate, intent: $intent, extras: ${intent.extras}")
+        try {
+            Log.d(
+                "TPU.Untagged",
+                "[ChatService] InlineNotificationActivity onCreate, intent: $intent, extras: ${intent.extras}"
+            )
 
-        val chatId = intent.getIntExtra("chatId", 0)
-        val remoteInput = RemoteInput.getResultsFromIntent(intent)
-        val content = remoteInput?.getCharSequence("content")?.toString()
-        TpuApi.init(SessionManager(context).getAuthToken() ?: "", context)
-        sendReply(chatId, content, context)
+            val chatId = intent.getIntExtra("chatId", 0)
+            val remoteInput = RemoteInput.getResultsFromIntent(intent)
+            val content = remoteInput?.getCharSequence("content")?.toString()
+            TpuApi.init(SessionManager(context).getAuthToken() ?: "", context)
+            sendReply(chatId, content, context)
+        } catch (e: Exception) {
+            Log.d("TPU.InlineNotificationActivity", "Exception: $e")
+        }
     }
 
     private fun sendReply(chatId: Int, content: String?, context: Context) {
-        if(chatId == 0) return
-        Log.d("TPU.Untagged", "Sending reply to chatId: $chatId")
-        CoroutineScope(Dispatchers.IO).launch {
-            val response = TpuApi.retrofitService.sendMessage(id = chatId, messageRequest = MessageRequest(
-                content = content ?: ""
-            )).execute()
+        try {
+            if (chatId == 0) return
+            Log.d("TPU.Untagged", "Sending reply to chatId: $chatId")
+            CoroutineScope(Dispatchers.IO).launch {
+                val response = TpuApi.retrofitService.sendMessage(
+                    id = chatId, messageRequest = MessageRequest(
+                        content = content ?: ""
+                    )
+                ).execute()
+            }
+        } catch (e: Exception) {
+            Log.d("TPU.InlineNotificationActivity", "sendReply exception: $e")
         }
     }
 }

@@ -50,6 +50,18 @@ data class MessageEvent(
 )
 
 @JsonClass(generateAdapter = true)
+data class MessageEventFirebase(
+    @field:Json(name = "content") val content: String,
+    @field:Json(name = "id") val id: Int,
+    @field:Json(name = "associationId") val associationId: Int,
+    @field:Json(name = "userId") val userId: Int,
+    @field:Json(name = "username") val username: String,
+    @field:Json(name = "avatar") val avatar: String,
+    @field:Json(name = "chatName") val chatName: String,
+    @field:Json(name = "createdAt") val createdAt: String
+)
+
+@JsonClass(generateAdapter = true)
 data class DeleteEvent(
     @field:Json(name = "chatId") val chatId: Int,
     @field:Json(name = "id") val id: Int,

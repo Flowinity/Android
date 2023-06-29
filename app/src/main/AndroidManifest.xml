@@ -16,17 +16,27 @@
         android:usesCleartextTraffic="true"
         android:windowSoftInputMode="adjustResize"
         tools:targetApi="31">
-        <service android:name=".ChatService"
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="communications" />
+        <service
+            android:name=".FirebaseChatService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+       <!-- <service android:name=".ChatService"
             android:exported="true"
             android:stopWithTask="false"
             android:permission="android.permission.POST_NOTIFICATIONS">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
-        </service>
+        </service>-->
         <receiver
             android:name=".InlineNotificationActivity"
-            android:exported="true"
+            android:exported="false"
             android:permission="android.permission.INTERNET">
             <intent-filter>
                 <action android:name="QUICK_REPLY_ACTION" />

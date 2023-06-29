@@ -17,6 +17,7 @@ sealed class NavRoute(val path: String) {
     object Home : NavRoute("home")
     object Gallery : NavRoute("gallery")
     object Settings : NavRoute("settings")
+    object SettingsAccount : NavRoute("settings/account")
     object SettingsUpload : NavRoute("settings/upload")
     object SettingsChangelog : NavRoute("settings/changelog")
     object Friends : NavRoute("friends")

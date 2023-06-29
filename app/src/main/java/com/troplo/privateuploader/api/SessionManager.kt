@@ -65,4 +65,25 @@ class SessionManager(context: Context) {
         editor.putString("instanceURL", url)
         editor.apply()
     }
+
+    // Cached FCM token to avoid re-registering
+    fun getFCMToken(): String? {
+        return prefs.getString("fcmToken", null)
+    }
+
+    fun setFCMToken(token: String?) {
+        val editor = prefs.edit()
+        editor.putString("fcmToken", token)
+        editor.apply()
+    }
+
+    fun getDebugMode(): Boolean {
+        return prefs.getBoolean("debugMode", BuildConfig.DEBUG)
+    }
+
+    fun setDebugMode(debug: Boolean) {
+        val editor = prefs.edit()
+        editor.putBoolean("debugMode", debug)
+        editor.apply()
+    }
 }

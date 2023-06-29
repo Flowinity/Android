@@ -9,6 +9,7 @@ import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.data.model.Chat
 import com.troplo.privateuploader.data.model.ChatCreateRequest
 import com.troplo.privateuploader.data.model.EditRequest
+import com.troplo.privateuploader.data.model.FCMTokenRequest
 import com.troplo.privateuploader.data.model.Friend
 import com.troplo.privateuploader.data.model.Gallery
 import com.troplo.privateuploader.data.model.LoginRequest
@@ -16,6 +17,7 @@ import com.troplo.privateuploader.data.model.LoginResponse
 import com.troplo.privateuploader.data.model.Message
 import com.troplo.privateuploader.data.model.MessageRequest
 import com.troplo.privateuploader.data.model.MessageSearchResponse
+import com.troplo.privateuploader.data.model.PatchUser
 import com.troplo.privateuploader.data.model.StarResponse
 import com.troplo.privateuploader.data.model.State
 import com.troplo.privateuploader.data.model.User
@@ -33,6 +35,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
@@ -97,9 +100,7 @@ object TpuApi {
                     val error: JSONObject = JSONObject(response.body?.string() ?: "{}")
                     val errorType = error.getJSONArray("errors").getJSONObject(0).getString("name")
                     if(errorType == "INVALID_TOKEN") {
-                        UserStore.resetUser()
-                        SessionManager(context).setUserCache(null)
-                        SessionManager(context).saveAuthToken(null)
+                        UserStore.logout(context)
                     } else {
                         val errorMessage =
                             error.getJSONArray("errors").getJSONObject(0).getString("message")
@@ -246,6 +247,16 @@ object TpuApi {
         fun addFriend(
             @Path("username") username: String,
             @Path("type") type: String
+        ): Call<Unit>
+
+        @POST("user/fcmToken")
+        fun registerFcmToken(
+            @Body token: FCMTokenRequest
+        ): Call<Unit>
+
+        @PATCH("user")
+        fun updateUser(
+            @Body user: PatchUser
         ): Call<Unit>
     }
 

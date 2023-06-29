@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
     id("io.sentry.android.gradle") version "3.11.1"
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -62,6 +63,11 @@ android {
 }
 
 dependencies {
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:32.1.1"))
+    implementation("com.google.firebase:firebase-messaging-ktx:23.1.2")
+    implementation("com.google.firebase:firebase-analytics-ktx:21.3.0")
+
     // TPU
     implementation("com.google.accompanist:accompanist-insets:0.22.0-rc")
     implementation("io.noties.markwon:core:4.6.2")
@@ -105,6 +111,7 @@ dependencies {
     // Android Studio Preview support
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.work.runtime.ktx)
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     // UI Tests
