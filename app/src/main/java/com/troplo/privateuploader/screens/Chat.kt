@@ -75,6 +75,7 @@ import com.troplo.privateuploader.data.model.Message
 import com.troplo.privateuploader.data.model.MessageEvent
 import com.troplo.privateuploader.data.model.MessageRequest
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -141,6 +142,13 @@ fun ChatScreen(
             chatViewModel.jumpToBottom.value = true
             chatViewModel.getMessages(associationId, jumpToMessage.value + 20, listState)
         }
+    }
+
+    LaunchedEffect(message.value) {
+        if (message.value.isNotEmpty()) {
+            chatViewModel.typing(associationId)
+        }
+        delay(3000)
     }
 
     Scaffold(
@@ -225,11 +233,6 @@ fun ChatScreen(
                                 Text("${message.value.length}/4000")
                             }
                         },
-                        keyboardActions = KeyboardActions(
-                            onAny = {
-                                chatViewModel.typing(associationId)
-                            }
-                        ),
                         trailingIcon = {
                             IconButton(
                                 onClick = {
@@ -531,7 +534,7 @@ class ChatViewModel : ViewModel() {
                         id,
                         chatId = associationId,
                         userId = user.id,
-                        content = message,
+                        content = message.trim(),
                         createdAt = TpuFunctions.currentISODate(),
                         updatedAt = TpuFunctions.currentISODate(),
                         user = user,
