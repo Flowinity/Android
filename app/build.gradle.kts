@@ -14,12 +14,12 @@ android {
         applicationId = "com.troplo.privateuploader"
         minSdk = 28
         targetSdk = 34
-        versionCode = 3
-        versionName = "1.0.3"
+        versionCode = 4
+        versionName = "1.0.4"
         multiDexEnabled = true
         buildConfigField("String", "SERVER_URL", "\"https://privateuploader.com\"")
         buildConfigField("String", "BUILD_TIME", "\"${System.currentTimeMillis()}\"")
-        buildConfigField("Integer", "BETA_VERSION", "3")
+        buildConfigField("Integer", "BETA_VERSION", "4")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

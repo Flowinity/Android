@@ -20,6 +20,7 @@ import com.troplo.privateuploader.data.model.MessageSearchResponse
 import com.troplo.privateuploader.data.model.PatchUser
 import com.troplo.privateuploader.data.model.StarResponse
 import com.troplo.privateuploader.data.model.State
+import com.troplo.privateuploader.data.model.TenorResponse
 import com.troplo.privateuploader.data.model.UploadResponse
 import com.troplo.privateuploader.data.model.User
 import okhttp3.Interceptor
@@ -192,6 +193,15 @@ object TpuApi {
             @Query("search") search: String = "",
             @Query("textMetadata") textMetadata: Boolean = true,
             @Query("filter") filter: String = "all",
+            @Query("sort") sort: String = "\"newest\""
+        ): Call<Gallery>
+
+        @GET("gallery/starred")
+        fun getStarredGallery(
+            @Query("page") page: Int = 1,
+            @Query("search") search: String = "",
+            @Query("textMetadata") textMetadata: Boolean = true,
+            @Query("filter") filter: String = "all",
             @Query("sort") sort: String = "\"newest\"",
         ): Call<Gallery>
 
@@ -268,6 +278,12 @@ object TpuApi {
         fun uploadFile(
             @Part attachment: MultipartBody.Part,
         ): Call<UploadResponse>
+
+        @GET("providers/tenor")
+        fun getTenorGallery(
+            @Query("next") next: String = "",
+            @Query("search") search: String = ""
+        ): Call<TenorResponse>
     }
 
     val retrofitService: TpuApiService by lazy {

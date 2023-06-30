@@ -61,22 +61,20 @@ fun MainScreen() {
             openPanel = true
         }
 
-        if (closePanels) {
-            LaunchedEffect(Unit) {
-                panelState.closePanels()
-                closePanels = false
-            }
+        LaunchedEffect(closePanels) {
+            if(!closePanels) return@LaunchedEffect
+            panelState.closePanels()
+            closePanels = false
         }
 
-        if (openPanel) {
-            LaunchedEffect(Unit) {
-                if (!panelState.isPanelsClosed) {
-                    panelState.closePanels()
-                } else {
-                    panelState.openStartPanel()
-                }
-                openPanel = false
+        LaunchedEffect(openPanel) {
+            if(!openPanel) return@LaunchedEffect
+            if (!panelState.isPanelsClosed) {
+                panelState.closePanels()
+            } else {
+                panelState.openStartPanel()
             }
+            openPanel = false
         }
 
         Scaffold(
@@ -113,8 +111,10 @@ fun MainScreen() {
                             Spacer(Modifier.height(12.dp))
                             HomeScreen(
                                 openChat = { chatId ->
-                                    ChatStore.setAssociationId(chatId, context)
-                                    navController.navigate("${NavRoute.Chat.path}/$chatId")
+                                    if(ChatStore.associationId.value != chatId) {
+                                        ChatStore.setAssociationId(chatId, context)
+                                        navController.navigate("${NavRoute.Chat.path}/$chatId")
+                                    }
                                     closePanels = true
                                 },
                                 panelState = panelState,
@@ -132,7 +132,7 @@ fun MainScreen() {
                             ),
                             navController = navController,
                             user = user.value,
-                            context,
+                            context = context,
                             panelsState = panelState
                         )
                     }

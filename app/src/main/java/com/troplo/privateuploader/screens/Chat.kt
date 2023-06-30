@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -63,6 +65,7 @@ import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.components.chat.Attachment
 import com.troplo.privateuploader.components.chat.Message
 import com.troplo.privateuploader.components.chat.MessageActions
+import com.troplo.privateuploader.components.chat.ReplyMessage
 import com.troplo.privateuploader.components.chat.attachment.UriPreview
 import com.troplo.privateuploader.components.core.InfiniteListHandler
 import com.troplo.privateuploader.components.core.NavRoute
@@ -96,19 +99,28 @@ fun ChatScreen(
     panelsState: OverlappingPanelsState,
 ) {
     var associationId = chatId
-    val loading = remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val token = SessionManager(context).getAuthToken() ?: ""
     val chatViewModel = remember { ChatViewModel() }
-    val messages = remember { mutableStateOf(chatViewModel.messages) }
     val message = remember { mutableStateOf("") }
     val listState = rememberLazyListState()
-    var initialLoad = remember { mutableStateOf(false) }
     val messageCtx = remember { mutableStateOf(false) }
     val messageCtxMessage: MutableState<Message?> = remember { mutableStateOf(null) }
-    val editId = remember { mutableIntStateOf(0) }
+    val editId: MutableState<Int> = remember { mutableIntStateOf(0) }
     val jumpToMessage = ChatStore.jumpToMessage.collectAsState()
     val attachment = remember { mutableStateOf(false) }
+    val replyId: MutableState<Int> = remember { mutableIntStateOf(0) }
+
+    if(chatViewModel.loading.value && chatViewModel.messages.value == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .align(Alignment.Center)
+            )
+        }
+    }
 
     if (attachment.value) {
         Attachment(openBottomSheet = attachment)
@@ -117,7 +129,6 @@ fun ChatScreen(
     if (associationId == 0 || associationId == null) {
         val lastChatId = SessionManager(context).getLastChatId()
         associationId = lastChatId
-        initialLoad.value = true
     }
 
     if (associationId == 0) return
@@ -137,10 +148,12 @@ fun ChatScreen(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
+
                 if (ChatStore.attachmentsToUpload.size > 0) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .requiredHeight(120.dp)
                             .padding(),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surface,
@@ -148,7 +161,7 @@ fun ChatScreen(
                         )
                     ) {
                         LazyRow(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxSize()
                         ) {
                             ChatStore.attachmentsToUpload.forEach {
                                 item(
@@ -162,39 +175,55 @@ fun ChatScreen(
                         }
                     }
                 }
-                if (editId.value != 0) {
-                    Card(
+
+                if(replyId.value != 0) {
+                    val msg = chatViewModel.messages.value?.find { it.id == replyId.value }
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            contentColor = MaterialTheme.colorScheme.onSurface
-                        )
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = "Editing message",
-                                modifier = Modifier.padding(start = 16.dp, bottom = 4.dp)
-                            )
-
-                            IconButton(
-                                onClick = {
-                                    editId.value = 0
-                                    message.value = ""
-                                },
-                                modifier = Modifier.padding(end = 16.dp, bottom = 4.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "Stop editing",
-                                    modifier = Modifier.padding(end = 16.dp, bottom = 4.dp)
-                                )
+                        ReplyMessage(msg, null)
+                        IconButton(
+                            onClick = {
+                                replyId.value = 0
                             }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Close reply",
+                                modifier = Modifier.padding(end = 16.dp, bottom = 4.dp)
+                            )
                         }
                     }
                 }
+
+                if (editId.value != 0) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Editing message",
+                            modifier = Modifier.padding(start = 16.dp)
+                        )
+
+                        IconButton(
+                            onClick = {
+                                editId.value = 0
+                                message.value = ""
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Stop editing",
+                                modifier = Modifier.padding(end = 16.dp)
+                            )
+                        }
+                    }
+                }
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -215,7 +244,6 @@ fun ChatScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(8.dp)
-                                .padding(top = 16.dp)
                                 .focusRequester(focusRequester),
                             supportingText = {
                                 Row(
@@ -244,7 +272,6 @@ fun ChatScreen(
                                 IconButton(
                                     onClick = {
                                         chatViewModel.sendMessage(
-                                            token,
                                             associationId,
                                             message.value,
                                             context,
@@ -253,7 +280,7 @@ fun ChatScreen(
                                         message.value = ""
                                         editId.value = 0
                                     },
-                                    enabled = ChatStore.attachmentsToUpload.none { it.url == null } && message.value.isNotEmpty()
+                                    enabled = ChatStore.attachmentsToUpload.none { it.url == null } && (message.value.isNotEmpty() || ChatStore.attachmentsToUpload.isNotEmpty())
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.Send,
@@ -305,15 +332,18 @@ fun ChatScreen(
                 reverseLayout = true,
                 state = listState
             ) {
-                messages.value.value?.forEach { msg ->
+                chatViewModel.messages.value?.forEach { msg ->
                     item(
                         key = msg.id
                     ) {
                         Message(
                             msg,
-                            compact(msg, messages.value.value!!),
+                            compact(msg, chatViewModel.messages.value!!),
                             messageCtx,
-                            messageCtxMessage
+                            messageCtxMessage,
+                            onReply = { id ->
+                                ChatStore.jumpToMessage.value = id
+                            }
                         )
                     }
                 }
@@ -350,7 +380,7 @@ fun ChatScreen(
     }
 
     if (messageCtx.value) {
-        MessageActions(messageCtxMessage, messageCtx, editId, message)
+        MessageActions(messageCtxMessage, messageCtx, editId, message, replyId)
     }
 
 
@@ -364,17 +394,22 @@ fun ChatScreen(
     }
 
     LaunchedEffect(Unit) {
-        chatViewModel.getMessages(associationId).also {
-            loading.value = false
-        }
+        chatViewModel.getMessages(associationId)
     }
 
     // Monitor jumpToMessage to jump to specific message contexts
     LaunchedEffect(jumpToMessage.value) {
         if (jumpToMessage.value != 0) {
-            chatViewModel.messages.value = null
-            chatViewModel.jumpToBottom.value = true
-            chatViewModel.getMessages(associationId, jumpToMessage.value + 20, listState)
+            val index =
+                chatViewModel.messages.value?.indexOfFirst { it.id == jumpToMessage.value }
+            if (index != -1 && index != null) {
+                listState.animateScrollToItem(index)
+                ChatStore.jumpToMessage.value = 0
+            } else {
+                chatViewModel.messages.value = null
+                chatViewModel.jumpToBottom.value = true
+                chatViewModel.getMessages(associationId, jumpToMessage.value + 20, listState)
+            }
         }
     }
 
@@ -496,7 +531,7 @@ class ChatViewModel : ViewModel() {
             }
         }
 
-        socket?.on("embedResolution") { it ->
+        socket?.on("embedResolution") {
             Log.d("TPU.Untagged", "Embed resolution received " + it[0])
             embedResolution(it)
         }
@@ -582,7 +617,6 @@ class ChatViewModel : ViewModel() {
     }
 
     fun sendMessage(
-        token: String,
         associationId: Int,
         message: String,
         context: Context,
@@ -591,7 +625,6 @@ class ChatViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val user = UserStore.getUser()
             if (user != null) {
-
                 if (editId == 0) {
                     // add it to the list as pending
                     val id = Date().time.toInt()
@@ -735,12 +768,16 @@ private fun compact(message: Message, messages: List<Message>): String {
     if (index == messages.size - 1) return "none"
     val previousMessage = messages[index + 1]
 
-    return if (TpuFunctions.formatDateDay(message.createdAt) != TpuFunctions.formatDateDay(
-            previousMessage.createdAt
-        )
-    ) {
+    val chainMessages = messages.takeLast(index + 1).takeWhile { it.userId == message.userId }
+    val chainMessagesCount = chainMessages.size
+    Log.d("Chat", "Chain messages: $chainMessagesCount, $chainMessages")
+    val chainMessagesDiff = if(chainMessagesCount > 1) TpuFunctions.getDate(chainMessages.first().createdAt)?.time!! - TpuFunctions.getDate(
+            chainMessages.last().createdAt
+        )?.time!! else 0
+
+    return if (TpuFunctions.formatDateDay(message.createdAt) != TpuFunctions.formatDateDay(previousMessage.createdAt)) {
         "separator"
-    } else if (message.userId == previousMessage.userId) {
+    } else if (message.userId == previousMessage.userId && message.replyId == null && chainMessagesCount < 5 && chainMessagesDiff < 300000) {
         "compact"
     } else {
         "none"

@@ -11,7 +11,7 @@ data class Gallery(
 
 @JsonClass(generateAdapter = true)
 data class Pager(
-    @field:Json(name = "currentPage") val currentPage: Int,
+    @field:Json(name = "currentPage") var currentPage: Int,
     @field:Json(name = "endIndex") val endIndex: Int,
     @field:Json(name = "endPage") val endPage: Int,
     @field:Json(name = "pageSize") val pageSize: Int,

@@ -9,10 +9,14 @@ import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material3.Button
@@ -25,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -51,19 +56,33 @@ fun MyDevice() {
 
     if (mediaPermissionState.status.isGranted) {
         viewModel.loadImages(context)
-        FlowRow(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            viewModel.images.forEach { upload ->
-                UriPreview(upload, onClick = {
-                    if (ChatStore.attachmentsToUpload.find { it.uri == upload.uri } != null) {
-                        Log.d("MyDevice", "Removing ${upload.name} from attachments to upload.")
-                        ChatStore.attachmentsToUpload.removeIf { it.uri == upload.uri }
-                    } else {
-                        Log.d("MyDevice", "Adding ${upload.name} to attachments to upload.")
-                        ChatStore.attachmentsToUpload.add(upload)
+        LazyColumn {
+            item {
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    viewModel.images.forEach { upload ->
+                        Box(
+                            modifier = Modifier.requiredHeight(120.dp).requiredWidth(120.dp)
+                        ) {
+                            UriPreview(upload, onClick = {
+                                if (ChatStore.attachmentsToUpload.find { it.uri == upload.uri } != null) {
+                                    Log.d(
+                                        "MyDevice",
+                                        "Removing ${upload.name} from attachments to upload."
+                                    )
+                                    ChatStore.attachmentsToUpload.removeIf { it.uri == upload.uri }
+                                } else {
+                                    Log.d(
+                                        "MyDevice",
+                                        "Adding ${upload.name} to attachments to upload."
+                                    )
+                                    ChatStore.attachmentsToUpload.add(upload)
+                                }
+                            })
+                        }
                     }
-                })
+                }
             }
         }
         if (viewModel.images.isEmpty()) {

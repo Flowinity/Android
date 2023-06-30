@@ -1,6 +1,7 @@
 package com.troplo.privateuploader
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -37,6 +38,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         GoogleApiAvailability.getInstance().makeGooglePlayServicesAvailable(this)
+        startService(Intent(this, UploadService::class.java))
         // if(BuildConfig.DEBUG) StrictMode.enableDefaults();
         Log.d("MainActivity.Instance", SessionManager(this).getInstanceURL())
         TpuApi.instance = SessionManager(this).getInstanceURL()

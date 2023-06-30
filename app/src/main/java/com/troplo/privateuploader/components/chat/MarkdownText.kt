@@ -72,7 +72,7 @@ fun MarkdownText(
                 style = style,
                 textAlign = textAlign,
                 viewId = viewId,
-                onClick = onClick,
+                onClick = onClick
             )
         },
         update = { textView ->
@@ -103,7 +103,7 @@ private fun createTextView(
     style: TextStyle,
     @IdRes viewId: Int? = null,
     onClick: (() -> Unit)? = null,
-    onLongClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null
 ): TextView {
     val textColor = color.takeOrElse { style.color.takeOrElse { defaultColor } }
     val mergedStyle = style.merge(
@@ -111,6 +111,7 @@ private fun createTextView(
             color = textColor,
             fontSize = if (fontSize != TextUnit.Unspecified) fontSize else style.fontSize,
             textAlign = textAlign,
+
         )
     )
     return TextView(context).apply {

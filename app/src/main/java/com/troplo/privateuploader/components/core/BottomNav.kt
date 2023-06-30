@@ -23,6 +23,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -143,5 +145,15 @@ fun BottomBarNav(
                 )
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview
+@Composable
+fun BottomBarNavPreview() {
+    val navController = NavController(LocalContext.current)
+    val panelState = OverlappingPanelsState(OverlappingPanelsValue.Closed)
+    BottomBarNav(navController = navController, panelState = panelState) {
     }
 }

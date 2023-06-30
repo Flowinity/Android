@@ -3,6 +3,7 @@ package com.troplo.privateuploader.components.chat
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,11 +13,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Reply
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -24,11 +27,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.components.core.UserAvatar
+import com.troplo.privateuploader.data.model.ChatAssociation
+import com.troplo.privateuploader.data.model.Embed
+import com.troplo.privateuploader.data.model.EmbedData
 import com.troplo.privateuploader.data.model.Message
+import com.troplo.privateuploader.data.model.defaultUser
+import com.troplo.privateuploader.ui.theme.PrivateUploaderTheme
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
@@ -39,6 +49,7 @@ fun Message(
     messageCtxMessage: MutableState<Message?>?,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
+    onReply: ((replyId: Int) -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier
@@ -82,15 +93,19 @@ fun Message(
                 }
             }
         }
+
         val normal = compact == "separator" || compact == "none"
 
+        if(message.replyId != null) {
+            ReplyMessage(message.reply, onReply)
+        }
+
         Row(
-            modifier = if (normal) Modifier.padding(
+            modifier = if (normal && message.replyId == null) Modifier.padding(
                 start = 16.dp,
                 top = 16.dp,
                 end = 16.dp
-            ) else Modifier.padding(start = 16.dp, end = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            ) else Modifier.padding(start = 16.dp, end = 16.dp)
         ) {
             if (normal) {
                 UserAvatar(
@@ -168,6 +183,79 @@ fun Message(
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun MessagePreview() {
+    PrivateUploaderTheme(
+        content = {
+            Surface {
+                Message(
+                    message = Message(
+                        id = 1,
+                        user = defaultUser(),
+                        chatId = 1,
+                        content = "Hello World!",
+                        createdAt = "2021-09-01T00:00:00.000Z",
+                        updatedAt = "2021-09-01T00:00:00.000Z",
+                        edited = false,
+                        editedAt = null,
+                        embeds = listOf(
+                            Embed(
+                                data = EmbedData(
+                                    type = "image",
+                                    description = "yes",
+                                    height = 69,
+                                    siteName = "TPU",
+                                    title = "TPU",
+                                    upload = null,
+                                    url = "https://i.troplo.com",
+                                    width = 420
+                                ),
+                                type = "image",
+                            )
+                        ),
+                        error = false,
+                        legacyUser = null,
+                        legacyUserId = null,
+                        pending = false,
+                        pinned = false,
+                        readReceipts = emptyList<ChatAssociation>(),
+                        reply = Message(
+                            id = 1,
+                            user = defaultUser(),
+                            chatId = 1,
+                            content = "Hello World!",
+                            createdAt = "2021-09-01T00:00:00.000Z",
+                            updatedAt = "2021-09-01T00:00:00.000Z",
+                            edited = false,
+                            editedAt = null,
+                            embeds = emptyList<Embed>(),
+                            error = false,
+                            legacyUser = null,
+                            legacyUserId = null,
+                            pending = false,
+                            pinned = false,
+                            readReceipts = emptyList<ChatAssociation>(),
+                            replyId = 1,
+                            tpuUser = null,
+                            userId = 1,
+                            type = "message",
+                            reply = null
+                        ),
+                        replyId = 1,
+                        tpuUser = null,
+                        userId = 1,
+                        type = "message"
+                    ),
+                    compact = "none",
+                    messageCtx = null,
+                    messageCtxMessage = null
+                )
+            }
+        }
+    )
 }
 
 /*class SampleMessageProvider : PreviewParameterProvider<Message> {

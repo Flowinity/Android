@@ -35,6 +35,7 @@ fun MessageActions(
     openBottomSheet: MutableState<Boolean>,
     editId: MutableState<Int>,
     messageInput: MutableState<String>,
+    replyId: MutableState<Int>
 ) {
     val windowInsets = WindowInsets(0)
     val bottomSheetState = rememberModalBottomSheetState(
@@ -60,6 +61,10 @@ fun MessageActions(
                         Icons.Default.Reply,
                         contentDescription = "Reply icon"
                     )
+                },
+                modifier = Modifier.clickable {
+                    replyId.value = message.value?.id ?: 0
+                    openBottomSheet.value = false
                 }
             )
 

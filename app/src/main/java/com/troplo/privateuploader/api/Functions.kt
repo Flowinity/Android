@@ -104,7 +104,8 @@ object TpuFunctions {
 
     fun getDate(date: String?): Date? {
         return try {
-            val df1: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+            val df1: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX")
+            df1.isLenient = false;
             df1.parse(date)
         } catch (e: Exception) {
             Log.d("TPU.Untagged", "Error formatting date (GD): $e")
