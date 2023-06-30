@@ -12,14 +12,14 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 fun InfiniteListHandler(
     listState: LazyListState,
     buffer: Int = 2,
-    onLoadMore: () -> Unit
+    onLoadMore: () -> Unit,
 ) {
     val loadMore = remember {
         derivedStateOf {
             val layoutInfo = listState.layoutInfo
             val totalItemsNumber = layoutInfo.totalItemsCount
             val lastVisibleItemIndex = (layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) + 1
-            if(totalItemsNumber < 50) return@derivedStateOf false
+            if (totalItemsNumber < 50) return@derivedStateOf false
             lastVisibleItemIndex > (totalItemsNumber - buffer)
         }
     }

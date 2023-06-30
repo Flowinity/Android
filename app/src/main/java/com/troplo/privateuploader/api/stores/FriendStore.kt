@@ -1,20 +1,13 @@
 package com.troplo.privateuploader.api.stores
 
-import android.content.Context
 import android.util.Log
-import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.data.model.Friend
 import com.troplo.privateuploader.data.model.FriendRequest
-import com.troplo.privateuploader.data.model.MessageEvent
 import com.troplo.privateuploader.data.model.StatusPayload
-import com.troplo.privateuploader.data.model.User
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -34,7 +27,7 @@ object FriendStore {
                 Dispatchers.IO
             ).launch {
                 val response = TpuApi.retrofitService.getFriends().execute()
-                if(response.isSuccessful) {
+                if (response.isSuccessful) {
                     friends.value = response.body()!!
                 }
             }
@@ -56,7 +49,7 @@ object FriendStore {
                             )
                         )
                     )
-                } else if(status.id == UserStore.user.value?.id) {
+                } else if (status.id == UserStore.user.value?.id) {
                     UserStore.user.value = UserStore.user.value?.copy(
                         status = status.status ?: "offline",
                         platforms = status.platforms
@@ -69,18 +62,19 @@ object FriendStore {
                 val payload = jsonArray.toString()
                 val friend = SocketHandler.gson.fromJson(payload, FriendRequest::class.java)
 
-                if((friend.status == "incoming" || friend.status == "accepted" || friend.status == "outgoing") && friend.friend != null) {
-                    val existingFriend = friends.value.find { it.otherUser?.id == friend.friend.otherUser?.id }
+                if ((friend.status == "incoming" || friend.status == "accepted" || friend.status == "outgoing") && friend.friend != null) {
+                    val existingFriend =
+                        friends.value.find { it.otherUser?.id == friend.friend.otherUser?.id }
 
-                    if(existingFriend != null) {
+                    if (existingFriend != null) {
                         friends.value = friends.value.minus(existingFriend).plus(friend.friend)
                     } else {
                         friends.value = friends.value.plus(friend.friend)
                     }
-                } else if(friend.status == "removed") {
+                } else if (friend.status == "removed") {
                     val existingFriend = friends.value.find { it.otherUser?.id == friend.id }
 
-                    if(existingFriend != null) {
+                    if (existingFriend != null) {
                         friends.value = friends.value.minus(existingFriend)
                     }
                 }

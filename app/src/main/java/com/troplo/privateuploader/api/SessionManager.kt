@@ -96,7 +96,7 @@ class SessionManager(context: Context) {
 
     fun getTheme(): ThemeOption {
         val theme = prefs.getString("theme", ThemeOption.System.name)
-        return if(theme == null) {
+        return if (theme == null) {
             ThemeOption.System
         } else {
             ThemeOption.valueOf(theme)

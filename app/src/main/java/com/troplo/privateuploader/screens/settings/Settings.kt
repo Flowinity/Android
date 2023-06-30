@@ -27,7 +27,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -102,7 +101,7 @@ fun SettingsScreen(
                 )
             }
 
-            if(UserStore.debug) {
+            if (UserStore.debug) {
                 item {
                     SettingsItem(
                         Icons.Default.DeviceUnknown,
@@ -137,10 +136,14 @@ fun SettingsScreen(
                                 color = Primary,
                                 modifier = Modifier.clickable {
                                     rippled.value += 1
-                                    if(rippled.value > 5) {
+                                    if (rippled.value > 5) {
                                         SessionManager(context).setDebugMode(!UserStore.debug)
                                         UserStore.debug = !UserStore.debug
-                                        Toast.makeText(context, "Debug mode: ${UserStore.debug}", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(
+                                            context,
+                                            "Debug mode: ${UserStore.debug}",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                         rippled.value = 0
                                     }
                                 }
@@ -196,7 +199,13 @@ class SettingsViewModel : ViewModel()
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsItem(icon: ImageVector, title: String, subtitle: String, onClick: () -> Unit = {}, trailingContent: @Composable () -> Unit = {}) {
+fun SettingsItem(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit = {},
+    trailingContent: @Composable () -> Unit = {},
+) {
     Card(
         onClick = onClick,
         modifier = Modifier
@@ -212,7 +221,9 @@ fun SettingsItem(icon: ImageVector, title: String, subtitle: String, onClick: ()
             Icon(
                 icon,
                 contentDescription = title,
-                modifier = Modifier.size(24.dp).padding(start = 4.dp)
+                modifier = Modifier
+                    .size(24.dp)
+                    .padding(start = 4.dp)
             )
             Column(
                 modifier = Modifier.padding(start = 16.dp)

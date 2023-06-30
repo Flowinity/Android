@@ -46,7 +46,7 @@ fun MessageActions(
         sheetState = bottomSheetState,
         windowInsets = windowInsets
     ) {
-        if(message.value != null) {
+        if (message.value != null) {
             Message(message.value!!, "none", null, null, modifier = Modifier.padding(bottom = 8.dp))
         }
         Column(

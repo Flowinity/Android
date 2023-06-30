@@ -39,19 +39,28 @@ object SocketHandler {
             socket = IO.socket(baseUrl, options)
             if (socket != null) {
                 socket?.open()
-                if(platform !== "android_kotlin_background_service") {
+                if (platform !== "android_kotlin_background_service") {
                     socket?.on(Socket.EVENT_CONNECT) {
                         this.connected.value = true
-                        Log.d("TPU.Untagged", "Socket connected ${socket?.isActive}, Connected: ${this.connected.value}")
+                        Log.d(
+                            "TPU.Untagged",
+                            "Socket connected ${socket?.isActive}, Connected: ${this.connected.value}"
+                        )
                     }
                     socket?.on(Socket.EVENT_DISCONNECT) {
                         this.connected.value = false
-                        Log.d("TPU.Untagged", "Socket disconnected ${socket?.isActive}, Connected: ${this.connected.value}")
+                        Log.d(
+                            "TPU.Untagged",
+                            "Socket disconnected ${socket?.isActive}, Connected: ${this.connected.value}"
+                        )
                     }
                     socket?.on(Socket.EVENT_CONNECT_ERROR) {
                         try {
                             this.connected.value = false
-                            Log.d("TPU.Untagged", "Socket connect error ${socket?.isActive}, Connected: ${this.connected.value}, Error: ${it[0]}")
+                            Log.d(
+                                "TPU.Untagged",
+                                "Socket connect error ${socket?.isActive}, Connected: ${this.connected.value}, Error: ${it[0]}"
+                            )
                         } catch (e: Exception) {
                             //
                         }

@@ -1,6 +1,6 @@
 package com.troplo.privateuploader
 
-import android.content.Intent
+import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -9,16 +9,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import com.google.android.gms.common.GoogleApiAvailability
 import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.SocketHandlerService
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.ui.theme.PrivateUploaderTheme
-import android.Manifest
-import android.content.Context
-import androidx.core.app.RemoteInput
-import com.google.android.gms.common.GoogleApiAvailability
 
 class MainActivity : ComponentActivity() {
     override fun onResume() {

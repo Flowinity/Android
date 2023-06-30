@@ -59,8 +59,8 @@ fun GalleryScreen(
                 onValueChange = { searchState.value.value = it },
                 label = { Text("Search") },
                 modifier = Modifier
-                  .fillMaxWidth()
-                  .padding(8.dp),
+                    .fillMaxWidth()
+                    .padding(8.dp),
                 trailingIcon = {
                     IconButton(onClick = {
                         galleryViewModel.getGalleryItems(token)
@@ -78,8 +78,8 @@ fun GalleryScreen(
             Box {
                 LazyColumn(
                     modifier = Modifier
-                      .fillMaxSize()
-                      .padding(top = it.calculateTopPadding())
+                        .fillMaxSize()
+                        .padding(top = it.calculateTopPadding())
                 ) {
                     galleryItems.value.value?.gallery?.forEach {
                         item(

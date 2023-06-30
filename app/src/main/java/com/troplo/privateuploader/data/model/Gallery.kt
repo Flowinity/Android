@@ -19,5 +19,5 @@ data class Pager(
     @field:Json(name = "startIndex") val startIndex: Int,
     @field:Json(name = "startPage") val startPage: Int,
     @field:Json(name = "totalItems") val totalItems: Int,
-    @field:Json(name = "totalPages") val totalPages: Int
+    @field:Json(name = "totalPages") val totalPages: Int,
 )

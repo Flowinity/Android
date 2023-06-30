@@ -27,5 +27,5 @@ data class Chat(
 
 @JsonClass(generateAdapter = true)
 data class ChatCreateRequest(
-    @field:Json(name = "users") val users: List<Int>
+    @field:Json(name = "users") val users: List<Int>,
 )

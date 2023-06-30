@@ -20,7 +20,7 @@ fun ZoomableBox(
     modifier: Modifier = Modifier,
     minScale: Float = 0.1f,
     maxScale: Float = 5f,
-    content: @Composable ZoomableBoxScope.() -> Unit
+    content: @Composable ZoomableBoxScope.() -> Unit,
 ) {
     var scale by remember { mutableFloatStateOf(1f) }
     var offsetX by remember { mutableFloatStateOf(0f) }
@@ -56,5 +56,5 @@ interface ZoomableBoxScope {
 private data class ZoomableBoxScopeImpl(
     override val scale: Float,
     override val offsetX: Float,
-    override val offsetY: Float
+    override val offsetY: Float,
 ) : ZoomableBoxScope

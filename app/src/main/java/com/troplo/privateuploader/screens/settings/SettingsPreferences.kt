@@ -20,11 +20,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.toColorInt
 import androidx.lifecycle.ViewModel
 import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.ThemeOption
@@ -46,7 +44,7 @@ fun SettingsPreferencesScreen() {
         val selectedName = remember { mutableStateOf("") }
         val currentTheme = remember { mutableStateOf(SessionManager(context).getTheme()) }
 
-        if(dialog.value) {
+        if (dialog.value) {
             ConfigureDialog(open = dialog, key = selected.value, name = selectedName.value)
         }
 
@@ -67,7 +65,7 @@ fun SettingsPreferencesScreen() {
                             .padding(16.dp)
                     ) {
                         Text(text = "Select Theme:")
-                        Column() {
+                        Column {
                             ThemeOption.values().forEach { theme ->
                                 Row(Modifier.selectable(theme == currentTheme.value, onClick = {
                                     currentTheme.value = theme
@@ -80,7 +78,10 @@ fun SettingsPreferencesScreen() {
                                             SessionManager(context).setTheme(theme)
                                         }
                                     )
-                                    Text(text = theme.name, modifier = Modifier.align(Alignment.CenterVertically))
+                                    Text(
+                                        text = theme.name,
+                                        modifier = Modifier.align(Alignment.CenterVertically)
+                                    )
                                 }
                             }
                         }
@@ -88,7 +89,7 @@ fun SettingsPreferencesScreen() {
                 }
             }
 
-            if(UserStore.debug) {
+            if (UserStore.debug) {
                 item {
                     val color = remember { mutableStateOf(SessionManager(context).getColor()) }
 
@@ -107,7 +108,7 @@ fun SettingsPreferencesScreen() {
                                 .padding(16.dp)
                         ) {
                             Text(text = "Accent color:")
-                            Column() {
+                            Column {
                                 Row {
                                     Checkbox(checked = color.value == null, onCheckedChange = {
                                         if (it) {

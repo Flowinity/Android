@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -17,7 +16,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -81,12 +79,14 @@ fun AddFriendDialog(open: MutableState<Boolean>) {
                     value = input.value
                 )
                 Text(
-                    modifier = Modifier.padding(8.dp).align(Alignment.CenterHorizontally),
-                    text = if(viewModel.loading.value) {
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .align(Alignment.CenterHorizontally),
+                    text = if (viewModel.loading.value) {
                         "Loading..."
-                    } else if(viewModel.success.value == true) {
+                    } else if (viewModel.success.value == true) {
                         "Friend request sent!"
-                    } else if(viewModel.success.value == false) {
+                    } else if (viewModel.success.value == false) {
                         "User not found."
                     } else {
                         "Enter your friend's username to add them."
@@ -95,11 +95,13 @@ fun AddFriendDialog(open: MutableState<Boolean>) {
                         false -> {
                             Color.Red
                         }
+
                         true -> {
                             Color.Green
                         }
+
                         else -> {
-                            androidx.compose.ui.graphics.Color.Unspecified
+                            Color.Unspecified
                         }
                     }
                 )

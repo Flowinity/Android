@@ -12,7 +12,7 @@ data class Friend(
     @field:Json(name = "otherUserId") val otherUserId: Int,
     @field:Json(name = "createdAt") val createdAt: String,
     @field:Json(name = "updatedAt") val updatedAt: String,
-    @field:Json(name = "id") val id: Int
+    @field:Json(name = "id") val id: Int,
 )
 
 @JsonClass(generateAdapter = true)
@@ -22,5 +22,5 @@ data class FriendRequest(
     @Json(name = "id")
     val id: Int,
     @Json(name = "status")
-    val status: String
+    val status: String,
 )

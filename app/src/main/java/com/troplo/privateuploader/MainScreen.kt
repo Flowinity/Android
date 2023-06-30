@@ -38,7 +38,8 @@ import com.troplo.privateuploader.components.core.rememberOverlappingPanelsState
 import com.troplo.privateuploader.screens.HomeScreen
 import io.sentry.compose.SentryTraced
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class,
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class,
     ExperimentalMaterialApi::class
 )
 
@@ -69,7 +70,7 @@ fun MainScreen() {
 
         if (openPanel) {
             LaunchedEffect(Unit) {
-                if(!panelState.isPanelsClosed) {
+                if (!panelState.isPanelsClosed) {
                     panelState.closePanels()
                 } else {
                     panelState.openStartPanel()
@@ -127,7 +128,7 @@ fun MainScreen() {
                         NavGraph(
                             modifier = Modifier.padding(
                                 top = paddingValues.calculateTopPadding(),
-                                bottom = if(navController.currentDestination?.route?.startsWith("chat/") == true) 0.dp else paddingValues.calculateBottomPadding()
+                                bottom = if (navController.currentDestination?.route?.startsWith("chat/") == true) 0.dp else paddingValues.calculateBottomPadding()
                             ),
                             navController = navController,
                             user = user.value,

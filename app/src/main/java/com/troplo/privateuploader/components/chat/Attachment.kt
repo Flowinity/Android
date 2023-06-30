@@ -1,34 +1,15 @@
 package com.troplo.privateuploader.components.chat
 
-import android.Manifest
-import android.app.Application
-import android.content.ContentUris
-import android.content.Context
-import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
-import android.provider.MediaStore
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Gif
 import androidx.compose.material.icons.filled.GifBox
 import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.Launch
-import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Smartphone
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Tab
@@ -43,19 +24,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberPermissionState
 import com.troplo.privateuploader.components.chat.attachment.MyDevice
 import com.troplo.privateuploader.screens.GalleryScreen
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -127,7 +98,7 @@ fun Attachment(openBottomSheet: MutableState<Boolean>) {
 @Preview
 @Composable
 fun AttachmentPreview() {
-    Attachment(openBottomSheet = remember { mutableStateOf(true) } )
+    Attachment(openBottomSheet = remember { mutableStateOf(true) })
 }
 
-class AttachmentViewModel : ViewModel() {}
+class AttachmentViewModel : ViewModel()

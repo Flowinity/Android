@@ -4,5 +4,5 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class FCMTokenRequest(
-    val token: String
+    val token: String,
 )

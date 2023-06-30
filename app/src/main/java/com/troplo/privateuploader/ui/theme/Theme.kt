@@ -2,7 +2,6 @@ package com.troplo.privateuploader.ui.theme
 
 import android.app.Activity
 import android.os.Build
-import android.se.omapi.Session
 import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -11,9 +10,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -48,20 +45,20 @@ fun PrivateUploaderTheme(
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit,
-    selected: MutableStateFlow<ThemeOption> = SessionManager(LocalContext.current).theme
+    selected: MutableStateFlow<ThemeOption> = SessionManager(LocalContext.current).theme,
 ) {
     var isDark = isSystemInDarkTheme()
     val accent = SessionManager(LocalContext.current).getColor()
-    if(selected.value == ThemeOption.Dark || selected.value == ThemeOption.AMOLED) {
+    if (selected.value == ThemeOption.Dark || selected.value == ThemeOption.AMOLED) {
         isDark = true
-    } else if(selected.value == ThemeOption.Light) {
+    } else if (selected.value == ThemeOption.Light) {
         isDark = false
     }
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             Log.d("Theme", "Accent: $accent, Selected: $selected")
-            if(accent != null) {
+            if (accent != null) {
                 try {
                     dynamicDarkColorScheme(context).copy(
                         primary = Color(accent.toColorInt())
@@ -71,8 +68,8 @@ fun PrivateUploaderTheme(
                 }
             }
 
-            if (isDark)  {
-                if(selected.value == ThemeOption.AMOLED) {
+            if (isDark) {
+                if (selected.value == ThemeOption.AMOLED) {
                     dynamicDarkColorScheme(context).copy(
                         background = Color(0xFF000000),
                         surface = Color(0xFF000000),

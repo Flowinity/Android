@@ -26,8 +26,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.res.ResourcesCompat
-import coil.ImageLoader
-import com.troplo.privateuploader.api.stores.UserStore
 import io.noties.markwon.AbstractMarkwonPlugin
 import io.noties.markwon.Markwon
 import io.noties.markwon.MarkwonConfiguration
@@ -52,12 +50,14 @@ fun MarkdownText(
     // it also enable the parent view to receive the click event
     onLinkClicked: ((String) -> Unit)? = null,
     onTextLayout: ((numLines: Int) -> Unit)? = null,
-    onLongClick: (() -> Unit)? = null
+    onLongClick: (() -> Unit)? = null,
 ) {
-    val defaultColor: Color = LocalContentColor.current.copy(alpha = LocalContentColor.current.alpha)
+    val defaultColor: Color =
+        LocalContentColor.current.copy(alpha = LocalContentColor.current.alpha)
     val context: Context = LocalContext.current
     val preventLinkClick = remember { mutableStateOf(false) }
-    val markdownRender: Markwon = remember { createMarkdownRender(context, onLinkClicked, preventLinkClick) }
+    val markdownRender: Markwon =
+        remember { createMarkdownRender(context, onLinkClicked, preventLinkClick) }
 
     AndroidView(
         modifier = modifier,
@@ -103,7 +103,7 @@ private fun createTextView(
     style: TextStyle,
     @IdRes viewId: Int? = null,
     onClick: (() -> Unit)? = null,
-    onLongClick: (() -> Unit)? = null
+    onLongClick: (() -> Unit)? = null,
 ): TextView {
     val textColor = color.takeOrElse { style.color.takeOrElse { defaultColor } }
     val mergedStyle = style.merge(
@@ -143,17 +143,17 @@ private fun createTextView(
 private fun createMarkdownRender(
     context: Context,
     onLinkClicked: ((String) -> Unit)? = null,
-    preventLinkClick: MutableState<Boolean>
+    preventLinkClick: MutableState<Boolean>,
 ): Markwon {
     return Markwon.builder(context)
         .usePlugin(HtmlPlugin.create())
         .usePlugin(StrikethroughPlugin.create())
         .usePlugin(TablePlugin.create(context))
         .usePlugin(LinkifyPlugin.create())
-        .usePlugin(object: AbstractMarkwonPlugin() {
+        .usePlugin(object : AbstractMarkwonPlugin() {
             override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
                 builder.linkResolver { _, link ->
-                    if(preventLinkClick.value) {
+                    if (preventLinkClick.value) {
                         preventLinkClick.value = false
                         return@linkResolver
                     }

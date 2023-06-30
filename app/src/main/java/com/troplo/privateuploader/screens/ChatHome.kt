@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddComment
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,7 +37,7 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     openChat: (Int) -> Unit = {},
     panelState: OverlappingPanelsState?,
-    navController: NavController
+    navController: NavController,
 ) {
     val loading = remember { mutableStateOf(true) }
     val token = SessionManager(LocalContext.current).getAuthToken() ?: ""
@@ -55,11 +54,11 @@ fun HomeScreen(
         }
     }
 
-    if(createChat.value) {
+    if (createChat.value) {
         NewChatDialog(createChat, navController)
     }
 
-    if(chatActions.value) {
+    if (chatActions.value) {
         ChatActions(chat, chatActions)
     }
 
@@ -77,9 +76,11 @@ fun HomeScreen(
             )
         }
     ) {
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(top = it.calculateTopPadding())) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = it.calculateTopPadding())
+        ) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 chats.value.forEach {
                     item(

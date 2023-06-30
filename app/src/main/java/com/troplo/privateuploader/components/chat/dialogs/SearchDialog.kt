@@ -1,6 +1,5 @@
 package com.troplo.privateuploader.components.chat.dialogs
 
-import android.content.Context
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,7 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
@@ -73,7 +71,13 @@ fun SearchDialog(open: MutableState<Boolean>) {
                                     imeAction = ImeAction.Done
                                 ),
                                 keyboardActions = KeyboardActions(
-                                    onDone = { searchViewModel.searchMessages(chat?.association?.id ?: 0, content.value, kbController = kbController) }
+                                    onDone = {
+                                        searchViewModel.searchMessages(
+                                            chat?.association?.id ?: 0,
+                                            content.value,
+                                            kbController = kbController
+                                        )
+                                    }
                                 ),
                                 singleLine = true,
                                 modifier = Modifier
@@ -82,7 +86,9 @@ fun SearchDialog(open: MutableState<Boolean>) {
                                     .onKeyEvent {
                                         if (it.nativeKeyEvent.keyCode == 13) {
                                             searchViewModel.searchMessages(
-                                                chat?.association?.id ?: 0, content.value, kbController = kbController
+                                                chat?.association?.id ?: 0,
+                                                content.value,
+                                                kbController = kbController
                                             )
                                             true
                                         } else {
@@ -90,7 +96,13 @@ fun SearchDialog(open: MutableState<Boolean>) {
                                         }
                                     },
                                 trailingIcon = {
-                                    IconButton(onClick = { searchViewModel.searchMessages(chat?.association?.id ?: 0, content.value, kbController = kbController) }) {
+                                    IconButton(onClick = {
+                                        searchViewModel.searchMessages(
+                                            chat?.association?.id ?: 0,
+                                            content.value,
+                                            kbController = kbController
+                                        )
+                                    }) {
                                         Icon(Icons.Filled.Search, contentDescription = "Search")
                                     }
                                 }
@@ -102,24 +114,37 @@ fun SearchDialog(open: MutableState<Boolean>) {
                             }
                         }
                     )
-                    if(searchViewModel.messages.value != null) {
-                        Text("Total results: ${searchViewModel.pager.value?.totalItems}", modifier = Modifier.padding(start = 16.dp, top = 69.dp))
+                    if (searchViewModel.messages.value != null) {
+                        Text(
+                            "Total results: ${searchViewModel.pager.value?.totalItems}",
+                            modifier = Modifier.padding(start = 16.dp, top = 69.dp)
+                        )
                     } else {
-                        Text("Search for some messages...", modifier = Modifier.padding(start = 16.dp, top = 64.dp))
+                        Text(
+                            "Search for some messages...",
+                            modifier = Modifier.padding(start = 16.dp, top = 64.dp)
+                        )
                     }
                 },
                 bottomBar = {
-                    if(searchViewModel.pager.value != null) {
+                    if (searchViewModel.pager.value != null) {
                         Paginate(
                             modelValue = searchViewModel.pager.value?.currentPage ?: 0,
                             totalPages = searchViewModel.pager.value?.totalPages ?: 0,
-                            onUpdateModelValue = { searchViewModel.searchMessages(chat?.association?.id ?: 0, content.value, it, kbController = kbController) },
+                            onUpdateModelValue = {
+                                searchViewModel.searchMessages(
+                                    chat?.association?.id ?: 0,
+                                    content.value,
+                                    it,
+                                    kbController = kbController
+                                )
+                            },
                             modifier = Modifier.padding(bottom = 18.dp)
                         )
                     }
                 }
             ) {
-                if(searchViewModel.messages.value != null) {
+                if (searchViewModel.messages.value != null) {
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
@@ -157,10 +182,19 @@ class SearchViewModel : ViewModel() {
     val pager = mutableStateOf<Pager?>(null)
 
     @OptIn(ExperimentalComposeUiApi::class)
-    fun searchMessages(associationId: Int, content: String, page: Int = 1, kbController: SoftwareKeyboardController?) {
+    fun searchMessages(
+        associationId: Int,
+        content: String,
+        page: Int = 1,
+        kbController: SoftwareKeyboardController?,
+    ) {
         kbController?.hide()
         viewModelScope.launch(Dispatchers.IO) {
-            val response = TpuApi.retrofitService.searchMessages(chatId = associationId, query = content, page = page).execute()
+            val response = TpuApi.retrofitService.searchMessages(
+                chatId = associationId,
+                query = content,
+                page = page
+            ).execute()
             withContext(Dispatchers.Main) {
                 messages.value = response.body()?.messages
                 pager.value = response.body()?.pager

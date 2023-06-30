@@ -8,16 +8,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Smartphone
-import androidx.compose.material3.Badge
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -28,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,7 +38,6 @@ import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.data.model.Friend
 import com.troplo.privateuploader.data.model.PartialUser
 import com.troplo.privateuploader.data.model.defaultPartialUser
-import com.troplo.privateuploader.data.model.defaultUser
 import kotlinx.coroutines.Dispatchers
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,7 +47,7 @@ fun UserAvatar(
     username: String,
     modifier: Modifier = Modifier,
     showStatus: Boolean = true,
-    fake: Boolean = false
+    fake: Boolean = false,
 ) {
     Box {
         val imageSize = 40.dp
@@ -61,7 +55,7 @@ fun UserAvatar(
         val friends = FriendStore.friends.collectAsState()
         var friend = friends.value.find { it.otherUser?.username == username }
         val currentUser = UserStore.user.collectAsState()
-        if(fake && friend == null) {
+        if (fake && friend == null) {
             friend = Friend(
                 otherUser = defaultPartialUser(id = 2, username = "Troplo"),
                 user = defaultPartialUser(),
@@ -72,7 +66,7 @@ fun UserAvatar(
                 status = "online",
                 id = -1
             )
-        } else if(friend == null && currentUser.value?.username == username) {
+        } else if (friend == null && currentUser.value?.username == username) {
             friend = Friend(
                 otherUser = PartialUser(
                     username = currentUser.value!!.username,
@@ -82,7 +76,7 @@ fun UserAvatar(
                     nickname = null,
                     banner = currentUser.value!!.banner,
                     description = currentUser.value!!.description,
-                    administrator =  currentUser.value!!.administrator,
+                    administrator = currentUser.value!!.administrator,
                     moderator = currentUser.value!!.moderator,
                     platforms = currentUser.value!!.platforms,
                     plan = currentUser.value!!.plan
@@ -111,7 +105,7 @@ fun UserAvatar(
                 ),
                 modifier = Modifier
                     .clip(CircleShape)
-                    .background(if(fake) MaterialTheme.colorScheme.surface else Color.Transparent)
+                    .background(if (fake) MaterialTheme.colorScheme.surface else Color.Transparent)
                     .then(modifier)
                     .size(imageSize)
             )
@@ -134,7 +128,7 @@ fun UserAvatar(
             }
         }
 
-        if(friend != null && showStatus && friend?.otherUser?.status !== null) {
+        if (friend != null && showStatus && friend.otherUser?.status !== null) {
             BoxWithConstraints(modifier = Modifier.matchParentSize()) {
                 Row(
                     modifier = Modifier
@@ -142,7 +136,10 @@ fun UserAvatar(
                         .align(Alignment.BottomEnd)
                 ) {
                     Text(text = "", modifier = Modifier.width(28.dp))
-                    if(friend.otherUser?.platforms == null || friend.otherUser?.platforms!!.isEmpty() || friend.otherUser?.platforms?.get(0)?.platform !== "android_kotlin") {
+                    if (friend.otherUser?.platforms == null || friend.otherUser?.platforms!!.isEmpty() || friend.otherUser?.platforms?.get(
+                            0
+                        )?.platform !== "android_kotlin"
+                    ) {
                         Box(
                             modifier = Modifier
                                 .size(dotSize)
@@ -150,7 +147,7 @@ fun UserAvatar(
                                 .background(
                                     Color(
                                         TpuFunctions.getStatusDetails(
-                                            friend?.otherUser?.status ?: "offline"
+                                            friend.otherUser?.status ?: "offline"
                                         ).first
                                     )
                                 )

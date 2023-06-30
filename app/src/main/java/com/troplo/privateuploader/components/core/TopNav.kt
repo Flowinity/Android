@@ -42,7 +42,7 @@ fun TopBarNav(navController: NavController, openPanel: () -> Unit) {
         remember { derivedStateOf { chats.value.find { it.association?.id == ChatStore.associationId.value } } }
     val user = UserStore.user.collectAsState()
 
-    if(chatSearch.value) {
+    if (chatSearch.value) {
         SearchDialog(chatSearch)
     }
 
@@ -83,7 +83,7 @@ fun TopBarNav(navController: NavController, openPanel: () -> Unit) {
             }
         },
         actions = {
-            if(currentRoute.startsWith("chat/")) {
+            if (currentRoute.startsWith("chat/")) {
                 IconButton(onClick = {
                     chatSearch.value = true
                 }) {

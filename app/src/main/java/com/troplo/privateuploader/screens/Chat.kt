@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.Close
@@ -111,10 +110,10 @@ fun ChatScreen(
     val jumpToMessage = ChatStore.jumpToMessage.collectAsState()
     val attachment = remember { mutableStateOf(false) }
 
-    if(attachment.value) {
+    if (attachment.value) {
         Attachment(openBottomSheet = attachment)
     }
-    
+
     if (associationId == 0 || associationId == null) {
         val lastChatId = SessionManager(context).getLastChatId()
         associationId = lastChatId
@@ -200,7 +199,7 @@ fun ChatScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
-                    Box() {
+                    Box {
                         val focusRequester = FocusRequester()
                         val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -358,7 +357,7 @@ fun ChatScreen(
     // Watchers
     LaunchedEffect(chatViewModel.newMessage.value) {
         chatViewModel.newMessage.value = false
-        if(chatViewModel.jumpToBottom.value) {
+        if (chatViewModel.jumpToBottom.value) {
             messagesReset()
         }
         listState.animateScrollToItem(0)
@@ -388,7 +387,7 @@ fun ChatScreen(
 
     LaunchedEffect(ChatStore.attachmentsToUpload.size) {
         ChatStore.attachmentsToUpload.forEach { file ->
-            if(file.started) return@LaunchedEffect
+            if (file.started) return@LaunchedEffect
             chatViewModel.uploadAttachment(file, context)
         }
     }
@@ -416,13 +415,19 @@ class ChatViewModel : ViewModel() {
             val message = messageEvent.message
 
             if (associationId != messageEvent.association.id) {
-                Log.d("TPU.Untagged", "Message not for this association, ${messageEvent.association.id} != $associationId")
+                Log.d(
+                    "TPU.Untagged",
+                    "Message not for this association, ${messageEvent.association.id} != $associationId"
+                )
                 return@on
             }
             // see if the message is already in the list
             val existingMessage =
                 messages.value?.find { e -> e.id == message.id || (e.content == message.content && e.pending == true && e.userId == message.userId) }
-            Log.d("TPU.Untagged", "Message for this association, ${messageEvent.association.id} == $associationId, $existingMessage")
+            Log.d(
+                "TPU.Untagged",
+                "Message for this association, ${messageEvent.association.id} == $associationId, $existingMessage"
+            )
             if (existingMessage == null) {
                 // add to start of list
                 messages.value = listOf(message, *messages.value.orEmpty().toTypedArray())
@@ -504,7 +509,10 @@ class ChatViewModel : ViewModel() {
 
             val chatId = ChatStore.getChat()?.id
             if (chatId != message.chatId) {
-                Log.d("TPU.Untagged", "Message delete not for this chat, ${message.chatId} != $chatId")
+                Log.d(
+                    "TPU.Untagged",
+                    "Message delete not for this chat, ${message.chatId} != $chatId"
+                )
                 return@on
             }
 
@@ -525,7 +533,10 @@ class ChatViewModel : ViewModel() {
 
             val chatId = ChatStore.getChat()?.id
             if (chatId != editEvent.chatId) {
-                Log.d("TPU.Untagged", "Message edit not for this chat, ${editEvent.chatId} != $chatId")
+                Log.d(
+                    "TPU.Untagged",
+                    "Message edit not for this chat, ${editEvent.chatId} != $chatId"
+                )
                 return@on
             }
 
@@ -542,20 +553,25 @@ class ChatViewModel : ViewModel() {
             }
         }
     }
+
     fun getMessages(associationId: Int, offset: Int? = null, listState: LazyListState? = null) {
-        if(loading.value) return
+        if (loading.value) return
         viewModelScope.launch(Dispatchers.IO) {
             loading.value = true
-            val response = TpuApi.retrofitService.getMessages(associationId, offset = offset ?: messages.value?.last()?.id?.minus(1)).execute()
+            val response = TpuApi.retrofitService.getMessages(
+                associationId,
+                offset = offset ?: messages.value?.last()?.id?.minus(1)
+            ).execute()
             withContext(Dispatchers.Main) {
                 messages.value = messages.value.orEmpty() + response.body().orEmpty()
-                if(messages.value?.size!! >= 200) {
+                if (messages.value?.size!! >= 200) {
                     messages.value = messages.value?.takeLast(50)
                     jumpToBottom.value = true
                 }
-                if(offset !== null) {
-                    val index = messages.value?.indexOfFirst { it.id == ChatStore.jumpToMessage.value } ?: 0
-                    if(index != -1) {
+                if (offset !== null) {
+                    val index =
+                        messages.value?.indexOfFirst { it.id == ChatStore.jumpToMessage.value } ?: 0
+                    if (index != -1) {
                         listState?.scrollToItem(index)
                         ChatStore.jumpToMessage.value = 0
                     }
@@ -605,7 +621,8 @@ class ChatViewModel : ViewModel() {
                         listOf(pendingMessage, *messages.value.orEmpty().toTypedArray())
                     try {
                         // ensure url is populated for attachments
-                        val uploadedAttachments = ChatStore.attachmentsToUpload.filter { it.url != null }.map { it.url!! }
+                        val uploadedAttachments =
+                            ChatStore.attachmentsToUpload.filter { it.url != null }.map { it.url!! }
                         ChatStore.attachmentsToUpload = mutableStateListOf()
                         val response = TpuApi.retrofitService.sendMessage(
                             associationId, MessageRequest(
@@ -674,16 +691,21 @@ class ChatViewModel : ViewModel() {
         val converted = TpuFunctions.uriToFile(file.uri, context, file.name)
 
         viewModelScope.launch(Dispatchers.IO) {
-            val requestFile = RequestBodyWithProgress(converted, RequestBodyWithProgress.ContentType.PNG_IMAGE, progressCallback = { progress ->
-                Log.d("TPU.Upload", "Progress: $progress")
-                ChatStore.attachmentsToUpload.find { it.uri == file.uri }
-                    ?: return@RequestBodyWithProgress
-                ChatStore.attachmentsToUpload.removeIf { it.uri == file.uri }
-                ChatStore.attachmentsToUpload.add(file.copy(
-                    progress = progress,
-                    started = true
-                ))
-            })
+            val requestFile = RequestBodyWithProgress(
+                converted,
+                RequestBodyWithProgress.ContentType.PNG_IMAGE,
+                progressCallback = { progress ->
+                    Log.d("TPU.Upload", "Progress: $progress")
+                    ChatStore.attachmentsToUpload.find { it.uri == file.uri }
+                        ?: return@RequestBodyWithProgress
+                    ChatStore.attachmentsToUpload.removeIf { it.uri == file.uri }
+                    ChatStore.attachmentsToUpload.add(
+                        file.copy(
+                            progress = progress,
+                            started = true
+                        )
+                    )
+                })
             val body = MultipartBody.Part.createFormData("attachment", file.name, requestFile)
             val response = TpuApi.retrofitService.uploadFile(body).execute()
             withContext(Dispatchers.Main) {
@@ -694,11 +716,13 @@ class ChatViewModel : ViewModel() {
                         ChatStore.attachmentsToUpload.find { it.uri == file.uri }
                             ?: return@withContext
                         ChatStore.attachmentsToUpload.removeIf { it.uri == file.uri }
-                        ChatStore.attachmentsToUpload.add(file.copy(
-                            url = attachment.upload.attachment,
-                            progress = 100f,
-                            started = true
-                        ))
+                        ChatStore.attachmentsToUpload.add(
+                            file.copy(
+                                url = attachment.upload.attachment,
+                                progress = 100f,
+                                started = true
+                            )
+                        )
                     }
                 }
             }
@@ -711,7 +735,10 @@ private fun compact(message: Message, messages: List<Message>): String {
     if (index == messages.size - 1) return "none"
     val previousMessage = messages[index + 1]
 
-    return if (TpuFunctions.formatDateDay(message.createdAt) != TpuFunctions.formatDateDay(previousMessage.createdAt)) {
+    return if (TpuFunctions.formatDateDay(message.createdAt) != TpuFunctions.formatDateDay(
+            previousMessage.createdAt
+        )
+    ) {
         "separator"
     } else if (message.userId == previousMessage.userId) {
         "compact"

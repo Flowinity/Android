@@ -22,7 +22,10 @@ import com.troplo.privateuploader.data.model.User
 fun UserBanner(user: State<User?> = UserStore.user.collectAsState()) {
     Box {
         GlideImage(
-            model = if(user.value?.banner != null) TpuFunctions.image(user.value?.banner, null) else "https://i.troplo.com/i/a050d6f271c3.png",
+            model = if (user.value?.banner != null) TpuFunctions.image(
+                user.value?.banner,
+                null
+            ) else "https://i.troplo.com/i/a050d6f271c3.png",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()

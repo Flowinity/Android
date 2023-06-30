@@ -38,17 +38,17 @@ import kotlinx.coroutines.launch
 fun UserPopup(
     @PreviewParameter(UserPreviewProvider::class)
     user: MutableState<User?>,
-    openBottomSheet: MutableState<Boolean> = mutableStateOf(true)
+    openBottomSheet: MutableState<Boolean> = mutableStateOf(true),
 ) {
     val windowInsets = WindowInsets(0)
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = false
     )
     val viewModel = remember { UserPopupViewModel() }
-    if(viewModel.user.value == null) {
+    if (viewModel.user.value == null) {
         viewModel.getFullUser(user.value?.username ?: "")
     }
-    if(viewModel.user.value !== null) {
+    if (viewModel.user.value !== null) {
         ModalBottomSheet(
             onDismissRequest = { openBottomSheet.value = false },
             sheetState = bottomSheetState,
@@ -58,7 +58,8 @@ fun UserPopup(
             UserBanner(user = viewModel.user)
             Column(modifier = Modifier.padding(16.dp)) {
                 Row {
-                    UserAvatar(avatar = viewModel.user.value?.avatar,
+                    UserAvatar(
+                        avatar = viewModel.user.value?.avatar,
                         username = viewModel.user.value?.username ?: "",
                         modifier = Modifier.align(alignment = Alignment.CenterVertically)
                     )

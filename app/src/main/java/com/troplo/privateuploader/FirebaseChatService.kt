@@ -43,7 +43,8 @@ import kotlinx.coroutines.launch
 
 
 class FirebaseChatService : FirebaseMessagingService() {
-    private val messages = mutableMapOf<Int, MutableList<NotificationCompat.MessagingStyle.Message>>()
+    private val messages =
+        mutableMapOf<Int, MutableList<NotificationCompat.MessagingStyle.Message>>()
 
     private fun isAppOnForeground(context: Context): Boolean {
         val activityManager = context.getSystemService(ACTIVITY_SERVICE) as ActivityManager
@@ -59,7 +60,7 @@ class FirebaseChatService : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         Log.d(TAG, "[NewChatService] Message received")
-        if(isAppOnForeground(this)) {
+        if (isAppOnForeground(this)) {
             Log.d(TAG, "[NewChatService] App is on foreground")
             return
         }
@@ -111,7 +112,7 @@ class FirebaseChatService : FirebaseMessagingService() {
     }
 
     private fun sendRegistrationToServer(token: String?) {
-        if(token != null) {
+        if (token != null) {
             Log.d("$TAG.FCMToken", token)
             CoroutineScope(Dispatchers.IO).launch {
                 TpuApi.retrofitService.registerFcmToken(FCMTokenRequest(token))
@@ -156,7 +157,8 @@ class FirebaseChatService : FirebaseMessagingService() {
                     NotificationManager.IMPORTANCE_HIGH
                 )
                 notificationManager.createNotificationChannel(channel)
-                if (messages[message.associationId] == null) messages[message.associationId] = mutableListOf()
+                if (messages[message.associationId] == null) messages[message.associationId] =
+                    mutableListOf()
                 messages[message.associationId]?.add(
                     NotificationCompat.MessagingStyle.Message(
                         message.content,
@@ -172,10 +174,15 @@ class FirebaseChatService : FirebaseMessagingService() {
                     style.addMessage(msg)
                 }
 
-                    val rep = Intent(this, InlineNotificationActivity::class.java)
-                    rep.replaceExtras(Bundle())
-                    rep.putExtra("chatId", message.associationId)
-                    val replyPendingIntent = PendingIntent.getBroadcast(this, message.associationId, rep, PendingIntent.FLAG_MUTABLE)
+                val rep = Intent(this, InlineNotificationActivity::class.java)
+                rep.replaceExtras(Bundle())
+                rep.putExtra("chatId", message.associationId)
+                val replyPendingIntent = PendingIntent.getBroadcast(
+                    this,
+                    message.associationId,
+                    rep,
+                    PendingIntent.FLAG_MUTABLE
+                )
 
                 val remoteInput = RemoteInput.Builder("content")
                     .setLabel("Reply")
@@ -190,28 +197,32 @@ class FirebaseChatService : FirebaseMessagingService() {
                     .setAllowGeneratedReplies(true)
                     .build()
 
-                val builder: NotificationCompat.Builder = NotificationCompat.Builder(this, "communications")
-                    .addPerson(chatPartner)
-                    .setStyle(style)
-                    .setContentText(message.content)
-                    .setContentTitle(message.username)
-                    .setSmallIcon(R.drawable.tpu_logo)
-                    .setWhen(TpuFunctions.getDate(message.createdAt)?.time ?: 0)
-                    .addAction(replyAction)
-                    .setContentIntent(
-                        PendingIntent.getActivity(
-                            this,
-                            message.associationId,
-                            Intent(this, MainActivity::class.java).apply {
-                                putExtra("chatId", message.associationId)
-                            },
-                            PendingIntent.FLAG_MUTABLE
+                val builder: NotificationCompat.Builder =
+                    NotificationCompat.Builder(this, "communications")
+                        .addPerson(chatPartner)
+                        .setStyle(style)
+                        .setContentText(message.content)
+                        .setContentTitle(message.username)
+                        .setSmallIcon(R.drawable.tpu_logo)
+                        .setWhen(TpuFunctions.getDate(message.createdAt)?.time ?: 0)
+                        .addAction(replyAction)
+                        .setContentIntent(
+                            PendingIntent.getActivity(
+                                this,
+                                message.associationId,
+                                Intent(this, MainActivity::class.java).apply {
+                                    putExtra("chatId", message.associationId)
+                                },
+                                PendingIntent.FLAG_MUTABLE
+                            )
                         )
-                    )
                 val res = notificationManager.notify(message.associationId, builder.build())
                 Log.d("TPU.Untagged", "[ChatService] Notification sent, $res")
             } catch (e: Exception) {
-                Log.d("TPU.Untagged", "[ChatService] Error sending notification, ${e.printStackTrace()}")
+                Log.d(
+                    "TPU.Untagged",
+                    "[ChatService] Error sending notification, ${e.printStackTrace()}"
+                )
             }
         }
     }
@@ -220,7 +231,8 @@ class FirebaseChatService : FirebaseMessagingService() {
         private const val TAG = "FirebaseChatService"
     }
 
-    internal class MyWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
+    internal class MyWorker(appContext: Context, workerParams: WorkerParameters) :
+        Worker(appContext, workerParams) {
         override fun doWork(): Result {
             // TODO(developer): add long running task here.
             return Result.success()

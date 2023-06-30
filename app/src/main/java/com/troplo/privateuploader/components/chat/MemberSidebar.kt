@@ -28,7 +28,7 @@ fun MemberSidebar() {
     val user: MutableState<User?> = remember { mutableStateOf(null) }
     val popup = remember { mutableStateOf(false) }
 
-    if(popup.value) {
+    if (popup.value) {
         UserPopup(user = user, openBottomSheet = popup)
     }
 
@@ -43,7 +43,7 @@ fun MemberSidebar() {
                 },
                 label = { Text(association.user.username) },
                 onClick = {
-                    if(association.legacyUser == null) {
+                    if (association.legacyUser == null) {
                         user.value = association.user
                         popup.value = true
                     }

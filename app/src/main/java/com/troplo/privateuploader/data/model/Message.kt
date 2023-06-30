@@ -2,7 +2,6 @@ package com.troplo.privateuploader.data.model
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
-import java.util.Date
 
 @JsonClass(generateAdapter = true)
 data class Message(
@@ -58,7 +57,7 @@ data class MessageEventFirebase(
     @field:Json(name = "username") val username: String,
     @field:Json(name = "avatar") val avatar: String,
     @field:Json(name = "chatName") val chatName: String,
-    @field:Json(name = "createdAt") val createdAt: String
+    @field:Json(name = "createdAt") val createdAt: String,
 )
 
 @JsonClass(generateAdapter = true)
@@ -90,7 +89,7 @@ data class EmbedData(
     val width: Int?,
     val height: Int?,
     val upload: Upload?,
-    val type: String?
+    val type: String?,
 )
 
 @JsonClass(generateAdapter = true)
@@ -108,5 +107,5 @@ data class EmbedFail(
 @JsonClass(generateAdapter = true)
 data class MessageSearchResponse(
     @field:Json(name = "messages") val messages: List<Message>,
-    @field:Json(name = "pager") val pager: Pager
+    @field:Json(name = "pager") val pager: Pager,
 )

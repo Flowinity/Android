@@ -77,7 +77,7 @@ object TpuApi {
     // replace BuildConfig.SERVER_URL with baseUrl for multiple TPU instances
     private val hostInterceptor = Interceptor { chain ->
         val url = URL(instance)
-        val port = if(url.port == -1) url.defaultPort else url.port
+        val port = if (url.port == -1) url.defaultPort else url.port
         val scheme = url.protocol
         val host = url.host
 
@@ -103,7 +103,7 @@ object TpuApi {
                 if (!response.isSuccessful) {
                     val error: JSONObject = JSONObject(response.body?.string() ?: "{}")
                     val errorType = error.getJSONArray("errors").getJSONObject(0).getString("name")
-                    if(errorType == "INVALID_TOKEN") {
+                    if (errorType == "INVALID_TOKEN") {
                         UserStore.logout(context)
                     } else {
                         val errorMessage =
@@ -198,7 +198,7 @@ object TpuApi {
         @GET("chats/{id}/messages")
         fun getMessages(
             @Path("id") id: Int,
-            @Query("offset") offset: Int? = null
+            @Query("offset") offset: Int? = null,
         ): Call<List<Message>>
 
         @POST("chats/{id}/message")
@@ -226,7 +226,7 @@ object TpuApi {
 
         @GET("user/profile/{username}")
         fun getUserProfile(
-            @Path("username") username: String
+            @Path("username") username: String,
         ): Call<User>
 
         @GET("user/friends")
@@ -236,12 +236,12 @@ object TpuApi {
         fun searchMessages(
             @Path("chatId") chatId: Int,
             @Query("query") query: String = "",
-            @Query("page") page: Int = 1
+            @Query("page") page: Int = 1,
         ): Call<MessageSearchResponse>
 
         @POST("chats")
         fun createChat(
-            @Body members: ChatCreateRequest
+            @Body members: ChatCreateRequest,
         ): Call<Chat>
 
         @GET("/api/v3/core")
@@ -250,23 +250,23 @@ object TpuApi {
         @POST("user/friends/username/{username}/{type}")
         fun addFriend(
             @Path("username") username: String,
-            @Path("type") type: String
+            @Path("type") type: String,
         ): Call<Unit>
 
         @POST("user/fcmToken")
         fun registerFcmToken(
-            @Body token: FCMTokenRequest
+            @Body token: FCMTokenRequest,
         ): Call<Unit>
 
         @PATCH("user")
         fun updateUser(
-            @Body user: PatchUser
+            @Body user: PatchUser,
         ): Call<Unit>
 
         @Multipart
         @POST("gallery")
         fun uploadFile(
-            @Part attachment: MultipartBody.Part
+            @Part attachment: MultipartBody.Part,
         ): Call<UploadResponse>
     }
 

@@ -10,9 +10,7 @@ import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.data.model.FCMTokenRequest
 import com.troplo.privateuploader.data.model.SettingsPayload
-import com.troplo.privateuploader.data.model.StatusPayload
 import com.troplo.privateuploader.data.model.User
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +27,7 @@ object UserStore {
     var debug = BuildConfig.DEBUG
 
     fun registerFCMToken() {
-        if(this.user.value == null) return
+        if (this.user.value == null) return
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
             if (!task.isSuccessful) {
                 Log.w("UserStore", "Fetching FCM registration token failed", task.exception)
@@ -58,7 +56,7 @@ object UserStore {
                 SessionManager(context).setUserCache(user.value)
                 FriendStore.initializeFriends()
 
-                if(user.value !== null) {
+                if (user.value !== null) {
                     val token = SessionManager(context).getFCMToken()
 
                     if (token == null) {
@@ -77,10 +75,12 @@ object UserStore {
                     description = settings.description ?: user.value?.description ?: "",
                     storedStatus = settings.storedStatus ?: user.value?.storedStatus ?: "",
                     email = settings.email ?: user.value?.email ?: "",
-                    discordPrecache = settings.discordPrecache ?: user.value?.discordPrecache ?: false,
+                    discordPrecache = settings.discordPrecache ?: user.value?.discordPrecache
+                    ?: false,
                     itemsPerPage = settings.itemsPerPage ?: user.value?.itemsPerPage ?: 12,
                     language = settings.language ?: user.value?.language ?: "en",
-                    excludedCollections = settings.excludedCollections ?: user.value?.excludedCollections ?: listOf(),
+                    excludedCollections = settings.excludedCollections
+                        ?: user.value?.excludedCollections ?: listOf(),
                     insights = settings.insights ?: user.value?.insights ?: "friends"
                 )
             }

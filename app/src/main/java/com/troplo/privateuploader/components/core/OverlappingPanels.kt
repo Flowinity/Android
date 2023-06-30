@@ -223,16 +223,16 @@ fun OverlappingPanels(
 
         Box(
             modifier = Modifier
-              .fillMaxSize()
-              .swipeable(
-                state = panelsState.swipeableState,
-                orientation = Orientation.Horizontal,
-                velocityThreshold = velocityThreshold,
-                anchors = anchors,
-                enabled = gesturesEnabled,
-                reverseDirection = layoutDirection == LayoutDirection.Rtl,
-                resistance = resistance(anchors.keys),
-              )
+                .fillMaxSize()
+                .swipeable(
+                    state = panelsState.swipeableState,
+                    orientation = Orientation.Horizontal,
+                    velocityThreshold = velocityThreshold,
+                    anchors = anchors,
+                    enabled = gesturesEnabled,
+                    reverseDirection = layoutDirection == LayoutDirection.Rtl,
+                    resistance = resistance(anchors.keys),
+                )
         ) {
             val sidePanelAlignment = organizeSidePanel(
                 panelsState,
@@ -242,16 +242,16 @@ fun OverlappingPanels(
             )
 
             val modifierZero = Modifier
-              .fillMaxWidth(0f)
-              .size(0.dp)
+                .fillMaxWidth(0f)
+                .size(0.dp)
 
             val modifierFull = Modifier
 
             Box(
                 modifier = Modifier
-                  .fillMaxHeight()
-                  .fillMaxWidth(fraction)
-                  .align(sidePanelAlignment)
+                    .fillMaxHeight()
+                    .fillMaxWidth(fraction)
+                    .align(sidePanelAlignment)
             ) {
                 Box(
                     modifier = if (panelsState.offset.value < 0) modifierFull else modifierZero
@@ -266,16 +266,16 @@ fun OverlappingPanels(
             }
             Box(
                 modifier = Modifier
-                  .fillMaxSize()
-                  .align(Alignment.Center)
-                  .alpha(animatedCenterPanelAlpha)
-                  .offset {
-                    IntOffset(
-                      x = panelsState.offset.value.roundToInt(),
-                      y = 0
-                    )
-                  }
-                  .shadow(centerPanelElevation),
+                    .fillMaxSize()
+                    .align(Alignment.Center)
+                    .alpha(animatedCenterPanelAlpha)
+                    .offset {
+                        IntOffset(
+                            x = panelsState.offset.value.roundToInt(),
+                            y = 0
+                        )
+                    }
+                    .shadow(centerPanelElevation),
                 content = panelCenter
             )
         }

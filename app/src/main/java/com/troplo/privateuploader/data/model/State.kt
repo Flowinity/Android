@@ -1,4 +1,5 @@
 package com.troplo.privateuploader.data.model
+
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
@@ -46,7 +47,7 @@ data class State(
     @Json(name = "stats")
     val stats: Stats,
     @Json(name = "termsNoteId")
-    val termsNoteId: String
+    val termsNoteId: String,
 )
 
 @JsonClass(generateAdapter = true)
@@ -64,7 +65,7 @@ data class Announcement(
     @Json(name = "user")
     val user: User,
     @Json(name = "userId")
-    val userId: Int
+    val userId: Int,
 )
 
 @JsonClass(generateAdapter = true)
@@ -72,7 +73,7 @@ data class Connection(
     @Json(name = "ip")
     val ip: String,
     @Json(name = "whitelist")
-    val whitelist: Boolean
+    val whitelist: Boolean,
 )
 
 @JsonClass(generateAdapter = true)
@@ -86,7 +87,7 @@ data class Features(
     @Json(name = "insights")
     val insights: Boolean,
     @Json(name = "workspaces")
-    val workspaces: Boolean
+    val workspaces: Boolean,
 )
 
 @JsonClass(generateAdapter = true)
@@ -96,7 +97,7 @@ data class Providers(
     @Json(name = "lastfm")
     val lastfm: Boolean,
     @Json(name = "mal")
-    val mal: Boolean
+    val mal: Boolean,
 )
 
 @JsonClass(generateAdapter = true)
@@ -134,7 +135,7 @@ data class Stats(
     @Json(name = "usagePercentage")
     val usagePercentage: Double,
     @Json(name = "users")
-    val users: Int
+    val users: Int,
 )
 
 @JsonClass(generateAdapter = true)
@@ -142,7 +143,7 @@ data class MessageGraph(
     @Json(name = "data")
     val `data`: List<Int>,
     @Json(name = "labels")
-    val labels: List<String>
+    val labels: List<String>,
 )
 
 @JsonClass(generateAdapter = true)
@@ -150,7 +151,7 @@ data class PulseGraph(
     @Json(name = "data")
     val `data`: List<Double>,
     @Json(name = "labels")
-    val labels: List<String>
+    val labels: List<String>,
 )
 
 @JsonClass(generateAdapter = true)
@@ -158,5 +159,5 @@ data class UploadGraph(
     @Json(name = "data")
     val `data`: List<Int>,
     @Json(name = "labels")
-    val labels: List<String>
+    val labels: List<String>,
 )

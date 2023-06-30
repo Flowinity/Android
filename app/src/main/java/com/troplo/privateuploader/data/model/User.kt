@@ -59,7 +59,7 @@ data class Platform(
     @field:Json(name = "platform") val platform: String,
     @field:Json(name = "id") val id: String,
     @field:Json(name = "lastSeen") val lastSeen: String,
-    @field:Json(name = "status") val status: String
+    @field:Json(name = "status") val status: String,
 )
 
 @JsonClass(generateAdapter = true)
@@ -266,7 +266,7 @@ fun defaultUser() = User(
 data class StatusPayload(
     @field:Json(name = "status") val status: String?,
     @field:Json(name = "id") val id: Int,
-    @field:Json(name = "platforms") val platforms: List<Platform>?
+    @field:Json(name = "platforms") val platforms: List<Platform>?,
 )
 
 @JsonClass(generateAdapter = true)
@@ -293,10 +293,14 @@ data class Nickname(
     @field:Json(name = "updatedAt") val updatedAt: String,
     @field:Json(name = "user") val user: PartialUser?,
     @field:Json(name = "friend") val friend: PartialUser?,
-    @field:Json(name = "friendId") val friendId: Int?
+    @field:Json(name = "friendId") val friendId: Int?,
 )
 
-fun defaultPartialUser(username: String? = "Troplo", avatar: String? = "50ba79e4.png", id: Int? = 1) = PartialUser(
+fun defaultPartialUser(
+    username: String? = "Troplo",
+    avatar: String? = "50ba79e4.png",
+    id: Int? = 1,
+) = PartialUser(
     id = id ?: 1,
     username = username ?: "Troplo",
     description = "Hey, I'm Troplo, owner of TPU!\nDiscord: Troplo#8495",
@@ -345,7 +349,7 @@ data class SettingsPayload(
     @field:Json(name = "storedStatus") val storedStatus: String?,
     // TODO: Theme Engine type, not currently parsed or used by Kotlin
     @field:Json(name = "themeEngine") val themeEngine: Any?,
-    @field:Json(name = "weatherUnit") val weatherUnit: String?
+    @field:Json(name = "weatherUnit") val weatherUnit: String?,
 )
 
 @JsonClass(generateAdapter = true)
@@ -364,5 +368,5 @@ data class PatchUser(
     @field:Json(name = "insights") val insights: String? = null,
     @field:Json(name = "itemsPerPage") val itemsPerPage: Int? = null,
     @field:Json(name = "currentPassword") val currentPassword: String? = null,
-    @field:Json(name = "password") val password: String? = null
+    @field:Json(name = "password") val password: String? = null,
 )

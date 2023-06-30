@@ -1,26 +1,19 @@
 package com.troplo.privateuploader.api
 
-import android.content.ContentResolver
-import android.content.Context
-import android.net.Uri
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
 import okio.BufferedSink
 import java.io.File
 import java.io.FileInputStream
-import java.io.IOException
-import java.io.InputStream
-import java.lang.ref.WeakReference
 
 
 class RequestBodyWithProgress(
     private val file: File,
     private val contentType: ContentType,
-    private val progressCallback:((progress: Float)->Unit)?
+    private val progressCallback: ((progress: Float) -> Unit)?,
 ) : RequestBody() {
 
     override fun contentType(): MediaType? = contentType.description.toMediaTypeOrNull()

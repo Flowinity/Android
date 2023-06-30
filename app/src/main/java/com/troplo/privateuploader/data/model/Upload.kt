@@ -3,7 +3,6 @@ package com.troplo.privateuploader.data.model
 import android.net.Uri
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
-import java.util.Date
 
 @JsonClass(generateAdapter = true)
 data class Upload(
@@ -46,7 +45,7 @@ data class UploadTarget(
     var progress: Float = 0f,
     val name: String = "",
     var started: Boolean = false,
-    var url: String? = null
+    var url: String? = null,
 )
 
 @JsonClass(generateAdapter = true)

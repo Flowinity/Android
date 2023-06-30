@@ -29,8 +29,8 @@ fun ConnectingBanner() {
     ) {
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(16.dp)
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.SignalCellularConnectedNoInternet4Bar,

@@ -59,7 +59,6 @@ import com.troplo.privateuploader.data.model.defaultUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
@@ -69,12 +68,12 @@ fun GalleryItem(@PreviewParameter(SampleUploadProvider::class) item: Upload) {
 
     Card(
         modifier = Modifier
-          .fillMaxWidth()
-          .padding(4.dp)
-          .clickable(
-            indication = null,
-            interactionSource = remember { MutableInteractionSource() }
-          ) {},
+            .fillMaxWidth()
+            .padding(4.dp)
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) {},
         onClick = {
             //
         },
@@ -105,8 +104,8 @@ fun GalleryItem(@PreviewParameter(SampleUploadProvider::class) item: Upload) {
                         imageVector = Icons.Default.InsertDriveFile,
                         contentDescription = "File",
                         modifier = Modifier
-                          .size(150.dp)
-                          .padding(16.dp)
+                            .size(150.dp)
+                            .padding(16.dp)
                     )
                 }
             }

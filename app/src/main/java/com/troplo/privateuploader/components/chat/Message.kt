@@ -1,6 +1,5 @@
 package com.troplo.privateuploader.components.chat
 
-import android.text.format.DateFormat
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -25,18 +24,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.components.core.UserAvatar
-import com.troplo.privateuploader.data.model.ChatAssociation
-import com.troplo.privateuploader.data.model.Embed
 import com.troplo.privateuploader.data.model.Message
-import com.troplo.privateuploader.data.model.defaultUser
-import com.troplo.privateuploader.components.chat.MarkdownText
-import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
@@ -46,21 +38,23 @@ fun Message(
     messageCtx: MutableState<Boolean>?,
     messageCtxMessage: MutableState<Message?>?,
     modifier: Modifier = Modifier,
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
 ) {
     Column(
-        modifier = Modifier.pointerInput(Unit) {
-            detectTapGestures(
-                onLongPress = {
-                    if(messageCtx == null || messageCtxMessage == null) return@detectTapGestures
-                    messageCtxMessage.value = message
-                    messageCtx.value = true
-                },
-                onTap = {
-                    if (onClick != null) onClick()
-                }
-            )
-        }.then(modifier)
+        modifier = Modifier
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = {
+                        if (messageCtx == null || messageCtxMessage == null) return@detectTapGestures
+                        messageCtxMessage.value = message
+                        messageCtx.value = true
+                    },
+                    onTap = {
+                        if (onClick != null) onClick()
+                    }
+                )
+            }
+            .then(modifier)
     ) {
         if (compact == "separator") {
             Column(
@@ -70,8 +64,8 @@ fun Message(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Divider(
                         modifier = Modifier
-                          .weight(1f)
-                          .height(1.dp),
+                            .weight(1f)
+                            .height(1.dp),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
@@ -81,8 +75,8 @@ fun Message(
                     )
                     Divider(
                         modifier = Modifier
-                          .weight(1f)
-                          .height(1.dp),
+                            .weight(1f)
+                            .height(1.dp),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -138,7 +132,7 @@ fun Message(
                         markdown = message.content,
                         color = color,
                         onLongClick = {
-                            if(messageCtx == null || messageCtxMessage == null) return@MarkdownText
+                            if (messageCtx == null || messageCtxMessage == null) return@MarkdownText
                             messageCtxMessage.value = message
                             messageCtx.value = true
                         },
@@ -154,17 +148,17 @@ fun Message(
                             contentDescription = "Edited",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier
-                              .clickable {
-                                Toast
-                                  .makeText(
-                                    context,
-                                    "Edited at ${message.editedAt}",
-                                    Toast.LENGTH_SHORT
-                                  )
-                                  .show()
-                              }
-                              .size(20.dp)
-                              .padding(start = 4.dp)
+                                .clickable {
+                                    Toast
+                                        .makeText(
+                                            context,
+                                            "Edited at ${message.editedAt}",
+                                            Toast.LENGTH_SHORT
+                                        )
+                                        .show()
+                                }
+                                .size(20.dp)
+                                .padding(start = 4.dp)
                         )
                     }
                 }
