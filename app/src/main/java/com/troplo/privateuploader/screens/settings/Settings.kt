@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.DeviceUnknown
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.MoreTime
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
@@ -59,15 +60,23 @@ fun SettingsScreen(
                 SettingsItem(
                     Icons.Default.AccountBox,
                     "My TPU",
-                    "Your TPU account settings",
+                    "Change your username, email, and password.",
                     onClick = { navigate("settings/account") })
+            }
+
+            item {
+                SettingsItem(
+                    Icons.Default.Palette,
+                    "Preferences",
+                    "Change your theme, language, and more.",
+                    onClick = { navigate("settings/preferences") })
             }
 
             item {
                 SettingsItem(
                     Icons.Default.Upload,
                     "Auto-Upload",
-                    "Options to automatically upload to TPU",
+                    "Options to automatically upload to TPU.",
                     onClick = { navigate("settings/upload") }
                 )
             }
@@ -76,7 +85,7 @@ fun SettingsScreen(
                 SettingsItem(
                     Icons.Default.MoreTime,
                     "Changelog",
-                    "Recent updates to TPU Mobile",
+                    "Recent updates to TPU Mobile.",
                     onClick = { navigate("settings/changelog") }
                 )
             }
@@ -85,7 +94,7 @@ fun SettingsScreen(
                 SettingsItem(
                     Icons.Default.Logout,
                     "Logout",
-                    "Logout of TPU",
+                    "Logout of TPU.",
                     onClick = {
                         UserStore.logout(context)
                         navigate("login")

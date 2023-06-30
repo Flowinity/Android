@@ -112,12 +112,14 @@ class GalleryViewModel : ViewModel() {
 @Preview(showBackground = true)
 @Composable
 private fun DefaultPreview() {
-    PrivateUploaderTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            GalleryScreen()
+    PrivateUploaderTheme(
+        content = {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                GalleryScreen()
+            }
         }
-    }
+    )
 }

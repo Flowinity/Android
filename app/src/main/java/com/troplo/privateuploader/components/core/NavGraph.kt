@@ -22,6 +22,7 @@ import com.troplo.privateuploader.screens.HomeScreen
 import com.troplo.privateuploader.screens.LoginScreen
 import com.troplo.privateuploader.screens.settings.ChangelogLayout
 import com.troplo.privateuploader.screens.settings.SettingsAccountScreen
+import com.troplo.privateuploader.screens.settings.SettingsPreferencesScreen
 import com.troplo.privateuploader.screens.settings.SettingsScreen
 import com.troplo.privateuploader.screens.settings.SettingsUploadScreen
 
@@ -57,6 +58,7 @@ fun NavGraph(
         addSettingsChangelogScreen(navController, this)
         addFriendsScreen(navController, this)
         addAccountSettingsScreen(navController, this)
+        addPreferencesSettingsScreen(navController, this)
     }
 }
 
@@ -177,5 +179,14 @@ private fun addAccountSettingsScreen(
 ) {
     navGraphBuilder.composable(route = NavRoute.SettingsAccount.path) {
         SettingsAccountScreen()
+    }
+}
+
+private fun addPreferencesSettingsScreen(
+    navController: NavHostController,
+    navGraphBuilder: NavGraphBuilder,
+) {
+    navGraphBuilder.composable(route = NavRoute.SettingsPreferences.path) {
+        SettingsPreferencesScreen()
     }
 }

@@ -90,6 +90,7 @@ data class EmbedData(
     val width: Int?,
     val height: Int?,
     val upload: Upload?,
+    val type: String?
 )
 
 @JsonClass(generateAdapter = true)

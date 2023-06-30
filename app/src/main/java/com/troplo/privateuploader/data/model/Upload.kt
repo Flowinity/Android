@@ -1,5 +1,6 @@
 package com.troplo.privateuploader.data.model
 
+import android.net.Uri
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import java.util.Date
@@ -37,4 +38,19 @@ data class Star(
     @Json(name = "attachmentId") val attachmentId: Int,
     @Json(name = "createdAt") val createdAt: String,
     @Json(name = "updatedAt") val updatedAt: String,
+)
+
+@JsonClass(generateAdapter = true)
+data class UploadTarget(
+    val uri: Uri,
+    var progress: Float = 0f,
+    val name: String = "",
+    var started: Boolean = false,
+    var url: String? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class UploadResponse(
+    @Json(name = "url") val url: String,
+    @Json(name = "upload") val upload: Upload,
 )

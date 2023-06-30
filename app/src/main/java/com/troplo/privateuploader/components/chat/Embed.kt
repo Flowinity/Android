@@ -3,6 +3,7 @@ package com.troplo.privateuploader.components.chat
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,6 +23,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,6 +37,7 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.api.imageLoader
 import com.troplo.privateuploader.api.stores.UserStore
+import com.troplo.privateuploader.components.chat.dialogs.ImageDialog
 import com.troplo.privateuploader.data.model.Embed
 import kotlinx.coroutines.Dispatchers
 
@@ -41,6 +45,7 @@ import kotlinx.coroutines.Dispatchers
 @Composable
 fun Embed(embed: Embed) {
     if (embed.data != null) {
+        val url = if(embed.data.type == "TPU_DIRECT") embed.data.url else "https://" + UserStore.getUser()?.domain?.domain + embed.data.url
         when (embed.type) {
             "openGraph" -> {
                 Card {
@@ -65,12 +70,16 @@ fun Embed(embed: Embed) {
             }
 
             "image" -> {
+                val expand = remember { mutableStateOf(false) }
+                if(expand.value)  {
+                    ImageDialog(url ?: "", embed.data.upload?.name ?: "unknown.png" , expand)
+                }
                 Image(
                     contentDescription = "Embed image (no alt text)",
                     painter = rememberAsyncImagePainter(
                         ImageRequest.Builder(LocalContext.current)
                             .dispatcher(Dispatchers.IO)
-                            .data(data = "https://" + UserStore.getUser()?.domain?.domain + embed.data.url)
+                            .data(data = url)
                             .apply(block = fun ImageRequest.Builder.() {
                                 size(Size.ORIGINAL)
                             }).build(), imageLoader = imageLoader(LocalContext.current, false)
@@ -78,6 +87,9 @@ fun Embed(embed: Embed) {
                     modifier = Modifier
                       .fillMaxWidth()
                       .height(if (embed.data.height!! > 300) 300.dp else embed.data.height.dp)
+                      .clickable {
+                          expand.value = true
+                      }
                 )
 
             }

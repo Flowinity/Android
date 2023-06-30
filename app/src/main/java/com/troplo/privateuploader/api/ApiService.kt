@@ -20,8 +20,10 @@ import com.troplo.privateuploader.data.model.MessageSearchResponse
 import com.troplo.privateuploader.data.model.PatchUser
 import com.troplo.privateuploader.data.model.StarResponse
 import com.troplo.privateuploader.data.model.State
+import com.troplo.privateuploader.data.model.UploadResponse
 import com.troplo.privateuploader.data.model.User
 import okhttp3.Interceptor
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.Response
@@ -35,9 +37,11 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 import java.io.IOException
@@ -258,6 +262,12 @@ object TpuApi {
         fun updateUser(
             @Body user: PatchUser
         ): Call<Unit>
+
+        @Multipart
+        @POST("gallery")
+        fun uploadFile(
+            @Part attachment: MultipartBody.Part
+        ): Call<UploadResponse>
     }
 
     val retrofitService: TpuApiService by lazy {

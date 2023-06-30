@@ -1,8 +1,13 @@
 package com.troplo.privateuploader.api
 
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import com.troplo.privateuploader.data.model.Chat
 import com.troplo.privateuploader.data.model.User
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.time.Instant
@@ -107,5 +112,22 @@ object TpuFunctions {
             Log.d("TPU.Untagged", "Error formatting date (GD): $e")
             null
         }
+    }
+
+    fun uriToFile(uri: Uri, context: Context, filename: String): File {
+        val parcelFileDescriptor = context.contentResolver.openFileDescriptor(
+            uri,
+            "r",
+            null
+        )
+        val file = File(
+            context.cacheDir,
+            filename
+        )
+        val inputStream = FileInputStream(parcelFileDescriptor?.fileDescriptor)
+        val outputStream = FileOutputStream(file)
+        inputStream.copyTo(outputStream)
+        parcelFileDescriptor?.close()
+        return file
     }
 }

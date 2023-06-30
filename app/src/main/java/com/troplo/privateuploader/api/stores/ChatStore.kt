@@ -1,10 +1,13 @@
 package com.troplo.privateuploader.api
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
+import androidx.compose.runtime.mutableStateListOf
 import com.troplo.privateuploader.data.model.Chat
 import com.troplo.privateuploader.data.model.SettingsPayload
 import com.troplo.privateuploader.data.model.Typing
+import com.troplo.privateuploader.data.model.UploadTarget
 import io.socket.client.Socket
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,6 +23,8 @@ object ChatStore {
     var associationId = MutableStateFlow(0)
     var typers = MutableStateFlow(emptyList<Typing>())
     var jumpToMessage = MutableStateFlow(0)
+    // To upload to TPU, uses URI Android system
+    var attachmentsToUpload = mutableStateListOf<UploadTarget>()
 
     val chats: StateFlow<List<Chat>>
         get() = _chats

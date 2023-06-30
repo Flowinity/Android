@@ -8,6 +8,9 @@ fun getCurrentRouteTitle(route: String): String {
         NavRoute.SettingsUpload.path -> "Upload"
         NavRoute.Chat.path -> "Chat"
         NavRoute.SettingsChangelog.path -> "Changelog"
+        NavRoute.SettingsAccount.path -> "My Account"
+        NavRoute.SettingsPreferences.path -> "Preferences"
+        NavRoute.Friends.path -> "Friends"
         else -> "PrivateUploader"
     }
 }
@@ -20,6 +23,7 @@ sealed class NavRoute(val path: String) {
     object SettingsAccount : NavRoute("settings/account")
     object SettingsUpload : NavRoute("settings/upload")
     object SettingsChangelog : NavRoute("settings/changelog")
+    object SettingsPreferences : NavRoute("settings/preferences")
     object Friends : NavRoute("friends")
 
     object Chat : NavRoute("chat") {

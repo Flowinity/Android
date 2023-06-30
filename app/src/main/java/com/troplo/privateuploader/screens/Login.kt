@@ -137,17 +137,19 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 private fun DefaultPreview() {
-    PrivateUploaderTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            LoginScreen(
-                onLoginSuccess = {
+    PrivateUploaderTheme(
+        content = {
+            Surface(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                LoginScreen(
+                    onLoginSuccess = {
 
-                }
-            )
+                    }
+                )
+            }
         }
-    }
+    )
 }
 
 class LoginViewModel : ViewModel() {

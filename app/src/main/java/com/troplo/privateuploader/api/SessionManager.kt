@@ -6,10 +6,17 @@ import com.google.gson.Gson
 import com.troplo.privateuploader.BuildConfig
 import com.troplo.privateuploader.R
 import com.troplo.privateuploader.data.model.User
+import kotlinx.coroutines.flow.MutableStateFlow
+
+enum class ThemeOption {
+    Dark, Light, System, AMOLED
+}
 
 class SessionManager(context: Context) {
     private var prefs: SharedPreferences =
         context.getSharedPreferences(context.getString(R.string.app_name), Context.MODE_PRIVATE)
+
+    val theme = MutableStateFlow(getTheme())
 
     companion object {
         const val USER_TOKEN = "token"
@@ -85,5 +92,31 @@ class SessionManager(context: Context) {
         val editor = prefs.edit()
         editor.putBoolean("debugMode", debug)
         editor.apply()
+    }
+
+    fun getTheme(): ThemeOption {
+        val theme = prefs.getString("theme", ThemeOption.System.name)
+        return if(theme == null) {
+            ThemeOption.System
+        } else {
+            ThemeOption.valueOf(theme)
+        }
+    }
+
+    fun setTheme(theme: ThemeOption) {
+        val editor = prefs.edit()
+        editor.putString("theme", theme.name)
+        editor.apply()
+        this.theme.value = theme
+    }
+
+    fun setColor(color: String) {
+        val editor = prefs.edit()
+        editor.putString("color", color)
+        editor.apply()
+    }
+
+    fun getColor(): String? {
+        return prefs.getString("color", null)
     }
 }

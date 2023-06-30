@@ -53,16 +53,22 @@ class MainActivity : ComponentActivity() {
         }
         if (token != null) {
             setContent {
-                PrivateUploaderTheme {
-                    MainScreen()
-                }
+                PrivateUploaderTheme(
+                    selected = SessionManager(this).theme,
+                    content = {
+                        MainScreen()
+                    }
+                )
             }
         } else {
             TpuApi.init("", this)
             setContent {
-                PrivateUploaderTheme {
-                    MainScreen()
-                }
+                PrivateUploaderTheme(
+                    selected = SessionManager(this).theme,
+                    content = {
+                        MainScreen()
+                    }
+                )
             }
         }
         super.onCreate(savedInstanceState)

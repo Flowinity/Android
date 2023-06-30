@@ -7,17 +7,19 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Send
@@ -32,11 +34,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -46,7 +48,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -54,13 +55,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.troplo.privateuploader.api.ChatStore
+import com.troplo.privateuploader.api.RequestBodyWithProgress
 import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.api.stores.UserStore
+import com.troplo.privateuploader.components.chat.Attachment
 import com.troplo.privateuploader.components.chat.Message
 import com.troplo.privateuploader.components.chat.MessageActions
+import com.troplo.privateuploader.components.chat.attachment.UriPreview
 import com.troplo.privateuploader.components.core.InfiniteListHandler
 import com.troplo.privateuploader.components.core.NavRoute
 import com.troplo.privateuploader.components.core.OverlappingPanelsState
@@ -74,14 +78,17 @@ import com.troplo.privateuploader.data.model.EmbedResolutionEvent
 import com.troplo.privateuploader.data.model.Message
 import com.troplo.privateuploader.data.model.MessageEvent
 import com.troplo.privateuploader.data.model.MessageRequest
+import com.troplo.privateuploader.data.model.UploadTarget
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.MultipartBody
 import org.json.JSONObject
 import retrofit2.HttpException
 import java.util.Date
 import com.troplo.privateuploader.data.model.Message as MessageModel
+
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -104,6 +111,10 @@ fun ChatScreen(
     val jumpToMessage = ChatStore.jumpToMessage.collectAsState()
     val attachment = remember { mutableStateOf(false) }
 
+    if(attachment.value) {
+        Attachment(openBottomSheet = attachment)
+    }
+    
     if (associationId == 0 || associationId == null) {
         val lastChatId = SessionManager(context).getLastChatId()
         associationId = lastChatId
@@ -121,166 +132,165 @@ fun ChatScreen(
         chatViewModel.newMessage.value = true
     }
 
-    LaunchedEffect(chatViewModel.newMessage.value) {
-        chatViewModel.newMessage.value = false
-        if(chatViewModel.jumpToBottom.value) {
-            messagesReset()
-        }
-        listState.animateScrollToItem(0)
-    }
-
-    LaunchedEffect(Unit) {
-        chatViewModel.getMessages(associationId).also {
-            loading.value = false
-        }
-    }
-
-    // Monitor jumpToMessage to jump to specific message contexts
-    LaunchedEffect(jumpToMessage.value) {
-        if (jumpToMessage.value != 0) {
-            chatViewModel.messages.value = null
-            chatViewModel.jumpToBottom.value = true
-            chatViewModel.getMessages(associationId, jumpToMessage.value + 20, listState)
-        }
-    }
-
-    LaunchedEffect(message.value) {
-        if (message.value.isNotEmpty()) {
-            chatViewModel.typing(associationId)
-        }
-        delay(3000)
-    }
-
     Scaffold(
         bottomBar = {
-            if (editId.value != 0) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = MaterialTheme.colorScheme.onSurface
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Editing message",
-                            modifier = Modifier.padding(start = 16.dp, bottom = 4.dp)
-                        )
-
-                        IconButton(
-                            onClick = {
-                                editId.value = 0
-                                message.value = ""
-                            },
-                            modifier = Modifier.padding(end = 16.dp, bottom = 4.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Stop editing",
-                                modifier = Modifier.padding(end = 16.dp, bottom = 4.dp)
-                            )
-                        }
-                    }
-                }
-            }
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                Box(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    val focusRequester = FocusRequester()
-                    val keyboardController = LocalSoftwareKeyboardController.current
-
-                    OutlinedTextField(
-                        value = message.value,
-                        onValueChange = { message.value = it },
-                        label = { Text("Message") },
-                        placeholder = { Text("Keep it civil") },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
-                            capitalization = KeyboardCapitalization.Sentences
-                        ),
+                if (ChatStore.attachmentsToUpload.size > 0) {
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp)
-                            .padding(top = 16.dp)
-                            .focusRequester(focusRequester),
-                        supportingText = {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                val typersState = ChatStore.typers.collectAsState()
-                                typersState.value.let { typers ->
-                                    if (typers.isNotEmpty()) {
-                                        val names =
-                                            typers.filter { it.chatId == ChatStore.getChat()?.id }
-                                                .map { it.user.username }
-                                        Text(
-                                            text = "${names.joinToString(", ")} is typing..."
-                                        )
-                                    } else {
-                                        Text(
-                                            text = ""
-                                        )
-                                    }
+                            .padding(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        )
+                    ) {
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            ChatStore.attachmentsToUpload.forEach {
+                                item(
+                                    key = it.uri
+                                ) {
+                                    UriPreview(it, onClick = {
+                                        ChatStore.attachmentsToUpload.remove(it)
+                                    })
                                 }
-                                Text("${message.value.length}/4000")
                             }
-                        },
-                        trailingIcon = {
+                        }
+                    }
+                }
+                if (editId.value != 0) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Editing message",
+                                modifier = Modifier.padding(start = 16.dp, bottom = 4.dp)
+                            )
+
                             IconButton(
                                 onClick = {
-                                    chatViewModel.sendMessage(
-                                        token,
-                                        associationId,
-                                        message.value,
-                                        context,
-                                        editId.value
-                                    )
-                                    message.value = ""
                                     editId.value = 0
-                                }
+                                    message.value = ""
+                                },
+                                modifier = Modifier.padding(end = 16.dp, bottom = 4.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Filled.Send,
-                                    contentDescription = "Send message"
-                                )
-                            }
-                        },
-                        leadingIcon = {
-                            IconButton(
-                                onClick = {
-                                    attachment.value = !attachment.value
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Add,
-                                    contentDescription = "Add attachment"
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Stop editing",
+                                    modifier = Modifier.padding(end = 16.dp, bottom = 4.dp)
                                 )
                             }
                         }
-                    )
-
-                    // hide keyboard when sidebar is open
-                    // TODO: fix
-                      if (panelsState.offset.value > 5 || panelsState.offset.value < -5) {
-                        keyboardController?.hide()
                     }
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Box() {
+                        val focusRequester = FocusRequester()
+                        val keyboardController = LocalSoftwareKeyboardController.current
 
-                    // Autofocus the input on mount
-                   /* if (!initialLoad.value) {
+                        OutlinedTextField(
+                            value = message.value,
+                            onValueChange = { message.value = it },
+                            label = { Text("Message") },
+                            placeholder = { Text("Keep it civil") },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Text,
+                                capitalization = KeyboardCapitalization.Sentences
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                                .padding(top = 16.dp)
+                                .focusRequester(focusRequester),
+                            supportingText = {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    val typersState = ChatStore.typers.collectAsState()
+                                    typersState.value.let { typers ->
+                                        if (typers.isNotEmpty()) {
+                                            val names =
+                                                typers.filter { it.chatId == ChatStore.getChat()?.id }
+                                                    .map { it.user.username }
+                                            Text(
+                                                text = "${names.joinToString(", ")} is typing..."
+                                            )
+                                        } else {
+                                            Text(
+                                                text = ""
+                                            )
+                                        }
+                                    }
+                                    Text("${message.value.length}/4000")
+                                }
+                            },
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = {
+                                        chatViewModel.sendMessage(
+                                            token,
+                                            associationId,
+                                            message.value,
+                                            context,
+                                            editId.value
+                                        )
+                                        message.value = ""
+                                        editId.value = 0
+                                    },
+                                    enabled = ChatStore.attachmentsToUpload.none { it.url == null } && message.value.isNotEmpty()
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Send,
+                                        contentDescription = "Send message"
+                                    )
+                                }
+                            },
+                            leadingIcon = {
+                                IconButton(
+                                    onClick = {
+                                        attachment.value = !attachment.value
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.AddCircle,
+                                        contentDescription = "Add attachment"
+                                    )
+                                }
+                            }
+                        )
+
+                        // hide keyboard when sidebar is open
+                        // TODO: fix
+                        if (panelsState.offset.value > 5 || panelsState.offset.value < -5) {
+                            keyboardController?.hide()
+                        }
+
+                        // Autofocus the input on mount
+                        /* if (!initialLoad.value) {
                         DisposableEffect(Unit) {
                             focusRequester.requestFocus()
                             onDispose { }
                         }
                         initialLoad.value = true
                     }*/
+                    }
                 }
             }
         }
@@ -342,6 +352,45 @@ fun ChatScreen(
 
     if (messageCtx.value) {
         MessageActions(messageCtxMessage, messageCtx, editId, message)
+    }
+
+
+    // Watchers
+    LaunchedEffect(chatViewModel.newMessage.value) {
+        chatViewModel.newMessage.value = false
+        if(chatViewModel.jumpToBottom.value) {
+            messagesReset()
+        }
+        listState.animateScrollToItem(0)
+    }
+
+    LaunchedEffect(Unit) {
+        chatViewModel.getMessages(associationId).also {
+            loading.value = false
+        }
+    }
+
+    // Monitor jumpToMessage to jump to specific message contexts
+    LaunchedEffect(jumpToMessage.value) {
+        if (jumpToMessage.value != 0) {
+            chatViewModel.messages.value = null
+            chatViewModel.jumpToBottom.value = true
+            chatViewModel.getMessages(associationId, jumpToMessage.value + 20, listState)
+        }
+    }
+
+    LaunchedEffect(message.value) {
+        if (message.value.isNotEmpty()) {
+            chatViewModel.typing(associationId)
+        }
+        delay(3000)
+    }
+
+    LaunchedEffect(ChatStore.attachmentsToUpload.size) {
+        ChatStore.attachmentsToUpload.forEach { file ->
+            if(file.started) return@LaunchedEffect
+            chatViewModel.uploadAttachment(file, context)
+        }
     }
 }
 
@@ -555,9 +604,13 @@ class ChatViewModel : ViewModel() {
                     messages.value =
                         listOf(pendingMessage, *messages.value.orEmpty().toTypedArray())
                     try {
+                        // ensure url is populated for attachments
+                        val uploadedAttachments = ChatStore.attachmentsToUpload.filter { it.url != null }.map { it.url!! }
+                        ChatStore.attachmentsToUpload = mutableStateListOf()
                         val response = TpuApi.retrofitService.sendMessage(
                             associationId, MessageRequest(
-                                message
+                                message,
+                                attachments = uploadedAttachments
                             )
                         ).execute()
                         launch(Dispatchers.IO) {
@@ -615,6 +668,41 @@ class ChatViewModel : ViewModel() {
 
     fun typing(associationId: Int) {
         socket?.emit("typing", associationId)
+    }
+
+    fun uploadAttachment(file: UploadTarget, context: Context) {
+        val converted = TpuFunctions.uriToFile(file.uri, context, file.name)
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val requestFile = RequestBodyWithProgress(converted, RequestBodyWithProgress.ContentType.PNG_IMAGE, progressCallback = { progress ->
+                Log.d("TPU.Upload", "Progress: $progress")
+                ChatStore.attachmentsToUpload.find { it.uri == file.uri }
+                    ?: return@RequestBodyWithProgress
+                ChatStore.attachmentsToUpload.removeIf { it.uri == file.uri }
+                ChatStore.attachmentsToUpload.add(file.copy(
+                    progress = progress,
+                    started = true
+                ))
+            })
+            val body = MultipartBody.Part.createFormData("attachment", file.name, requestFile)
+            val response = TpuApi.retrofitService.uploadFile(body).execute()
+            withContext(Dispatchers.Main) {
+                if (response.isSuccessful) {
+                    val attachment = response.body()
+                    if (attachment != null) {
+                        Log.d("TPU.Upload", "Success: ${attachment.url}")
+                        ChatStore.attachmentsToUpload.find { it.uri == file.uri }
+                            ?: return@withContext
+                        ChatStore.attachmentsToUpload.removeIf { it.uri == file.uri }
+                        ChatStore.attachmentsToUpload.add(file.copy(
+                            url = attachment.upload.attachment,
+                            progress = 100f,
+                            started = true
+                        ))
+                    }
+                }
+            }
+        }
     }
 }
 
