@@ -9,3 +9,11 @@ data class LoginRequest(
     @field:Json(name = "password") val password: String,
     @field:Json(name = "code") val code: String,
 )
+
+@JsonClass(generateAdapter = true)
+data class RegisterRequest(
+    @field:Json(name = "username") val username: String,
+    @field:Json(name = "password") val password: String,
+    @field:Json(name = "email") val email: String,
+    @field:Json(name = "inviteKey") val inviteKey: String = ""
+)

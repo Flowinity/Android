@@ -19,13 +19,10 @@ import com.troplo.privateuploader.data.model.User
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 @Preview
-fun UserBanner(user: State<User?> = UserStore.user.collectAsState()) {
+fun UserBanner(banner: String? = UserStore.user.collectAsState().value?.banner) {
     Box {
         GlideImage(
-            model = if (user.value?.banner != null) TpuFunctions.image(
-                user.value?.banner,
-                null
-            ) else "https://i.troplo.com/i/a050d6f271c3.png",
+            model = if (banner != null) TpuFunctions.image(banner, null) else "https://i.troplo.com/i/a050d6f271c3.png",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()

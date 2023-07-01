@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Paint
 import android.net.Uri
+import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.widget.TextView
@@ -26,6 +27,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.res.ResourcesCompat
+import com.troplo.privateuploader.TpuApp
 import io.noties.markwon.AbstractMarkwonPlugin
 import io.noties.markwon.Markwon
 import io.noties.markwon.MarkwonConfiguration
@@ -33,6 +35,9 @@ import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.html.HtmlPlugin
 import io.noties.markwon.linkify.LinkifyPlugin
+import io.wax911.emojify.parser.parseToHtmlDecimal
+import io.wax911.emojify.parser.parseToUnicode
+
 
 @Composable
 fun MarkdownText(
@@ -58,7 +63,7 @@ fun MarkdownText(
     val preventLinkClick = remember { mutableStateOf(false) }
     val markdownRender: Markwon =
         remember { createMarkdownRender(context, onLinkClicked, preventLinkClick) }
-
+    Log.d("Test", "Test")
     AndroidView(
         modifier = modifier,
         factory = { ctx ->
@@ -103,7 +108,7 @@ private fun createTextView(
     style: TextStyle,
     @IdRes viewId: Int? = null,
     onClick: (() -> Unit)? = null,
-    onLongClick: (() -> Unit)? = null
+    onLongClick: (() -> Unit)? = null,
 ): TextView {
     val textColor = color.takeOrElse { style.color.takeOrElse { defaultColor } }
     val mergedStyle = style.merge(

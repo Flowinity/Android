@@ -55,6 +55,7 @@ object UserStore {
                 user.value = TpuApi.retrofitService.getUser().execute().body()
                 SessionManager(context).setUserCache(user.value)
                 FriendStore.initializeFriends()
+                CollectionStore.initializeCollections()
 
                 if (user.value !== null) {
                     val token = SessionManager(context).getFCMToken()

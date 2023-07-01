@@ -3,20 +3,39 @@ package com.troplo.privateuploader
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.startup.AppInitializer
 import com.google.android.gms.common.GoogleApiAvailability
+import com.troplo.privateuploader.api.RequestBodyWithProgress
 import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.SocketHandlerService
 import com.troplo.privateuploader.api.TpuApi
+import com.troplo.privateuploader.api.TpuFunctions
+import com.troplo.privateuploader.api.stores.CollectionStore
+import com.troplo.privateuploader.api.stores.UploadStore
 import com.troplo.privateuploader.api.stores.UserStore
+import com.troplo.privateuploader.data.model.UploadTarget
 import com.troplo.privateuploader.ui.theme.PrivateUploaderTheme
+import io.wax911.emojify.EmojiManager
+import io.wax911.emojify.initializer.EmojiInitializer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+
 
 class MainActivity : ComponentActivity() {
     override fun onResume() {
@@ -128,6 +147,111 @@ class MainActivity : ComponentActivity() {
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
+    }
+
+    fun upload(files: List<UploadTarget>) {
+        UploadStore.uploads = files.toMutableList()
+
+        val filesBody = files.map { file ->
+            TpuFunctions.uriToFile(file.uri, this, file.name)
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            var totalSize = 0L
+
+            // Calculate total file size
+            filesBody.forEach { file ->
+                totalSize += file.length()
+            }
+
+            val parts = mutableListOf<MultipartBody.Part>()
+
+            val requestFile = RequestBodyWithProgress(
+                filesBody,
+                RequestBodyWithProgress.ContentType.ANY,
+                progressCallback = { progress ->
+                    Log.d("TPU.Upload", "Progress: $progress")
+                    UploadStore.globalProgress.value = progress
+                }
+            )
+
+            filesBody.forEach { file ->
+                val part = MultipartBody.Part.createFormData(
+                    "attachments",
+                    file.name,
+                    requestFile
+                )
+                parts.add(part)
+            }
+
+            val response = TpuApi.retrofitService.uploadFiles(parts).execute()
+            response.body()?.let {
+                UploadStore.globalProgress.value = 0f
+                UploadStore.uploads = mutableListOf()
+            }
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == UploadStore.intentCode && resultCode == RESULT_OK) {
+            if (data != null) {
+                if (data.clipData != null) {
+                    // Multiple files were selected
+                    val clipData = data.clipData
+                    if (clipData != null) {
+                        val files = mutableListOf<UploadTarget>()
+                        for (i in 0 until clipData.itemCount) {
+                            Log.d("TPU.Upload", "File: ${clipData.getItemAt(i).uri}")
+                            val uri = clipData.getItemAt(i).uri
+                            files.add(UploadTarget(
+                                uri = uri,
+                                name = getFileName(uri) ?: "unknown.file"
+                            ))
+                        }
+                        upload(files)
+                    }
+                } else if (data.data != null) {
+                    val uri = data.data
+                    if (uri != null) {
+                        upload(listOf(UploadTarget(
+                            uri = uri,
+                            name = getFileName(uri) ?: "unknown.file"
+                        )))
+                    }
+                }
+            }
+        }
+    }
+
+    private fun getFileName(uri: Uri): String {
+        var result: String? = null
+        if (uri.scheme == "content") {
+            val cursor = contentResolver.query(uri, null, null, null, null)
+            cursor.use { c ->
+                if (c != null && c.moveToFirst()) {
+                    val index = c.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    result = c.getString(index)
+                }
+            }
+        }
+        if (result == null) {
+            result = uri.path
+            val cut = result!!.lastIndexOf('/')
+            if (cut != -1) {
+                result = result!!.substring(cut + 1)
+            }
+        }
+        return result as String
+    }
+
+
+    internal val emojiManager: EmojiManager by lazy {
+        // should already be initialized if we haven't disabled initialization in manifest
+        // see: https://developer.android.com/topic/libraries/app-startup#disable-individual
+        AppInitializer.getInstance(this)
+            .initializeComponent(EmojiInitializer::class.java)
     }
 }
 

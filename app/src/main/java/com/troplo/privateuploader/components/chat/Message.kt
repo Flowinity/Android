@@ -102,21 +102,26 @@ fun Message(
 
         Row(
             modifier = if (normal && message.replyId == null) Modifier.padding(
-                start = 16.dp,
+                start = 12.dp,
                 top = 16.dp,
                 end = 16.dp
-            ) else Modifier.padding(start = 16.dp, end = 16.dp)
+            ) else Modifier.padding(start = 12.dp, end = 16.dp)
         ) {
             if (normal) {
-                UserAvatar(
-                    avatar = message.user?.avatar,
-                    username = message.user?.username ?: "Deleted User",
-                    modifier = Modifier.align(Alignment.Top),
-                    showStatus = false
-                )
+                Box(
+                    modifier = Modifier
+                        .padding(end = 4.dp)
+                        .align(Alignment.Top)
+                ) {
+                    UserAvatar(
+                        avatar = message.user?.avatar,
+                        username = message.user?.username ?: "Deleted User",
+                        showStatus = false
+                    )
+                }
             }
             if (!normal) {
-                Spacer(modifier = Modifier.width(40.dp))
+                Spacer(modifier = Modifier.width(44.dp))
             }
             Column(modifier = Modifier.padding(start = 8.dp)) {
                 if (normal) {

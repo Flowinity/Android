@@ -34,7 +34,7 @@ fun TopBarNav(navController: NavController, openPanel: () -> Unit) {
     val chatSearch = remember { mutableStateOf(false) }
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    if (currentRoute == null || currentRoute == NavRoute.Login.path) {
+    if (currentRoute == null || currentRoute == NavRoute.Login.path || currentRoute == NavRoute.Register.path) {
         return
     }
     val chats = ChatStore.chats.collectAsState()

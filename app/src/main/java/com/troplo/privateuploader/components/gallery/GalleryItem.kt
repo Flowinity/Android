@@ -6,19 +6,20 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
@@ -50,29 +51,40 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import coil.size.Size
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.api.imageLoader
 import com.troplo.privateuploader.api.stores.UserStore
-import com.troplo.privateuploader.data.model.Collection
+import com.troplo.privateuploader.components.gallery.dialogs.AddToCollectionDialog
+import com.troplo.privateuploader.data.model.PartialCollection
 import com.troplo.privateuploader.data.model.Upload
 import com.troplo.privateuploader.data.model.defaultUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class,
+    ExperimentalLayoutApi::class
+)
 @Composable
 @Preview
-fun GalleryItem(@PreviewParameter(SampleUploadProvider::class) item: Upload, hide: Boolean = false, onClick: () -> Unit = {}) {
+fun GalleryItem(
+    @PreviewParameter(SampleUploadProvider::class) item: Upload,
+    hide: Boolean = false,
+    onClick: () -> Unit = {},
+) {
     val itemStarred = remember { mutableStateOf(item.starred) }
+    val addToCollection = remember { mutableStateOf(false) }
+
+    if (addToCollection.value) {
+        AddToCollectionDialog(open = addToCollection, item = item)
+    }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(4.dp)
+            .padding(8.dp)
             .clickable(
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
@@ -81,7 +93,7 @@ fun GalleryItem(@PreviewParameter(SampleUploadProvider::class) item: Upload, hid
             },
     ) {
         Column {
-            if(item.type !== "image-tenor") {
+            if (item.type !== "image-tenor") {
                 TopAppBar(
                     title = {
                         Text(
@@ -96,7 +108,7 @@ fun GalleryItem(@PreviewParameter(SampleUploadProvider::class) item: Upload, hid
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
                 if (item.type == "image" || item.type == "image-tenor") {
-                    val url = if(item.type == "image-tenor") {
+                    val url = if (item.type == "image-tenor") {
                         item.attachment
                     } else {
                         TpuFunctions.image(item.attachment, null)
@@ -106,7 +118,8 @@ fun GalleryItem(@PreviewParameter(SampleUploadProvider::class) item: Upload, hid
                         painter = rememberAsyncImagePainter(
                             ImageRequest.Builder(LocalContext.current)
                                 .data(data = url)
-                                .apply(block = fun ImageRequest.Builder.() {}).build(), imageLoader = imageLoader(LocalContext.current)
+                                .apply(block = fun ImageRequest.Builder.() {}).build(),
+                            imageLoader = imageLoader(LocalContext.current)
                         ),
                         modifier = Modifier
                             .requiredHeight(200.dp)
@@ -124,8 +137,8 @@ fun GalleryItem(@PreviewParameter(SampleUploadProvider::class) item: Upload, hid
                 }
             }
 
-            if(!hide) {
-                Column(modifier = Modifier.padding(start = 16.dp)) {
+            if (!hide) {
+                Column(modifier = Modifier.padding(start = 16.dp, top = 4.dp)) {
                     Text(
                         text = "Type: " + when (item.type) {
                             "paste" -> "Legacy Paste"
@@ -139,9 +152,21 @@ fun GalleryItem(@PreviewParameter(SampleUploadProvider::class) item: Upload, hid
                             TpuFunctions.formatDate(item.createdAt)
                         }"
                     )
-                    Text(text = "File size: ${item.fileSize}")
+                    Text(text = "Size: ${TpuFunctions.fileSize(item.fileSize)}")
                 }
-                Row(modifier = Modifier.padding(start = 16.dp)) {
+                FlowRow(modifier = Modifier.padding(start = 16.dp)) {
+                    SuggestionChip(
+                        modifier = Modifier.padding(end = 4.dp),
+                        onClick = {
+                            addToCollection.value = true
+                        },
+                        label = {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Add to collection"
+                            )
+                        }
+                    )
                     item.collections.forEach { collection ->
                         // Chip next to each other
                         SuggestionChip(
@@ -157,7 +182,9 @@ fun GalleryItem(@PreviewParameter(SampleUploadProvider::class) item: Upload, hid
                 }
                 Divider()
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(4.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(4.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {
                     FilledTonalIconButton(
@@ -273,7 +300,7 @@ fun GalleryItem(@PreviewParameter(SampleUploadProvider::class) item: Upload, hid
                 }
             }
         }
-        
+
     }
 }
 
@@ -289,15 +316,15 @@ class SampleUploadProvider : PreviewParameterProvider<Upload> {
                 createdAt = "2021-08-01T00:00:00.000Z",
                 fileSize = 1000,
                 collections = listOf(
-                    Collection(
+                    PartialCollection(
                         id = 1,
                         name = "Test"
                     ),
-                    Collection(
+                    PartialCollection(
                         id = 2,
                         name = "Test2"
                     ),
-                    Collection(
+                    PartialCollection(
                         id = 3,
                         name = "Test3"
                     )

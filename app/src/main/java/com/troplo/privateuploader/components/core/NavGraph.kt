@@ -20,8 +20,11 @@ import com.troplo.privateuploader.screens.Friends
 import com.troplo.privateuploader.screens.GalleryScreen
 import com.troplo.privateuploader.screens.HomeScreen
 import com.troplo.privateuploader.screens.LoginScreen
+import com.troplo.privateuploader.screens.RegisterScreen
 import com.troplo.privateuploader.screens.settings.ChangelogLayout
 import com.troplo.privateuploader.screens.settings.SettingsAccountScreen
+import com.troplo.privateuploader.screens.settings.SettingsCollectionItemScreen
+import com.troplo.privateuploader.screens.settings.SettingsCollectionsScreen
 import com.troplo.privateuploader.screens.settings.SettingsPreferencesScreen
 import com.troplo.privateuploader.screens.settings.SettingsScreen
 import com.troplo.privateuploader.screens.settings.SettingsUploadScreen
@@ -59,6 +62,9 @@ fun NavGraph(
         addFriendsScreen(navController, this)
         addAccountSettingsScreen(navController, this)
         addPreferencesSettingsScreen(navController, this)
+        addCollectionSettingsScreen(navController, this)
+        addCollectionItemSettingsScreen(navController, this)
+        addRegisterScreen(navController, this)
     }
 }
 
@@ -71,6 +77,9 @@ private fun addLoginScreen(
             onLoginSuccess = {
                 Log.d("TPU.Untagged", "LoginScreen: onLoginSuccess")
                 navController.navigate(NavRoute.Home.path)
+            },
+            navigate = { subItem ->
+                navController.navigate(subItem)
             }
         )
     }
@@ -140,7 +149,7 @@ private fun addChatScreen(
         }
         ChatScreen(
             chatId = chatId,
-            panelsState = panelsState
+            panelsState = panelsState,
         )
     }
 }
@@ -188,5 +197,52 @@ private fun addPreferencesSettingsScreen(
 ) {
     navGraphBuilder.composable(route = NavRoute.SettingsPreferences.path) {
         SettingsPreferencesScreen()
+    }
+}
+
+private fun addCollectionSettingsScreen(
+    navController: NavHostController,
+    navGraphBuilder: NavGraphBuilder,
+) {
+    navGraphBuilder.composable(route = NavRoute.SettingsCollections.path) {
+        SettingsCollectionsScreen(
+            navigate = { subItem ->
+                navController.navigate(subItem)
+            })
+    }
+}
+
+private fun addCollectionItemSettingsScreen(
+    navController: NavHostController,
+    navGraphBuilder: NavGraphBuilder,
+) {
+    navGraphBuilder.composable(
+        route = "${NavRoute.SettingsCollectionItem.path}/{collectionId}",
+        arguments = listOf(
+            navArgument("collectionId") {
+                type = NavType.IntType
+            }
+        )
+    ) { backStackEntry ->
+        val collectionId = backStackEntry.arguments?.getInt("collectionId")
+        SettingsCollectionItemScreen(collectionId, navigate = { subItem ->
+            navController.navigate(subItem)
+        })
+    }
+}
+
+private fun addRegisterScreen(
+    navController: NavHostController,
+    navGraphBuilder: NavGraphBuilder,
+) {
+    navGraphBuilder.composable(route = NavRoute.Register.path) {
+        RegisterScreen(
+            onLoginSuccess = {
+                Log.d("TPU.Untagged", "LoginScreen: onLoginSuccess")
+                navController.navigate(NavRoute.Home.path)
+            },
+            navigate = { subItem ->
+                navController.navigate(subItem)
+            })
     }
 }

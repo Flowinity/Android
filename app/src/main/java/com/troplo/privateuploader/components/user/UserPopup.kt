@@ -55,7 +55,7 @@ fun UserPopup(
             windowInsets = windowInsets,
             dragHandle = { }
         ) {
-            UserBanner(user = viewModel.user)
+            UserBanner(viewModel.user.value?.banner)
             Column(modifier = Modifier.padding(16.dp)) {
                 Row {
                     UserAvatar(

@@ -19,6 +19,8 @@
         android:theme="@style/Theme.PrivateUploader"
         android:usesCleartextTraffic="true"
         android:windowSoftInputMode="adjustResize"
+        android:enableOnBackInvokedCallback="true"
+        android:name="com.troplo.privateuploader.TpuApp"
         tools:targetApi="31">
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
@@ -71,5 +73,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".UploadResponseActivity"
+            android:exported="true"
+            ></activity>
     </application>
 </manifest>

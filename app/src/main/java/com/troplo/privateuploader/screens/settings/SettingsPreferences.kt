@@ -1,5 +1,8 @@
 package com.troplo.privateuploader.screens.settings
 
+import android.content.ComponentName
+import android.content.Intent
+import android.content.pm.PackageManager
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,11 +13,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -32,6 +37,10 @@ import com.troplo.privateuploader.ui.theme.Primary
 import io.mhssn.colorpicker.ColorPicker
 import io.mhssn.colorpicker.ColorPickerType
 import io.mhssn.colorpicker.ext.toHex
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -42,10 +51,23 @@ fun SettingsPreferencesScreen() {
         val dialog = remember { mutableStateOf(false) }
         val selected = remember { mutableStateOf("") }
         val selectedName = remember { mutableStateOf("") }
-        val currentTheme = remember { mutableStateOf(SessionManager(context).getTheme()) }
+        val currentTheme = SessionManager(context).theme.collectAsState()
+        val packageManager: PackageManager = context.packageManager
 
         if (dialog.value) {
             ConfigureDialog(open = dialog, key = selected.value, name = selectedName.value)
+        }
+
+        fun setTheme(theme: ThemeOption) {
+            CoroutineScope(Dispatchers.IO).launch {
+                SessionManager(context).setTheme(theme)
+                delay(100)
+                val intent: Intent = packageManager.getLaunchIntentForPackage(context.packageName)!!
+                val componentName: ComponentName = intent.component!!
+                val restartIntent: Intent = Intent.makeRestartActivityTask(componentName)
+                context.startActivity(restartIntent)
+                Runtime.getRuntime().exit(0)
+            }
         }
 
         LazyColumn(
@@ -64,18 +86,17 @@ fun SettingsPreferencesScreen() {
                         modifier = Modifier
                             .padding(16.dp)
                     ) {
-                        Text(text = "Select Theme:")
+                        Text("Select Theme:")
+                        Text("The app will restart when you change the theme.", modifier = Modifier.padding(bottom = 8.dp), style = MaterialTheme.typography.bodySmall)
                         Column {
                             ThemeOption.values().forEach { theme ->
                                 Row(Modifier.selectable(theme == currentTheme.value, onClick = {
-                                    currentTheme.value = theme
-                                    SessionManager(context).setTheme(theme)
+                                    setTheme(theme)
                                 })) {
                                     RadioButton(
                                         selected = theme == currentTheme.value,
                                         onClick = {
-                                            currentTheme.value = theme
-                                            SessionManager(context).setTheme(theme)
+                                            setTheme(theme)
                                         }
                                     )
                                     Text(

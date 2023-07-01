@@ -35,10 +35,12 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,7 +58,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.troplo.privateuploader.api.ChatStore
-import com.troplo.privateuploader.api.RequestBodyWithProgress
 import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.TpuApi
@@ -120,6 +121,10 @@ fun ChatScreen(
                     .align(Alignment.Center)
             )
         }
+    }
+
+    DisposableEffect(chatViewModel) {
+        onDispose { chatViewModel.onStop() }
     }
 
     if (attachment.value) {
@@ -234,7 +239,7 @@ fun ChatScreen(
 
                         OutlinedTextField(
                             value = message.value,
-                            onValueChange = { message.value = it },
+                            onValueChange = { message.value = it; chatViewModel.typing(associationId) },
                             label = { Text("Message") },
                             placeholder = { Text("Keep it civil") },
                             keyboardOptions = KeyboardOptions(
@@ -413,13 +418,6 @@ fun ChatScreen(
         }
     }
 
-    LaunchedEffect(message.value) {
-        if (message.value.isNotEmpty()) {
-            chatViewModel.typing(associationId)
-        }
-        delay(3000)
-    }
-
     LaunchedEffect(ChatStore.attachmentsToUpload.size) {
         ChatStore.attachmentsToUpload.forEach { file ->
             if (file.started) return@LaunchedEffect
@@ -436,6 +434,13 @@ class ChatViewModel : ViewModel() {
     val loading = mutableStateOf(false)
     val newMessage = mutableStateOf(false)
     val jumpToBottom = mutableStateOf(false)
+    private val lastTypingEvent: MutableState<Long> = mutableLongStateOf(0L)
+
+    fun onStop() {
+        socket?.off("embedResolution")
+        socket?.off("messageDelete")
+        socket?.off("edit")
+    }
 
     init {
         Log.d("TPU.Untagged", "Route Param: ${NavRoute.Chat}}")
@@ -717,11 +722,16 @@ class ChatViewModel : ViewModel() {
     }
 
     fun typing(associationId: Int) {
-        socket?.emit("typing", associationId)
+        if (Date().time - lastTypingEvent.value > 3000) {
+            lastTypingEvent.value = Date().time
+            Log.d("TPU.Chat", "Typing")
+            socket?.emit("typing", associationId)
+        }
     }
 
     fun uploadAttachment(file: UploadTarget, context: Context) {
-        val converted = TpuFunctions.uriToFile(file.uri, context, file.name)
+        //TODO: rewrite this to use the new upload endpoint
+    /*    val converted = TpuFunctions.uriToFile(file.uri, context, file.name)
 
         viewModelScope.launch(Dispatchers.IO) {
             val requestFile = RequestBodyWithProgress(
@@ -759,25 +769,21 @@ class ChatViewModel : ViewModel() {
                     }
                 }
             }
-        }
+        }*/
     }
 }
 
 private fun compact(message: Message, messages: List<Message>): String {
+    if(message.type != "message" && message.type != null) return "none"
     val index = messages.indexOf(message)
     if (index == messages.size - 1) return "none"
     val previousMessage = messages[index + 1]
 
-    val chainMessages = messages.takeLast(index + 1).takeWhile { it.userId == message.userId }
-    val chainMessagesCount = chainMessages.size
-    Log.d("Chat", "Chain messages: $chainMessagesCount, $chainMessages")
-    val chainMessagesDiff = if(chainMessagesCount > 1) TpuFunctions.getDate(chainMessages.first().createdAt)?.time!! - TpuFunctions.getDate(
-            chainMessages.last().createdAt
-        )?.time!! else 0
+    val chainMessagesDiff = (TpuFunctions.getDate(message.createdAt)?.time ?: 0) - (TpuFunctions.getDate(previousMessage.createdAt)?.time ?: 0)
 
     return if (TpuFunctions.formatDateDay(message.createdAt) != TpuFunctions.formatDateDay(previousMessage.createdAt)) {
         "separator"
-    } else if (message.userId == previousMessage.userId && message.replyId == null && chainMessagesCount < 5 && chainMessagesDiff < 300000) {
+    } else if (message.userId == previousMessage.userId && message.replyId == null && chainMessagesDiff < 300000) {
         "compact"
     } else {
         "none"

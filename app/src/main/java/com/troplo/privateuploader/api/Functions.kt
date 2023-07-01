@@ -86,10 +86,10 @@ object TpuFunctions {
     fun fileSize(size: Int?): String {
         if (size == null || size == 0) return "0B"
         val unit = 1024
-        if (size < unit) return "$size B"
-        val exp = (Math.log(size.toDouble()) / ln(unit.toDouble())).toInt()
+        if (size < unit) return "${size}B"
+        val exp = (ln(size.toDouble()) / ln(unit.toDouble())).toInt()
         val pre = "KMGTPE"[exp - 1] + "i"
-        return String.format("%.1f %sB", size / unit.toDouble().pow(exp.toDouble()), pre)
+        return String.format("%.1f%sB", size / unit.toDouble().pow(exp.toDouble()), pre)
     }
 
     fun getStatusDetails(status: String): Pair<Long, String> {
@@ -119,6 +119,7 @@ object TpuFunctions {
             "r",
             null
         )
+        // get true filename
         val file = File(
             context.cacheDir,
             filename

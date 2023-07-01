@@ -20,7 +20,7 @@ data class Upload(
     @Json(name = "createdAt") val createdAt: String,
     @Json(name = "updatedAt") val updatedAt: String,
     @Json(name = "starred") var starred: Star?,
-    @Json(name = "collections") val collections: List<Collection>,
+    @Json(name = "collections") val collections: List<PartialCollection>,
     @Json(name = "user") val user: User,
 )
 

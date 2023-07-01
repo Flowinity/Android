@@ -9,7 +9,8 @@ data class Message(
     @field:Json(name = "chatId") val chatId: Int,
     @field:Json(name = "userId") val userId: Int,
     @field:Json(name = "content") val content: String,
-    @field:Json(name = "type") val type: String,
+    // Type is null on Colubrina messages
+    @field:Json(name = "type") val type: String?,
     @field:Json(name = "embeds") var embeds: List<Embed>,
     @field:Json(name = "edited") val edited: Boolean,
     @field:Json(name = "editedAt") val editedAt: String?,

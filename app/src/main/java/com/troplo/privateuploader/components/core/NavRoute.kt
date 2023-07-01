@@ -11,22 +11,31 @@ fun getCurrentRouteTitle(route: String): String {
         NavRoute.SettingsAccount.path -> "My Account"
         NavRoute.SettingsPreferences.path -> "Preferences"
         NavRoute.Friends.path -> "Friends"
+        NavRoute.SettingsCollections.path -> "Collections"
         else -> "PrivateUploader"
     }
 }
 
 sealed class NavRoute(val path: String) {
-    object Login : NavRoute("login")
-    object Home : NavRoute("home")
-    object Gallery : NavRoute("gallery")
-    object Settings : NavRoute("settings")
-    object SettingsAccount : NavRoute("settings/account")
-    object SettingsUpload : NavRoute("settings/upload")
-    object SettingsChangelog : NavRoute("settings/changelog")
-    object SettingsPreferences : NavRoute("settings/preferences")
-    object Friends : NavRoute("friends")
-
-    object Chat : NavRoute("chat") {
+    object Login: NavRoute("login")
+    object Home: NavRoute("home")
+    object Gallery: NavRoute("gallery")
+    object Settings: NavRoute("settings")
+    object SettingsAccount: NavRoute("settings/account")
+    object SettingsUpload: NavRoute("settings/upload")
+    object SettingsChangelog: NavRoute("settings/changelog")
+    object SettingsPreferences: NavRoute("settings/preferences")
+    object SettingsCollections: NavRoute("settings/collections")
+    object SettingsCollectionItem: NavRoute("settings/collection") {
+        fun withArgs(collectionId: Int): String {
+            return buildString {
+                append(path)
+                append("/$collectionId")
+            }
+        }
+    }
+    object Friends: NavRoute("friends")
+    object Chat: NavRoute("chat") {
         fun withArgs(chatId: Int): String {
             return buildString {
                 append(path)
@@ -34,6 +43,7 @@ sealed class NavRoute(val path: String) {
             }
         }
     }
+    object Register: NavRoute("register")
 
 
     // build navigation path (for screen navigation)

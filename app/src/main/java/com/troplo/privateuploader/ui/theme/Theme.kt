@@ -11,6 +11,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -48,16 +49,17 @@ fun PrivateUploaderTheme(
     selected: MutableStateFlow<ThemeOption> = SessionManager(LocalContext.current).theme,
 ) {
     var isDark = isSystemInDarkTheme()
+    val select = selected.collectAsState()
     val accent = SessionManager(LocalContext.current).getColor()
-    if (selected.value == ThemeOption.Dark || selected.value == ThemeOption.AMOLED) {
+    if (select.value == ThemeOption.Dark || select.value == ThemeOption.AMOLED) {
         isDark = true
-    } else if (selected.value == ThemeOption.Light) {
+    } else if (select.value == ThemeOption.Light) {
         isDark = false
     }
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
-            Log.d("Theme", "Accent: $accent, Selected: $selected")
+            Log.d("Theme", "Accent: $accent, Selected: $select")
             if (accent != null) {
                 try {
                     dynamicDarkColorScheme(context).copy(
@@ -69,14 +71,11 @@ fun PrivateUploaderTheme(
             }
 
             if (isDark) {
-                if (selected.value == ThemeOption.AMOLED) {
+                if (select.value == ThemeOption.AMOLED) {
                     dynamicDarkColorScheme(context).copy(
                         background = Color(0xFF000000),
                         surface = Color(0xFF000000),
-                        onBackground = Color(0xFFFFFFFF),
-                        onSurface = Color(0xFFFFFFFF),
                         surfaceVariant = Color(0xFF0F1015),
-                        onSurfaceVariant = Color(0xFFFFFFFF),
                         error = Red
                     )
                 } else {

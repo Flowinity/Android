@@ -10,11 +10,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven("https://jitpack.io")
+        maven { url = uri("https://www.jitpack.io" ) }
         maven("https://oss.sonatype.org/content/repositories/snapshots")
     }
 }
 
 rootProject.name = "PrivateUploader"
 include(":app")
- 

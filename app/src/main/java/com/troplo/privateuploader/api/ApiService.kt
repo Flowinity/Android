@@ -8,6 +8,10 @@ import com.troplo.privateuploader.BuildConfig
 import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.data.model.Chat
 import com.troplo.privateuploader.data.model.ChatCreateRequest
+import com.troplo.privateuploader.data.model.Collection
+import com.troplo.privateuploader.data.model.CollectionItem
+import com.troplo.privateuploader.data.model.CollectivizeRequest
+import com.troplo.privateuploader.data.model.CreateCollectionRequest
 import com.troplo.privateuploader.data.model.EditRequest
 import com.troplo.privateuploader.data.model.FCMTokenRequest
 import com.troplo.privateuploader.data.model.Friend
@@ -18,9 +22,13 @@ import com.troplo.privateuploader.data.model.Message
 import com.troplo.privateuploader.data.model.MessageRequest
 import com.troplo.privateuploader.data.model.MessageSearchResponse
 import com.troplo.privateuploader.data.model.PatchUser
+import com.troplo.privateuploader.data.model.RegisterRequest
+import com.troplo.privateuploader.data.model.ShareCollectionRequest
+import com.troplo.privateuploader.data.model.ShareCollectionResponse
 import com.troplo.privateuploader.data.model.StarResponse
 import com.troplo.privateuploader.data.model.State
 import com.troplo.privateuploader.data.model.TenorResponse
+import com.troplo.privateuploader.data.model.UpdateCollectionRequest
 import com.troplo.privateuploader.data.model.UploadResponse
 import com.troplo.privateuploader.data.model.User
 import okhttp3.Interceptor
@@ -62,7 +70,7 @@ object TpuApi {
         client = OkHttpClient.Builder()
             .addInterceptor(ErrorHandlingInterceptor(context))
             .addInterceptor(HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
+                level = if(BuildConfig.DEBUG) HttpLoggingInterceptor.Level.HEADERS else HttpLoggingInterceptor.Level.NONE
             })
             .addInterceptor(AuthorizationInterceptor())
             .addInterceptor(hostInterceptor)
@@ -114,7 +122,7 @@ object TpuApi {
                     return Response.Builder()
                         .request(request)
                         .protocol(Protocol.HTTP_2)
-                        .code(999)
+                        .code(response.code ?: 999)
                         .message("Error")
                         .body("TpuServerError".toResponseBody(null)).build()
                 }
@@ -279,11 +287,65 @@ object TpuApi {
             @Part attachment: MultipartBody.Part,
         ): Call<UploadResponse>
 
+        @Multipart
+        @POST("gallery/site")
+        fun uploadFiles(
+            @Part attachments: List<MultipartBody.Part>,
+        ): Call<List<UploadResponse>>
+
         @GET("providers/tenor")
         fun getTenorGallery(
             @Query("next") next: String = "",
             @Query("search") search: String = ""
         ): Call<TenorResponse>
+
+        @GET("collections")
+        fun getCollections(): Call<List<Collection>>
+
+        @POST("collections/attachment")
+        fun collectivize(
+            @Body collectivizeRequest: CollectivizeRequest,
+        ): Call<List<CollectionItem>>
+
+        @GET("collections/{collectionId}/gallery")
+        fun getCollectionGallery(
+            @Path("collectionId") collectionId: Int,
+            @Query("page") page: Int = 1,
+            @Query("search") search: String = "",
+            @Query("textMetadata") textMetadata: Boolean = true,
+            @Query("filter") filter: String = "all",
+            @Query("sort") sort: String = "\"newest\""
+        ): Call<Gallery>
+
+        @POST("collections")
+        fun createCollection(
+            @Body createCollectionRequest: CreateCollectionRequest,
+        ): Call<Any>
+
+        @PATCH("collections/share")
+        fun shareCollection(
+            @Body shareCollectionRequest: ShareCollectionRequest,
+        ): Call<ShareCollectionResponse>
+
+        @PATCH("collections/{collectionId}")
+        fun updateCollection(
+            @Path("collectionId") collectionId: Int,
+            @Body updateCollectionRequest: UpdateCollectionRequest,
+            // data response is same as request for now, this is intentional
+        ): Call<UpdateCollectionRequest>
+
+        @DELETE("collections/{collectionId}")
+        fun deleteCollection(
+            @Path("collectionId") collectionId: Int,
+        ): Call<Unit>
+
+        @POST("auth/register")
+        fun register(
+            @Body registerRequest: RegisterRequest,
+        ): Call<LoginResponse>
+
+        @POST("user/verification/send")
+        fun sendVerificationEmail(): Call<Unit>
     }
 
     val retrofitService: TpuApiService by lazy {
