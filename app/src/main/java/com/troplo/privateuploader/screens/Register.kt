@@ -36,6 +36,7 @@ import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.SocketHandlerService
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.stores.UserStore
+import com.troplo.privateuploader.components.core.HyperlinkText
 import com.troplo.privateuploader.components.core.LoadingButton
 import com.troplo.privateuploader.data.model.LoginRequest
 import com.troplo.privateuploader.data.model.RegisterRequest
@@ -111,6 +112,15 @@ fun RegisterScreen(onLoginSuccess: () -> Unit, navigate: (String) -> Unit) {
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
+            )
+            HyperlinkText(
+                modifier = Modifier.padding(top = 8.dp),
+                linkTextColor = Primary,
+                fullText = "By registering I agree to the Privacy Policy, and Content Policy.",
+                hyperLinks = mutableMapOf(
+                    "Privacy Policy" to "https://privateuploader.com/policies/privacy",
+                    "Content Policy" to "https://privateuploader.com/policies/content"
+                ),
             )
             Spacer(modifier = Modifier.height(16.dp))
             LoadingButton(

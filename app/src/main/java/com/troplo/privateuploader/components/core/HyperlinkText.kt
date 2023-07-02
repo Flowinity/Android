@@ -51,7 +51,7 @@ fun HyperlinkText(
         addStyle(
             style = SpanStyle(
                 fontSize = fontSize,
-                color = linkTextColor
+                color = textStyle.color,
             ),
             start = 0,
             end = fullText.length

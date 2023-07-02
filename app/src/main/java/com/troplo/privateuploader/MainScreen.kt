@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.LinearProgressIndicator
+import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.Scaffold
@@ -32,7 +33,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.troplo.privateuploader.api.ChatStore
+import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.SocketHandler
+import com.troplo.privateuploader.api.ThemeOption
 import com.troplo.privateuploader.api.stores.UploadStore
 import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.components.chat.MemberSidebar
@@ -43,7 +46,6 @@ import com.troplo.privateuploader.components.core.NavRoute
 import com.troplo.privateuploader.components.core.OverlappingPanels
 import com.troplo.privateuploader.components.core.PanelSurface
 import com.troplo.privateuploader.components.core.TopBarNav
-import com.troplo.privateuploader.components.core.debug.recomposeHighlighter
 import com.troplo.privateuploader.components.core.dialogs.EmailVerificationDialog
 import com.troplo.privateuploader.components.core.rememberOverlappingPanelsState
 import com.troplo.privateuploader.screens.HomeScreen
@@ -63,7 +65,9 @@ fun MainScreen() {
         val panelState = rememberOverlappingPanelsState()
         var closePanels by remember { mutableStateOf(false) }
         var openPanel by remember { mutableStateOf(false) }
-
+        val theme = SessionManager(context).theme.collectAsState()
+        val isAMOLED = rememberUpdatedState(theme.value == ThemeOption.AMOLED)
+        Log.d("MainScreen", "isAMOLED: ${isAMOLED.value}")
         val closePanelsFunc = {
             closePanels = true
         }
@@ -126,7 +130,8 @@ fun MainScreen() {
                 BottomBarNav(
                     navController = navController,
                     panelState = panelState,
-                    closePanels = closePanelsFunc
+                    closePanels = closePanelsFunc,
+                    isAMOLED = isAMOLED
                 )
             }
         ) { paddingValues ->
@@ -140,7 +145,8 @@ fun MainScreen() {
                             modifier = Modifier.padding(
                                 top = paddingValues.calculateTopPadding(),
                                 bottom = paddingValues.calculateBottomPadding()
-                            )
+                            ),
+                            drawerTonalElevation = if(isAMOLED.value) 0.dp else DrawerDefaults.ModalDrawerElevation
                         ) {
                             Spacer(Modifier.height(12.dp))
                             HomeScreen(
@@ -177,7 +183,8 @@ fun MainScreen() {
                             modifier = Modifier.padding(
                                 top = paddingValues.calculateTopPadding(),
                                 bottom = paddingValues.calculateBottomPadding()
-                            )
+                            ),
+                            drawerTonalElevation = if(isAMOLED.value) 0.dp else DrawerDefaults.ModalDrawerElevation
                         ) {
                             Column(
                                 modifier = Modifier

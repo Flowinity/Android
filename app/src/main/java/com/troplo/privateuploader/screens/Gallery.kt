@@ -139,78 +139,80 @@ fun GalleryScreen(
                     },
                     singleLine = true
                 )
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = !expanded },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    CompositionLocalProvider(
-                        LocalTextInputService provides null
+                if(type != "tenor") {
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = !expanded },
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
-                        TextField(
-                            // The `menuAnchor` modifier must be passed to the text field for correctness.
-                            modifier = Modifier
-                                .menuAnchor()
-                                .fillMaxWidth()
-                                .padding(8.dp),
-                            value = selectedCollectionText.value,
-                            onValueChange = {},
-                            // this could be an accessibility problem
-                            enabled = false,
-                            label = { Text("Filter by Collection") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                            colors = ExposedDropdownMenuDefaults.textFieldColors(
-                                disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface,
-                                disabledIndicatorColor = MaterialTheme.colorScheme.onSurface
-                            ),
-                        )
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .exposedDropdownSize()
-                                .padding(8.dp),
+                        CompositionLocalProvider(
+                            LocalTextInputService provides null
                         ) {
-                            DropdownMenuItem(
-                                text = { Text("None") },
-                                onClick = {
-                                    selectedCollectionText.value = "None"
-                                    selectedCollectionId.value = 0
-                                    expanded = false
-                                },
-                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                            TextField(
+                                // The `menuAnchor` modifier must be passed to the text field for correctness.
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                value = selectedCollectionText.value,
+                                onValueChange = {},
+                                // this could be an accessibility problem
+                                enabled = false,
+                                label = { Text("Filter by Collection") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                                colors = ExposedDropdownMenuDefaults.textFieldColors(
+                                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                    disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface,
+                                    disabledIndicatorColor = MaterialTheme.colorScheme.onSurface
+                                ),
                             )
-                            DropdownMenuItem(
-                                text = { Text("Uncollectivized") },
-                                onClick = {
-                                    selectedCollectionText.value = "Uncollectivized"
-                                    selectedCollectionId.value = -1
-                                    expanded = false
-                                },
-                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Starred") },
-                                onClick = {
-                                    selectedCollectionText.value = "Starred"
-                                    selectedCollectionId.value = -2
-                                    expanded = false
-                                },
-                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                            )
-                            Divider()
-                            collections.value.forEach { collection ->
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .exposedDropdownSize()
+                                    .padding(8.dp),
+                            ) {
                                 DropdownMenuItem(
-                                    text = { Text(collection.name) },
+                                    text = { Text("None") },
                                     onClick = {
-                                        selectedCollectionText.value = collection.name
-                                        selectedCollectionId.value = collection.id
+                                        selectedCollectionText.value = "None"
+                                        selectedCollectionId.value = 0
                                         expanded = false
                                     },
                                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                                 )
+                                DropdownMenuItem(
+                                    text = { Text("Uncollectivized") },
+                                    onClick = {
+                                        selectedCollectionText.value = "Uncollectivized"
+                                        selectedCollectionId.value = -1
+                                        expanded = false
+                                    },
+                                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Starred") },
+                                    onClick = {
+                                        selectedCollectionText.value = "Starred"
+                                        selectedCollectionId.value = -2
+                                        expanded = false
+                                    },
+                                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                                )
+                                Divider()
+                                collections.value.forEach { collection ->
+                                    DropdownMenuItem(
+                                        text = { Text(collection.name) },
+                                        onClick = {
+                                            selectedCollectionText.value = collection.name
+                                            selectedCollectionId.value = collection.id
+                                            expanded = false
+                                        },
+                                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                                    )
+                                }
                             }
                         }
                     }
@@ -260,23 +262,25 @@ fun GalleryScreen(
         },
         floatingActionButtonPosition = FabPosition.End,
         floatingActionButton = {
-            ExpandedFloatingActionButton(
-                onClick = {
-                    Log.d("GalleryScreen", activity.toString())
-                    if(activity == null) return@ExpandedFloatingActionButton
-                    UploadStore.requestUploadIntent(activity)
-                },
-                extended = listState.isScrollingUp(),
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.Upload,
-                        contentDescription = "Upload"
-                    )
-                },
-                text = {
-                    Text("Upload")
-                }
-            )
+            if(type != "tenor") {
+                ExpandedFloatingActionButton(
+                    onClick = {
+                        Log.d("GalleryScreen", activity.toString())
+                        if (activity == null) return@ExpandedFloatingActionButton
+                        UploadStore.requestUploadIntent(activity)
+                    },
+                    extended = listState.isScrollingUp(),
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Upload,
+                            contentDescription = "Upload"
+                        )
+                    },
+                    text = {
+                        Text("Upload")
+                    }
+                )
+            }
         }
     )
 }
@@ -327,7 +331,7 @@ class GalleryViewModel : ViewModel() {
         this.loading.value = true
         val type = if(t == "gallery" && collectionId != -2) "gallery" else "starred"
         viewModelScope.launch(Dispatchers.IO) {
-            if(type !== "tenor") {
+            if(t != "tenor") {
                 val response: Response<Gallery> =
                     if (type == "starred") TpuApi.retrofitService.getStarredGallery(
                         search = search.value,

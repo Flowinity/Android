@@ -1,5 +1,7 @@
 package com.troplo.privateuploader.screens.settings
 
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -183,7 +185,13 @@ fun SettingsScreen(
                                 Icons.Default.OpenInBrowser,
                                 "Can't find what you're looking for?",
                                 "Visit PrivateUploader on the web.",
-                                onClick = { navigate("settings/changelog") }
+                                onClick = {
+                                    val intent = Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse("https://privateuploader.com")
+                                    )
+                                    context.startActivity(intent)
+                                }
                             )
                         }
 
