@@ -15,7 +15,10 @@ data class ChatAssociation(
     @field:Json(name = "tpuUser") val tpuUser: User?,
     @field:Json(name = "legacyUser") val legacyUser: User?,
     @field:Json(name = "user") val user: PartialUser,
-)
+) {
+    val isOwner = rank == "owner"
+    val isAdmin = rank == "admin" || rank == "owner"
+}
 
 @JsonClass(generateAdapter = true)
 data class ReadReceiptEvent(

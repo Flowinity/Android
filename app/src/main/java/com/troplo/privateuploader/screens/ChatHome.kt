@@ -40,7 +40,6 @@ fun HomeScreen(
     navController: NavController,
 ) {
     val loading = remember { mutableStateOf(true) }
-    val token = SessionManager(LocalContext.current).getAuthToken() ?: ""
     val chatViewModel = remember { ChatHomeViewModel() }
     val chatStore = ChatStore
     val chats = chatStore.chats.collectAsState()
@@ -49,7 +48,7 @@ fun HomeScreen(
     val chat = remember { mutableStateOf<Chat?>(null) }
 
     LaunchedEffect(Unit) {
-        chatViewModel.getChats(token).also {
+        chatViewModel.getChats().also {
             loading.value = false
         }
     }
@@ -95,9 +94,9 @@ fun HomeScreen(
 }
 
 class ChatHomeViewModel : ViewModel() {
-    fun getChats(token: String) {
+    fun getChats() {
         viewModelScope.launch(Dispatchers.IO) {
-            ChatStore.initializeChats(token)
+            ChatStore.initializeChats()
         }
     }
 }

@@ -19,18 +19,18 @@ import androidx.compose.ui.platform.LocalTextInputService
 import com.troplo.privateuploader.components.core.LoadingButton
 
 @Composable
-fun DeleteConfirmDialog(open: MutableState<Boolean>, onConfirm: () -> Unit, title: String, name: String?, important: Boolean = false, loading: MutableState<Boolean> = mutableStateOf(false)) {
+fun DeleteConfirmDialog(open: MutableState<Boolean>, onConfirm: () -> Unit, title: String, name: String?, important: Boolean = false, loading: MutableState<Boolean> = mutableStateOf(false), terminology: String = "Delete", message: String? = null) {
     val confirm = remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = {
             open.value = false
         },
         title = {
-            Text(text = "Delete $title?")
+            Text(text = if(title == "") "$terminology?" else "$terminology $title?")
         },
         text = {
             Column {
-                Text(text = "Are you sure you want to delete the $title? This is irreversible!")
+                Text(text = message ?: "Are you sure you want to ${terminology.lowercase()} the $title? This is irreversible!")
                 if (important) {
                     Text("Please type \"$name\" to confirm.")
                     OutlinedTextField(
@@ -42,7 +42,7 @@ fun DeleteConfirmDialog(open: MutableState<Boolean>, onConfirm: () -> Unit, titl
         },
         confirmButton = {
             LoadingButton(
-                text = "Delete",
+                text = terminology,
                 loading = loading.value,
                 onClick = onConfirm,
                 enabled = !important || confirm.value == name,

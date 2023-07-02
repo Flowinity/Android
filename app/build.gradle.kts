@@ -69,6 +69,7 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics-ktx:21.3.0")
 
     // TPU
+    implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("com.github.wax911:android-emojify:1.7.1")
     implementation("androidx.activity:activity:1.7.2")
     implementation("com.google.accompanist:accompanist-permissions:0.31.4-beta")

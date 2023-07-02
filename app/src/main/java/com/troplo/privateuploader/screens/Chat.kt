@@ -785,6 +785,7 @@ class ChatViewModel : ViewModel() {
     }
 
     fun typing(associationId: Int) {
+        if(UserStore.user.value?.storedStatus == "invisible") return
         if (Date().time - lastTypingEvent.value > 3000) {
             lastTypingEvent.value = Date().time
             Log.d("TPU.Chat", "Typing")

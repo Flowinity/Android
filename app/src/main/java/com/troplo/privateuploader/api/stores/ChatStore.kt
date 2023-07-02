@@ -3,7 +3,10 @@ package com.troplo.privateuploader.api
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import com.troplo.privateuploader.data.model.AddChatUsersEvent
 import com.troplo.privateuploader.data.model.Chat
+import com.troplo.privateuploader.data.model.RemoveChatEvent
+import com.troplo.privateuploader.data.model.RemoveChatUserEvent
 import com.troplo.privateuploader.data.model.Typing
 import com.troplo.privateuploader.data.model.UploadTarget
 import io.socket.client.Socket
@@ -21,6 +24,7 @@ object ChatStore {
     var associationId = MutableStateFlow(0)
     var typers = MutableStateFlow(emptyList<Typing>())
     var jumpToMessage = MutableStateFlow(0)
+    var hasInit = false
 
     // To upload to TPU, uses URI Android system
     var attachmentsToUpload = mutableStateListOf<UploadTarget>()
@@ -28,14 +32,14 @@ object ChatStore {
     val chats: StateFlow<List<Chat>>
         get() = _chats
 
-    fun initializeChats(token: String) {
+    fun initializeChats() {
         try {
-            if (_chats.value.isNotEmpty()) return
             CoroutineScope(Dispatchers.IO).launch {
                 val response = TpuApi.retrofitService.getChats().execute().body() ?: emptyList()
                 _chats.value = response
             }
-
+            if(hasInit) return
+            hasInit = true
             val socket: Socket? = SocketHandler.getSocket()
             if (socket != null) {
                 socket.on("chatCreated") {
@@ -44,6 +48,47 @@ object ChatStore {
                     val chat = SocketHandler.gson.fromJson(payload, Chat::class.java)
                     // add it to the top
                     _chats.value = listOf(chat).plus(_chats.value)
+                }
+
+                socket.on("removeChat") {
+                    val jsonArray = it[0] as JSONObject
+                    val payload = jsonArray.toString()
+                    val chat = SocketHandler.gson.fromJson(payload, RemoveChatEvent::class.java)
+                    _chats.value = _chats.value.filter { it.id != chat.id }
+                }
+
+                socket.on("removeChatUser") {
+                    val jsonArray = it[0] as JSONObject
+                    val payload = jsonArray.toString()
+                    val assoc = SocketHandler.gson.fromJson(payload, RemoveChatUserEvent::class.java)
+                    val chatIndex = _chats.value.indexOfFirst { it.id == assoc.chatId }
+                    if (chatIndex != -1) {
+                        val chat = _chats.value[chatIndex]
+                        val userIndex = chat.users.indexOfFirst { it.id == assoc.id }
+                        if (userIndex != -1) {
+                            _chats.value = _chats.value.toMutableList().apply {
+                                this[chatIndex] = chat.copy(users = chat.users.toMutableList().apply {
+                                    this.removeAt(userIndex)
+                                })
+                            }
+                        }
+                    }
+                }
+
+                socket.on("addChatUsers") {
+                    val jsonArray = it[0] as JSONObject
+                    val payload = jsonArray.toString()
+                    val users = SocketHandler.gson.fromJson(payload, AddChatUsersEvent::class.java)
+
+                    val chatIndex = _chats.value.indexOfFirst { it.id == users.chatId }
+                    if (chatIndex != -1) {
+                        val chat = _chats.value[chatIndex]
+                        _chats.value = _chats.value.toMutableList().apply {
+                            this[chatIndex] = chat.copy(users = chat.users.toMutableList().apply {
+                                this.addAll(users.users)
+                            })
+                        }
+                    }
                 }
             } else {
                 Log.d("TPU.Untagged", "Socket is null")

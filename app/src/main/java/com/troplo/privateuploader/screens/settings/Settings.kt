@@ -49,6 +49,7 @@ import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.components.core.UserAvatar
+import com.troplo.privateuploader.components.core.dialogs.DeleteConfirmDialog
 import com.troplo.privateuploader.components.settings.dialogs.StatusDialog
 import com.troplo.privateuploader.components.user.UserBanner
 import com.troplo.privateuploader.ui.theme.Primary
@@ -62,8 +63,23 @@ fun SettingsScreen(
         val context = LocalContext.current
         val user = UserStore.user.collectAsState()
         val status = remember { mutableStateOf(false) }
-        if(status.value) {
+        val logout = remember { mutableStateOf(false) }
+        if (status.value) {
             StatusDialog(status)
+        }
+        if (logout.value) {
+            DeleteConfirmDialog(
+                open = logout,
+                onConfirm = {
+                    UserStore.logout(context)
+                    navigate("login")
+                },
+                title = "",
+                name = "",
+                terminology = "Logout",
+                important = false,
+                message = "Are you sure you want to logout?"
+            )
         }
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -100,7 +116,10 @@ fun SettingsScreen(
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis,
                                             )
-                                            Text("Click here to set your status.", style = MaterialTheme.typography.bodySmall)
+                                            Text(
+                                                "Click here to set your status.",
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
                                         }
                                     }
                                 },
@@ -174,8 +193,7 @@ fun SettingsScreen(
                                 "Logout",
                                 "Logout of TPU.",
                                 onClick = {
-                                    UserStore.logout(context)
-                                    navigate("login")
+                                    logout.value = true
                                 }
                             )
                         }
@@ -298,7 +316,7 @@ fun SettingsItem(
     enabled: Boolean = true,
     colors: CardColors = CardDefaults.cardColors(),
     content: @Composable() (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
         onClick = onClick,

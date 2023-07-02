@@ -50,7 +50,6 @@ fun AddToCollectionDialog(open: MutableState<Boolean>, item: Upload) {
             Text(text = "Add to collection")
         },
         text = {
-            Text(text = "Add ${item.name} to a collection?")
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = { expanded = !expanded },

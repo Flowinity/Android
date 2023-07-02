@@ -366,6 +366,11 @@ object TpuApi {
             @Path("userId") userId: Int,
             @Body friendNicknameRequest: FriendNicknameRequest
         ): Call<Unit>
+
+        @DELETE("chats/{associationId}/association")
+        fun leaveChat(
+            @Path("associationId") associationId: Int
+        ): Call<Unit>
     }
 
     val retrofitService: TpuApiService by lazy {

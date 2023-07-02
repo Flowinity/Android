@@ -1,19 +1,33 @@
 package com.troplo.privateuploader.components.chat
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
@@ -37,7 +51,7 @@ fun ChatItem(
     if (id.value == chat.association?.id) {
         unread.value = 0
     }
-    NavigationDrawerItem(
+    NavigationItem(
         badge = {
             if (unread.value!! > 0) {
                 Badge(
@@ -60,14 +74,12 @@ fun ChatItem(
                     onLongPress = {
                         chatCtx.value = chat
                         chatActions.value = true
+                    },
+                    onTap = {
+                        openChat(chat.association?.id ?: 0)
                     }
                 )
             },
-        onClick = {
-            chat.association?.let {
-                openChat(it.id)
-            }
-        },
         label = {
             Text(
                 text = chatName,
@@ -96,4 +108,38 @@ fun ChatItem(
             )
         }
     )
+}
+
+@Composable
+fun NavigationItem(
+    modifier: Modifier = Modifier,
+    label: @Composable () -> Unit,
+    icon: @Composable () -> Unit,
+    onClick: (() -> Unit)? = null,
+    selected: Boolean = false,
+    badge: @Composable (() -> Unit)? = null,
+    subtitle: @Composable (() -> Unit)? = null
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable { onClick?.invoke() }
+            .padding(horizontal = 8.dp)
+            .background(
+                color = if (selected) MaterialTheme.colorScheme.surfaceContainer else Color.Transparent,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .then(modifier),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+            icon()
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                label()
+                if (subtitle !== null) subtitle()
+            }
+            badge?.invoke()
+    }
 }

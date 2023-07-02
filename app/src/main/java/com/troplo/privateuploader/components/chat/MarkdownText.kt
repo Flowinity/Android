@@ -63,7 +63,6 @@ fun MarkdownText(
     val preventLinkClick = remember { mutableStateOf(false) }
     val markdownRender: Markwon =
         remember { createMarkdownRender(context, onLinkClicked, preventLinkClick) }
-    Log.d("Test", "Test")
     AndroidView(
         modifier = modifier,
         factory = { ctx ->

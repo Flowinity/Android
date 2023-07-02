@@ -73,6 +73,7 @@ fun MainScreen() {
         }
 
         LaunchedEffect(closePanels) {
+            Log.d("MainScreen", "closePanels: $closePanels")
             if(!closePanels) return@LaunchedEffect
             panelState.closePanels()
             closePanels = false
