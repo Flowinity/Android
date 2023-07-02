@@ -55,10 +55,15 @@ class SessionManager(context: Context) {
     }
 
     fun getUserCache(): User? {
-        val user = prefs.getString("user", null)
-        return if (user != null) {
-            Gson().fromJson(user, User::class.java)
-        } else {
+        // Can crash if the backend schema has changed, this will be refreshed with new data provided the app is updated
+        return try {
+            val user = prefs.getString("user", null)
+            if (user != null) {
+                Gson().fromJson(user, User::class.java)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
             null
         }
     }

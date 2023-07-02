@@ -11,7 +11,9 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.troplo.privateuploader.api.ChatStore
+import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.components.core.UserAvatar
+import com.troplo.privateuploader.components.user.PopupRequiredUser
 import com.troplo.privateuploader.components.user.UserPopup
 import com.troplo.privateuploader.data.model.User
 
@@ -25,7 +27,7 @@ fun MemberSidebar() {
     val chats = ChatStore.chats.collectAsState()
     val chat =
         remember { derivedStateOf { chats.value.find { it.association?.id == chatId.value } } }
-    val user: MutableState<User?> = remember { mutableStateOf(null) }
+    val user: MutableState<PopupRequiredUser?> = remember { mutableStateOf(null) }
     val popup = remember { mutableStateOf(false) }
 
     if (popup.value) {
@@ -41,10 +43,10 @@ fun MemberSidebar() {
                         username = association.user.username
                     )
                 },
-                label = { Text(association.user.username) },
+                label = { Text(TpuFunctions.getName(association.user)) },
                 onClick = {
                     if (association.legacyUser == null) {
-                        user.value = association.user
+                        user.value = PopupRequiredUser(association.user.username)
                         popup.value = true
                     }
                 },

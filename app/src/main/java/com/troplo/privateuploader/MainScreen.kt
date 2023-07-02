@@ -99,7 +99,9 @@ fun MainScreen() {
         }
 
         if(user.value?.emailVerified == false) {
-            EmailVerificationDialog()
+            EmailVerificationDialog(navigate = { subItem ->
+                navController.navigate(subItem)
+            })
         }
 
         Scaffold(

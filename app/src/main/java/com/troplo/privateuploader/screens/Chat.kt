@@ -71,7 +71,6 @@ import com.troplo.privateuploader.components.chat.attachment.UriPreview
 import com.troplo.privateuploader.components.core.InfiniteListHandler
 import com.troplo.privateuploader.components.core.NavRoute
 import com.troplo.privateuploader.components.core.OverlappingPanelsState
-import com.troplo.privateuploader.data.model.ChatAssociation
 import com.troplo.privateuploader.data.model.DeleteEvent
 import com.troplo.privateuploader.data.model.EditEvent
 import com.troplo.privateuploader.data.model.EditRequest
@@ -81,12 +80,12 @@ import com.troplo.privateuploader.data.model.EmbedResolutionEvent
 import com.troplo.privateuploader.data.model.Message
 import com.troplo.privateuploader.data.model.MessageEvent
 import com.troplo.privateuploader.data.model.MessageRequest
+import com.troplo.privateuploader.data.model.ReadReceiptEvent
 import com.troplo.privateuploader.data.model.UploadTarget
+import io.socket.emitter.Emitter
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.MultipartBody
 import org.json.JSONObject
 import retrofit2.HttpException
 import java.util.Date
@@ -126,7 +125,6 @@ fun ChatScreen(
     DisposableEffect(chatViewModel) {
         onDispose { chatViewModel.onStop() }
     }
-
     if (attachment.value) {
         Attachment(openBottomSheet = attachment)
     }
@@ -309,7 +307,7 @@ fun ChatScreen(
 
                         // hide keyboard when sidebar is open
                         // TODO: fix
-                        if (panelsState.offset.value > 5 || panelsState.offset.value < -5) {
+                        if (panelsState.isStartPanelPartialOpen || panelsState.isEndPanelPartialOpen) {
                             keyboardController?.hide()
                         }
 
@@ -400,6 +398,7 @@ fun ChatScreen(
 
     LaunchedEffect(Unit) {
         chatViewModel.getMessages(associationId)
+        chatViewModel.onMount()
     }
 
     // Monitor jumpToMessage to jump to specific message contexts
@@ -435,163 +434,227 @@ class ChatViewModel : ViewModel() {
     val newMessage = mutableStateOf(false)
     val jumpToBottom = mutableStateOf(false)
     private val lastTypingEvent: MutableState<Long> = mutableLongStateOf(0L)
+    private val gson = Gson()
+    private var embedFails: Array<EmbedFail> = arrayOf()
 
     fun onStop() {
-        socket?.off("embedResolution")
-        socket?.off("messageDelete")
-        socket?.off("edit")
+        socket?.off("embedResolution", embedResolutionListener)
+        socket?.off("messageDelete", messageDeleteListener)
+        socket?.off("edit", editListener)
+        socket?.off("readReceipt", readReceiptListener)
+        socket?.off("message", msgListener)
     }
 
-    init {
-        Log.d("TPU.Untagged", "Route Param: ${NavRoute.Chat}}")
-        val gson = Gson()
-        socket?.on("message") {
-            Log.d("TPU.Untagged", "Message received" + it[0])
+    val msgListener: Emitter.Listener = Emitter.Listener {
+        onMessage(it)
+    }
 
-            val jsonArray = it[0] as JSONObject
-            val payload = jsonArray.toString()
-            val messageEvent = gson.fromJson(payload, MessageEvent::class.java)
+    val readReceiptListener: Emitter.Listener = Emitter.Listener {
+        onReadReceipt(it)
+    }
 
-            val message = messageEvent.message
+    val editListener: Emitter.Listener = Emitter.Listener {
+        onEdit(it)
+    }
 
-            if (associationId != messageEvent.association.id) {
-                Log.d(
-                    "TPU.Untagged",
-                    "Message not for this association, ${messageEvent.association.id} != $associationId"
-                )
-                return@on
-            }
-            // see if the message is already in the list
-            val existingMessage =
-                messages.value?.find { e -> e.id == message.id || (e.content == message.content && e.pending == true && e.userId == message.userId) }
+    val messageDeleteListener: Emitter.Listener = Emitter.Listener {
+        onMessageDelete(it)
+    }
+
+    val embedResolutionListener: Emitter.Listener = Emitter.Listener {
+        onEmbedResolution(it)
+    }
+
+    private fun onMessage(item: Array<Any>) {
+        Log.d("Chat", "Message received" + item[0])
+
+        val jsonArray = item[0] as JSONObject
+        val payload = jsonArray.toString()
+        val messageEvent = gson.fromJson(payload, MessageEvent::class.java)
+
+        val message = messageEvent.message
+
+        if (associationId != messageEvent.association.id) {
             Log.d(
                 "TPU.Untagged",
-                "Message for this association, ${messageEvent.association.id} == $associationId, $existingMessage"
+                "Message not for this association, ${messageEvent.association.id} != $associationId"
             )
-            if (existingMessage == null) {
-                // add to start of list
-                messages.value = listOf(message, *messages.value.orEmpty().toTypedArray())
-            } else {
-                val index = messages.value.orEmpty().indexOf(existingMessage)
-                val newMessage = message.copy(
-                    pending = false,
-                    error = false,
-                    content = message.content,
-                    createdAt = message.createdAt
+            return
+        }
+        // see if the message is already in the list
+        val existingMessage =
+            messages.value?.find { e -> e.id == message.id || (e.content == message.content && e.pending == true && e.userId == message.userId) }
+        Log.d(
+            "TPU.Untagged",
+            "Message for this association, ${messageEvent.association.id} == $associationId, $existingMessage"
+        )
+        if (existingMessage == null) {
+            // add to start of list
+            messages.value = listOf(message, *messages.value.orEmpty().toTypedArray())
+        } else {
+            val index = messages.value.orEmpty().indexOf(existingMessage)
+            val newMessage = message.copy(
+                pending = false,
+                error = false,
+                content = message.content,
+                createdAt = message.createdAt
+            )
+            messages.value = messages.value.orEmpty().toMutableList().also { msg ->
+                msg[index] = newMessage
+            }
+        }
+        newMessage.value = true
+    }
+
+    fun onEmbedResolution(data: Array<Any>) {
+        val chatId = ChatStore.chats.value.find { it.association?.id == associationId }?.id
+        val jsonArray = data[0] as JSONObject
+        val payload = jsonArray.toString()
+        val embed = gson.fromJson(payload, EmbedResolutionEvent::class.java)
+        if (chatId != embed.chatId) {
+            Log.d("TPU.Untagged", "Embed not for this chat, ${embed.chatId} != $chatId")
+            return
+        }
+
+
+        val index = messages.value.orEmpty().indexOfFirst { e -> e.id == embed.id }
+        if (index != -1) {
+            // update the message embeds with copy
+            val message = messages.value.orEmpty()[index]
+            val newMessage = message.copy(embeds = embed.embeds)
+            messages.value = messages.value.orEmpty().toMutableList().also {
+                it[index] = newMessage
+            }
+        } else {
+            // find in embedFails
+            val index = embedFails.indexOfFirst { e -> e.data.id == embed.id }
+            Log.d("TPU.Untagged", "Embed not found in messages, ${embed.id}, $index")
+            if (index == -1) {
+                // add to embedFails
+                embedFails += EmbedFail(
+                    retries = 1,
+                    data = embed
                 )
-                messages.value = messages.value.orEmpty().toMutableList().also { msg ->
-                    msg[index] = newMessage
-                }
-            }
-            newMessage.value = true
-        }
-
-        var embedFails: Array<EmbedFail> = arrayOf()
-
-        fun embedResolution(data: Array<Any>) {
-            val chatId = ChatStore.chats.value.find { it.association?.id == associationId }?.id
-            val jsonArray = data[0] as JSONObject
-            val payload = jsonArray.toString()
-            val embed = gson.fromJson(payload, EmbedResolutionEvent::class.java)
-            if (chatId != embed.chatId) {
-                Log.d("TPU.Untagged", "Embed not for this chat, ${embed.chatId} != $chatId")
-                return
-            }
-
-
-            val index = messages.value.orEmpty().indexOfFirst { e -> e.id == embed.id }
-            if (index != -1) {
-                // update the message embeds with copy
-                val message = messages.value.orEmpty()[index]
-                val newMessage = message.copy(embeds = embed.embeds)
-                messages.value = messages.value.orEmpty().toMutableList().also {
-                    it[index] = newMessage
-                }
             } else {
-                // find in embedFails
-                val index = embedFails.indexOfFirst { e -> e.data.id == embed.id }
-                Log.d("TPU.Untagged", "Embed not found in messages, ${embed.id}, $index")
-                if (index == -1) {
-                    // add to embedFails
-                    embedFails += EmbedFail(
-                        retries = 1,
-                        data = embed
-                    )
-                } else {
-                    val count = embedFails[index].retries
-                    if (count > 5) {
-                        embedFails = embedFails.filterIndexed { i, _ -> i != index }.toTypedArray()
-                        return
-                    }
-                    // update the count
-                    embedFails[index] = EmbedFail(
-                        retries = embedFails[index].retries + 1,
-                        data = embedFails[index].data
-                    )
+                val count = embedFails[index].retries
+                if (count > 5) {
+                    embedFails = embedFails.filterIndexed { i, _ -> i != index }.toTypedArray()
+                    return
                 }
+                // update the count
+                embedFails[index] = EmbedFail(
+                    retries = embedFails[index].retries + 1,
+                    data = embedFails[index].data
+                )
+            }
 
-                Handler(Looper.getMainLooper()).postDelayed({
-                    embedResolution(data)
-                }, 50)
+            Handler(Looper.getMainLooper()).postDelayed({
+                onEmbedResolution(data)
+            }, 50)
+        }
+    }
+
+    fun onEdit(item: Array<Any>) {
+        Log.d("TPU.Untagged", "Message edit received " + item[0])
+        val jsonArray = item[0] as JSONObject
+        val payload = jsonArray.toString()
+        val editEvent = gson.fromJson(payload, EditEvent::class.java)
+
+        val chatId = ChatStore.getChat()?.id
+        if (chatId != editEvent.chatId) {
+            Log.d(
+                "TPU.Untagged",
+                "Message edit not for this chat, ${editEvent.chatId} != $chatId"
+            )
+            return
+        }
+
+        val index = messages.value.orEmpty().indexOfFirst { e -> e.id == editEvent.id }
+        if (index != -1) {
+            // update the message
+            messages.value = messages.value.orEmpty().toMutableList().also {
+                it[index] = it[index].copy(
+                    content = editEvent.content,
+                    edited = editEvent.edited,
+                    editedAt = editEvent.editedAt
+                )
             }
         }
+    }
 
-        socket?.on("embedResolution") {
-            Log.d("TPU.Untagged", "Embed resolution received " + it[0])
-            embedResolution(it)
+    fun onMessageDelete(item: Array<Any>) {
+        Log.d("TPU.Untagged", "Message delete received " + item[0])
+        val jsonArray = item[0] as JSONObject
+        val payload = jsonArray.toString()
+        val message = gson.fromJson(payload, DeleteEvent::class.java)
+
+        val chatId = ChatStore.getChat()?.id
+        if (chatId != message.chatId) {
+            Log.d(
+                "TPU.Untagged",
+                "Message delete not for this chat, ${message.chatId} != $chatId"
+            )
+            return
         }
 
-        socket?.on("messageDelete") { it ->
-            Log.d("TPU.Untagged", "Message delete received " + it[0])
-            val jsonArray = it[0] as JSONObject
+        val index = messages.value.orEmpty().indexOfFirst { e -> e.id == message.id }
+        if (index != -1) {
+            // remove the message
+            messages.value = messages.value.orEmpty().toMutableList().also {
+                it.removeAt(index)
+            }
+        }
+    }
+
+    fun onReadReceipt(item: Array<Any>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            Log.d("ReadReceipts", "Read receipt received " + item[0])
+            val jsonArray = item[0] as JSONObject
             val payload = jsonArray.toString()
-            val message = gson.fromJson(payload, DeleteEvent::class.java)
+            val readReceiptEvent = gson.fromJson(payload, ReadReceiptEvent::class.java)
 
             val chatId = ChatStore.getChat()?.id
-            if (chatId != message.chatId) {
+            if (chatId != readReceiptEvent.chatId) {
                 Log.d(
-                    "TPU.Untagged",
-                    "Message delete not for this chat, ${message.chatId} != $chatId"
+                    "ReadReceipts",
+                    "Read receipt not for this chat, ${readReceiptEvent.chatId} != $chatId"
                 )
-                return@on
+                return@launch
             }
 
-            val index = messages.value.orEmpty().indexOfFirst { e -> e.id == message.id }
-            if (index != -1) {
-                // remove the message
-                messages.value = messages.value.orEmpty().toMutableList().also {
-                    it.removeAt(index)
-                }
-            }
-        }
-
-        socket?.on("edit") { it ->
-            Log.d("TPU.Untagged", "Message edit received " + it[0])
-            val jsonArray = it[0] as JSONObject
-            val payload = jsonArray.toString()
-            val editEvent = gson.fromJson(payload, EditEvent::class.java)
-
-            val chatId = ChatStore.getChat()?.id
-            if (chatId != editEvent.chatId) {
-                Log.d(
-                    "TPU.Untagged",
-                    "Message edit not for this chat, ${editEvent.chatId} != $chatId"
-                )
-                return@on
-            }
-
-            val index = messages.value.orEmpty().indexOfFirst { e -> e.id == editEvent.id }
+            // find the old read receipt belonging to the user and delete it in messages[].readreceipts array
+            val index = messages.value.orEmpty()
+                .indexOfFirst { e -> e.readReceipts.find { it.user.id == readReceiptEvent.user.id } != null }
             if (index != -1) {
                 // update the message
                 messages.value = messages.value.orEmpty().toMutableList().also {
-                    it[index] = it[index].copy(
-                        content = editEvent.content,
-                        edited = editEvent.edited,
-                        editedAt = editEvent.editedAt
-                    )
+                    val message = it[index]
+                    val readReceipts =
+                        message.readReceipts.filter { it.user.id != readReceiptEvent.user.id }
+                    it[index] = message.copy(readReceipts = readReceipts)
+                }
+            }
+
+            // add the new read receipt to the message
+            val indexNew = messages.value.orEmpty().indexOfFirst { e -> e.id == readReceiptEvent.id }
+            if (indexNew != -1) {
+                // update the message
+                messages.value = messages.value.orEmpty().toMutableList().also {
+                    val message = it[indexNew]
+                    val readReceipts = message.readReceipts + readReceiptEvent
+                    it[indexNew] = message.copy(readReceipts = readReceipts)
                 }
             }
         }
+    }
+
+    fun onMount() {
+        Log.d("TPU.Untagged", "Route Param: ${NavRoute.Chat}}")
+        socket?.on("message", msgListener)
+        socket?.on("embedResolution", embedResolutionListener)
+        socket?.on("messageDelete", messageDeleteListener)
+        socket?.on("edit", editListener)
+        socket?.on("readReceipt", readReceiptListener)
     }
 
     fun getMessages(associationId: Int, offset: Int? = null, listState: LazyListState? = null) {
@@ -649,7 +712,7 @@ class ChatViewModel : ViewModel() {
                         legacyUser = null,
                         legacyUserId = null,
                         pinned = false,
-                        readReceipts = emptyList<ChatAssociation>(),
+                        readReceipts = emptyList(),
                         reply = null,
                         replyId = null,
                         tpuUser = user,

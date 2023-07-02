@@ -50,8 +50,9 @@ data class User(
     @field:Json(name = "integrations") val integrations: List<Any>,
     @field:Json(name = "scopes") val scopes: String?,
     @field:Json(name = "pendingAutoCollects") val pendingAutoCollects: Int,
-    @field:Json(name = "notifications") val notifications: List<Notification>,
+    @field:Json(name = "notifications") var notifications: List<Notification>,
     @field:Json(name = "platforms") val platforms: List<Platform>?,
+    @field:Json(name = "nickname") val nickname: Nickname? = null,
 )
 
 @JsonClass(generateAdapter = true)
@@ -137,8 +138,8 @@ data class Notification(
     @field:Json(name = "id") val id: Int,
     @field:Json(name = "message") val message: String,
     @field:Json(name = "userId") val userId: Int,
-    @field:Json(name = "dismissed") val dismissed: Int,
-    @field:Json(name = "route") val route: String,
+    @field:Json(name = "dismissed") var dismissed: Boolean,
+    @field:Json(name = "route") val route: String?,
     @field:Json(name = "createdAt") val createdAt: String,
     @field:Json(name = "updatedAt") val updatedAt: String,
 )
@@ -253,7 +254,7 @@ fun defaultUser() = User(
             id = 4649,
             message = "Spy_Testing has sent you a friend request!",
             userId = 1,
-            dismissed = 1,
+            dismissed = false,
             route = "/u/Spy_Testing",
             createdAt = "2023-06-14T01:08:10.000Z",
             updatedAt = "2023-06-23T00:22:37.000Z"
@@ -278,10 +279,10 @@ data class PartialUser(
     @field:Json(name = "nickname") val nickname: Nickname?,
     @field:Json(name = "plan") val plan: Plan?,
     @field:Json(name = "platforms") val platforms: List<Platform>?,
-    @field:Json(name = "status") val status: String?,
+    @field:Json(name = "status") var status: String?,
     @field:Json(name = "username") val username: String,
     @field:Json(name = "administrator") val administrator: Boolean?,
-    @field:Json(name = "moderator") val moderator: Boolean?,
+    @field:Json(name = "moderator") val moderator: Boolean?
 )
 
 @JsonClass(generateAdapter = true)

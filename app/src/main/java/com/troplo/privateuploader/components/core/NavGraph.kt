@@ -20,6 +20,7 @@ import com.troplo.privateuploader.screens.Friends
 import com.troplo.privateuploader.screens.GalleryScreen
 import com.troplo.privateuploader.screens.HomeScreen
 import com.troplo.privateuploader.screens.LoginScreen
+import com.troplo.privateuploader.screens.NotificationsScreen
 import com.troplo.privateuploader.screens.RegisterScreen
 import com.troplo.privateuploader.screens.settings.ChangelogLayout
 import com.troplo.privateuploader.screens.settings.SettingsAccountScreen
@@ -46,6 +47,7 @@ fun NavGraph(
     } else if (user != null) {
         startDestination = "${NavRoute.Chat.path}/0"
     }
+    Log.d("NavGraph", "Recomposing!")
     NavHost(
         modifier = modifier,
         navController = navController,
@@ -65,6 +67,7 @@ fun NavGraph(
         addCollectionSettingsScreen(navController, this)
         addCollectionItemSettingsScreen(navController, this)
         addRegisterScreen(navController, this)
+        addNotificationsScreen(navController, this)
     }
 }
 
@@ -244,5 +247,14 @@ private fun addRegisterScreen(
             navigate = { subItem ->
                 navController.navigate(subItem)
             })
+    }
+}
+
+private fun addNotificationsScreen(
+    navController: NavHostController,
+    navGraphBuilder: NavGraphBuilder,
+) {
+    navGraphBuilder.composable(route = NavRoute.Notifications.path) {
+        NotificationsScreen()
     }
 }

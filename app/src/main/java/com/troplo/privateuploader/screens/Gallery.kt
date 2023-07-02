@@ -37,6 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -91,16 +92,16 @@ fun GalleryScreen(
     val context = LocalContext.current
     val activity = LocalContext.current as Activity
     var expanded by remember { mutableStateOf(false) }
-    var selectedCollectionText by remember { mutableStateOf("None") }
-    var selectedCollectionId by remember { mutableIntStateOf(0) }
+    var selectedCollectionText = remember { mutableStateOf("None") }
+    var selectedCollectionId: MutableState<Int> = remember { mutableIntStateOf(0) }
     val collections = CollectionStore.collections.collectAsState()
 
-    LaunchedEffect(selectedCollectionId) {
-        galleryViewModel.getGalleryItems(type, selectedCollectionId)
+    LaunchedEffect(selectedCollectionId.value) {
+        galleryViewModel.getGalleryItems(type, selectedCollectionId.value)
     }
 
     LaunchedEffect(Unit) {
-        galleryViewModel.getGalleryItems(type, selectedCollectionId)
+        galleryViewModel.getGalleryItems(type, selectedCollectionId.value)
         galleryViewModel.onMount()
     }
 
@@ -152,7 +153,7 @@ fun GalleryScreen(
                                 .menuAnchor()
                                 .fillMaxWidth()
                                 .padding(8.dp),
-                            value = selectedCollectionText,
+                            value = selectedCollectionText.value,
                             onValueChange = {},
                             // this could be an accessibility problem
                             enabled = false,
@@ -175,8 +176,8 @@ fun GalleryScreen(
                             DropdownMenuItem(
                                 text = { Text("None") },
                                 onClick = {
-                                    selectedCollectionText = "None"
-                                    selectedCollectionId = 0
+                                    selectedCollectionText.value = "None"
+                                    selectedCollectionId.value = 0
                                     expanded = false
                                 },
                                 contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
@@ -184,8 +185,8 @@ fun GalleryScreen(
                             DropdownMenuItem(
                                 text = { Text("Uncollectivized") },
                                 onClick = {
-                                    selectedCollectionText = "Uncollectivized"
-                                    selectedCollectionId = -1
+                                    selectedCollectionText.value = "Uncollectivized"
+                                    selectedCollectionId.value = -1
                                     expanded = false
                                 },
                                 contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
@@ -193,8 +194,8 @@ fun GalleryScreen(
                             DropdownMenuItem(
                                 text = { Text("Starred") },
                                 onClick = {
-                                    selectedCollectionText = "Starred"
-                                    selectedCollectionId = -2
+                                    selectedCollectionText.value = "Starred"
+                                    selectedCollectionId.value = -2
                                     expanded = false
                                 },
                                 contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
@@ -204,8 +205,8 @@ fun GalleryScreen(
                                 DropdownMenuItem(
                                     text = { Text(collection.name) },
                                     onClick = {
-                                        selectedCollectionText = collection.name
-                                        selectedCollectionId = collection.id
+                                        selectedCollectionText.value = collection.name
+                                        selectedCollectionId.value = collection.id
                                         expanded = false
                                     },
                                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
@@ -242,7 +243,9 @@ fun GalleryScreen(
                             item(
                                 key = it.id
                             ) {
-                                GalleryItem(it, inline, onClick = { onClick(it) })
+                                GalleryItem(it, inline, onClick = { onClick(it) }, onDelete = {
+                                    galleryViewModel.deleteItem(it)
+                                }, selectedCollectionId = selectedCollectionId, selectedCollectionText = selectedCollectionText)
                             }
                         }
                     }
@@ -388,6 +391,19 @@ class GalleryViewModel : ViewModel() {
                         }
                         loading.value = false
                     }
+                }
+            }
+        }
+    }
+
+    fun deleteItem(upload: Upload) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val response = TpuApi.retrofitService.deleteUpload(upload.id).execute()
+            if(response.isSuccessful) {
+                withContext(Dispatchers.Main) {
+                    gallery.value = gallery.value?.copy(
+                        gallery = gallery.value?.gallery?.filter { it.id != upload.id }.orEmpty()
+                    )
                 }
             }
         }

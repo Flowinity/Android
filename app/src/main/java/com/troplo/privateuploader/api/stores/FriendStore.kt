@@ -83,4 +83,14 @@ object FriendStore {
             e.printStackTrace()
         }
     }
+
+    fun updateFriendNickname(name: String, userId: Int) {
+        friends.value = friends.value.map {
+            if (it.otherUser?.id == userId) {
+                it.copy(otherUser = it.otherUser?.copy(nickname = it.otherUser?.nickname?.copy(nickname = name)))
+            } else {
+                it
+            }
+        }
+    }
 }

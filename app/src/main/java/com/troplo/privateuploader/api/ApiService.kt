@@ -15,6 +15,7 @@ import com.troplo.privateuploader.data.model.CreateCollectionRequest
 import com.troplo.privateuploader.data.model.EditRequest
 import com.troplo.privateuploader.data.model.FCMTokenRequest
 import com.troplo.privateuploader.data.model.Friend
+import com.troplo.privateuploader.data.model.FriendNicknameRequest
 import com.troplo.privateuploader.data.model.Gallery
 import com.troplo.privateuploader.data.model.LoginRequest
 import com.troplo.privateuploader.data.model.LoginResponse
@@ -111,13 +112,18 @@ object TpuApi {
 
                 if (!response.isSuccessful) {
                     val error: JSONObject = JSONObject(response.body?.string() ?: "{}")
-                    val errorType = error.getJSONArray("errors").getJSONObject(0).getString("name")
-                    if (errorType == "INVALID_TOKEN") {
-                        UserStore.logout(context)
-                    } else {
-                        val errorMessage =
-                            error.getJSONArray("errors").getJSONObject(0).getString("message")
-                        showToast(errorMessage)
+                    when (error.getJSONArray("errors").getJSONObject(0).getString("name")) {
+                        "INVALID_TOKEN" -> {
+                            UserStore.logout(context)
+                        }
+                        "EMAIL_NOT_VERIFIED" -> {
+                            // do nothing
+                        }
+                        else -> {
+                            val errorMessage =
+                                error.getJSONArray("errors").getJSONObject(0).getString("message")
+                            showToast(errorMessage)
+                        }
                     }
                     return Response.Builder()
                         .request(request)
@@ -346,6 +352,20 @@ object TpuApi {
 
         @POST("user/verification/send")
         fun sendVerificationEmail(): Call<Unit>
+
+        @DELETE("gallery/{attachmentId}")
+        fun deleteUpload(
+            @Path("attachmentId") attachmentId: Int
+        ): Call<Unit>
+
+        @PATCH("user/notifications")
+        fun markNotificationsAsRead(): Call<Unit>
+
+        @PATCH("user/nickname/{userId}")
+        fun updateNickname(
+            @Path("userId") userId: Int,
+            @Body friendNicknameRequest: FriendNicknameRequest
+        ): Call<Unit>
     }
 
     val retrofitService: TpuApiService by lazy {

@@ -3,7 +3,9 @@ package com.troplo.privateuploader.api
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import com.troplo.privateuploader.api.stores.FriendStore
 import com.troplo.privateuploader.data.model.Chat
+import com.troplo.privateuploader.data.model.PartialUser
 import com.troplo.privateuploader.data.model.User
 import java.io.File
 import java.io.FileInputStream
@@ -39,12 +41,35 @@ object TpuFunctions {
             return "Communications"
         }
         return if (chat.type == "direct") {
-            chat.recipient?.username ?: "Deleted User"
+            getName(chat.recipient)
         } else {
             chat.name
         }
     }
 
+    fun getName(user: Any?): String {
+        when (user) {
+            is PartialUser -> {
+                val friend = FriendStore.friends.value.find { it.otherUser?.id == user.id }
+                if (friend?.otherUser?.nickname?.nickname != null) {
+                    return friend.otherUser.nickname.nickname
+                }
+                return user?.username ?: "Deleted User"
+            }
+
+            is User -> {
+                val friend = FriendStore.friends.value.find { it.otherUser?.id == user.id }
+                if (friend?.otherUser?.nickname?.nickname != null) {
+                    return friend.otherUser.nickname.nickname
+                }
+                return user?.username ?: "Deleted User"
+            }
+
+            else -> {
+                return "Deleted User"
+            }
+        }
+    }
 
     fun formatDate(date: String?): CharSequence {
         try {
@@ -53,7 +78,7 @@ object TpuFunctions {
             val currentDate = LocalDate.now()
 
             val formatter = if (localDateTime.toLocalDate() == currentDate) {
-                DateTimeFormatter.ofPattern("hh:mm:ss a")
+                DateTimeFormatter.ofPattern("'Today at' hh:mm:ss a")
             } else {
                 DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm:ss a")
             }

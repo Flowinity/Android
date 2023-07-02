@@ -24,3 +24,9 @@ data class FriendRequest(
     @Json(name = "status")
     val status: String,
 )
+
+@JsonClass(generateAdapter = true)
+data class FriendNicknameRequest(
+    @Json(name = "nickname")
+    val nickname: String
+)

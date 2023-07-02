@@ -72,7 +72,7 @@ fun SettingsScreen(
             },
             content = { paddingValues ->
                 Column(
-                    modifier = Modifier.padding(top = paddingValues.calculateTopPadding())
+                    modifier = Modifier.padding(top = paddingValues.calculateTopPadding() + 8.dp)
                 ) {
                     LazyColumn(
                         modifier = Modifier

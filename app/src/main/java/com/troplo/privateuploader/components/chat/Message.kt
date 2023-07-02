@@ -3,10 +3,12 @@ package com.troplo.privateuploader.components.chat
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -82,7 +84,8 @@ fun Message(
                     Text(
                         text = TpuFunctions.formatDateDay(message.createdAt).toString(),
                         style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(horizontal = 8.dp)
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Divider(
                         modifier = Modifier
@@ -123,19 +126,40 @@ fun Message(
             if (!normal) {
                 Spacer(modifier = Modifier.width(44.dp))
             }
-            Column(modifier = Modifier.padding(start = 8.dp)) {
+            Column(modifier = Modifier.padding(start = 8.dp).fillMaxWidth()) {
                 if (normal) {
                     Row {
                         Text(
-                            text = message.user?.username ?: "Deleted User",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.weight(1f)
+                            text = TpuFunctions.getName(message.user),
+                            style = MaterialTheme.typography.bodyLarge,
                         )
                         Text(
                             text = TpuFunctions.formatDate(message.createdAt).toString(),
                             style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(start = 8.dp)
+                            modifier = Modifier.padding(start = 8.dp).align(Alignment.CenterVertically)
                         )
+                        if (message.edited) {
+                            val context = LocalContext.current
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edited",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier
+                                    .clickable {
+                                        Toast
+                                            .makeText(
+                                                context,
+                                                "${TpuFunctions.formatDate(message.editedAt)}",
+                                                Toast.LENGTH_SHORT
+                                            )
+                                            .show()
+                                    }
+                                    .size(20.dp)
+                                    .padding(start = 6.dp)
+                                    .align(Alignment.CenterVertically)
+
+                            )
+                        }
                     }
                 }
 
@@ -147,39 +171,79 @@ fun Message(
                     MaterialTheme.colorScheme.onSurfaceVariant
                 }
 
-                Row {
-                    MarkdownText(
-                        markdown = message.content,
-                        color = color,
-                        onLongClick = {
-                            if (messageCtx == null || messageCtxMessage == null) return@MarkdownText
-                            messageCtxMessage.value = message
-                            messageCtx.value = true
-                        },
-                        onClick = {
-                            if (onClick != null) onClick()
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f).fillMaxWidth()
+                    ) {
+                            MarkdownText(
+                                markdown = message.content,
+                                color = color,
+                                onLongClick = {
+                                    if (messageCtx == null || messageCtxMessage == null) return@MarkdownText
+                                    messageCtxMessage.value = message
+                                    messageCtx.value = true
+                                },
+                                onClick = {
+                                    if (onClick != null) onClick()
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+                        if (message.edited && !normal) {
+                            val context = LocalContext.current
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edited",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier
+                                    .clickable {
+                                        Toast
+                                            .makeText(
+                                                context,
+                                                "${TpuFunctions.formatDate(message.editedAt)}",
+                                                Toast.LENGTH_SHORT
+                                            )
+                                            .show()
+                                    }
+                                    .size(20.dp)
+                            )
                         }
-                    )
+                    }
 
-                    if (message.edited) {
-                        val context = LocalContext.current
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edited",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier
-                                .clickable {
-                                    Toast
-                                        .makeText(
-                                            context,
-                                            "Edited at ${message.editedAt}",
-                                            Toast.LENGTH_SHORT
-                                        )
-                                        .show()
+                    Row(
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        if(message.readReceipts.size <= 2) {
+                            message.readReceipts.forEach {
+                                Box(modifier = Modifier.padding(start = 4.dp)) {
+                                    UserAvatar(
+                                        avatar = it.user?.avatar,
+                                        username = it.user?.username ?: "Deleted User",
+                                        showStatus = false,
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                    )
                                 }
-                                .size(20.dp)
-                                .padding(start = 4.dp)
-                        )
+                            }
+                        } else {
+                            Box(
+                                modifier = Modifier.padding(start = 4.dp).clickable {
+                                    if (messageCtx == null || messageCtxMessage == null) return@clickable
+                                    messageCtxMessage.value = message
+                                    messageCtx.value = true
+                                }
+                            ) {
+                                UserAvatar(
+                                    avatar = null,
+                                    username = message.readReceipts.size.toString(),
+                                    showStatus = false,
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                )
+                            }
+                        }
                     }
                 }
                 message.embeds.forEach {
@@ -201,10 +265,10 @@ fun MessagePreview() {
                         id = 1,
                         user = defaultUser(),
                         chatId = 1,
-                        content = "Hello World!",
+                        content = "ioeajdoiaeduhyausdjhaosidhj8asduy89sady897asdy789sad7y8sasdhusa!",
                         createdAt = "2021-09-01T00:00:00.000Z",
                         updatedAt = "2021-09-01T00:00:00.000Z",
-                        edited = false,
+                        edited = true,
                         editedAt = null,
                         embeds = listOf(
                             Embed(
@@ -226,7 +290,7 @@ fun MessagePreview() {
                         legacyUserId = null,
                         pending = false,
                         pinned = false,
-                        readReceipts = emptyList<ChatAssociation>(),
+                        readReceipts = emptyList(),
                         reply = Message(
                             id = 1,
                             user = defaultUser(),
@@ -242,7 +306,7 @@ fun MessagePreview() {
                             legacyUserId = null,
                             pending = false,
                             pinned = false,
-                            readReceipts = emptyList<ChatAssociation>(),
+                            readReceipts = emptyList(),
                             replyId = 1,
                             tpuUser = null,
                             userId = 1,

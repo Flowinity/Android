@@ -37,6 +37,8 @@ import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -56,6 +58,7 @@ import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.api.imageLoader
 import com.troplo.privateuploader.api.stores.UserStore
+import com.troplo.privateuploader.components.core.dialogs.DeleteConfirmDialog
 import com.troplo.privateuploader.components.gallery.dialogs.AddToCollectionDialog
 import com.troplo.privateuploader.data.model.PartialCollection
 import com.troplo.privateuploader.data.model.Upload
@@ -73,12 +76,23 @@ fun GalleryItem(
     @PreviewParameter(SampleUploadProvider::class) item: Upload,
     hide: Boolean = false,
     onClick: () -> Unit = {},
+    onDelete: (Upload) -> Unit = {},
+    selectedCollectionId: MutableState<Int> = mutableIntStateOf(0),
+    selectedCollectionText: MutableState<String> = mutableStateOf(""),
 ) {
     val itemStarred = remember { mutableStateOf(item.starred) }
     val addToCollection = remember { mutableStateOf(false) }
+    val deleteItem = remember { mutableStateOf(false) }
+    val userId = UserStore.user.value?.id ?: 0
 
     if (addToCollection.value) {
         AddToCollectionDialog(open = addToCollection, item = item)
+    }
+
+    if(deleteItem.value) {
+        DeleteConfirmDialog(open = deleteItem, onConfirm = {
+            onDelete(item)
+        }, title = "upload", name = item.name )
     }
 
     Card(
@@ -139,6 +153,9 @@ fun GalleryItem(
 
             if (!hide) {
                 Column(modifier = Modifier.padding(start = 16.dp, top = 4.dp)) {
+                    if(item.userId != userId) {
+                        Text("Uploaded by: ${item.user?.username ?: "Unknown"}")
+                    }
                     Text(
                         text = "Type: " + when (item.type) {
                             "paste" -> "Legacy Paste"
@@ -155,24 +172,31 @@ fun GalleryItem(
                     Text(text = "Size: ${TpuFunctions.fileSize(item.fileSize)}")
                 }
                 FlowRow(modifier = Modifier.padding(start = 16.dp)) {
-                    SuggestionChip(
-                        modifier = Modifier.padding(end = 4.dp),
-                        onClick = {
-                            addToCollection.value = true
-                        },
-                        label = {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Add to collection"
-                            )
-                        }
-                    )
-                    item.collections.forEach { collection ->
-                        // Chip next to each other
+                    if(item.userId == userId) {
                         SuggestionChip(
                             modifier = Modifier.padding(end = 4.dp),
                             onClick = {
-                                // Open collection
+                                addToCollection.value = true
+                            },
+                            label = {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "Add to collection"
+                                )
+                            }
+                        )
+                    }
+                    item.collections.forEach { collection ->
+                        SuggestionChip(
+                            modifier = Modifier.padding(end = 4.dp),
+                            onClick = {
+                                  if(selectedCollectionId.value == collection.id) {
+                                      selectedCollectionId.value = 0
+                                      selectedCollectionText.value = ""
+                                  } else {
+                                      selectedCollectionId.value = collection.id
+                                      selectedCollectionText.value = collection.name
+                                  }
                             },
                             label = {
                                 Text(text = collection.name)
@@ -187,20 +211,24 @@ fun GalleryItem(
                         .padding(4.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    FilledTonalIconButton(
-                        onClick = { /* Do something! */ },
-                        colors = IconButtonDefaults.filledTonalIconButtonColors(
-                            containerColor = Color(255, 67, 54, 30)
-                        ),
+                    if(item.userId == userId) {
+                        FilledTonalIconButton(
+                            onClick = {
+                                deleteItem.value = true
+                            },
+                            colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                containerColor = Color(255, 67, 54, 30)
+                            ),
 
-                        content = {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete",
-                                tint = Color(255, 67, 54, 255)
-                            )
-                        }
-                    )
+                            content = {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete",
+                                    tint = Color(255, 67, 54, 255)
+                                )
+                            }
+                        )
+                    }
                     val clipboardManager =
                         LocalContext.current.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                     FilledTonalIconButton(

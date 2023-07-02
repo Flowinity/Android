@@ -9,6 +9,7 @@ import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.data.model.FCMTokenRequest
+import com.troplo.privateuploader.data.model.Notification
 import com.troplo.privateuploader.data.model.SettingsPayload
 import com.troplo.privateuploader.data.model.User
 import kotlinx.coroutines.CoroutineScope
@@ -85,6 +86,14 @@ object UserStore {
                     insights = settings.insights ?: user.value?.insights ?: "friends"
                 )
             }
+
+            socket?.on("notification") {
+                val jsonArray = it[0] as JSONObject
+                val payload = jsonArray.toString()
+                val notification = SocketHandler.gson.fromJson(payload, Notification::class.java)
+                Log.d("UserStore", "Notification received: $notification")
+                user.value?.notifications = user.value?.notifications?.plus(notification) ?: listOf(notification)
+            }
         } catch (e: URISyntaxException) {
             e.printStackTrace()
         }
@@ -98,6 +107,7 @@ object UserStore {
         user.value = null
         val socket = SocketHandler.getSocket()
         socket?.off("userSettingsUpdate")
+        socket?.off("notification")
         SessionManager(context).setUserCache(null)
         SessionManager(context).setFCMToken(null)
         SessionManager(context).saveAuthToken(null)

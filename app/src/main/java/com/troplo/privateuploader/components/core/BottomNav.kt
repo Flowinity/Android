@@ -1,5 +1,6 @@
 package com.troplo.privateuploader.components.core
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -28,8 +29,11 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -57,7 +61,7 @@ fun BottomBarNav(
     val friends = FriendStore.friends.collectAsState()
 
     AnimatedVisibility(
-        visible = panelState.offset.value > 200 || !currentRoute.contains("chat/"),
+        visible = !currentRoute.contains("chat/") || panelState.isStartPanelPartialOpen,
         enter = expandVertically(animationSpec = tween(durationMillis = 200)) { fullWidth ->
             // Offsets the content by 1/3 of its width to the left, and slide towards right
             // Overwrites the default animation with tween for this slide animation.
@@ -144,27 +148,35 @@ fun BottomBarNav(
                     //label = { Text("Friends") }
                 )
 
-                if(UserStore.debug) {
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.Notifications,
-                                contentDescription = NavRoute.Friends.path
-                            )
-                        },
-                        selected = currentRoute == NavRoute.Friends.path,
-                        onClick = {
-                            closePanels()
-                            if (currentRoute != NavRoute.Friends.path) {
-                                navController.navigate(NavRoute.Friends.path) {
-                                    popUpTo(NavRoute.Friends.path) { inclusive = true }
-                                }
+                NavigationBarItem(
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = NavRoute.Notifications.path
+                        )
+                        if(user.value?.notifications?.any { !it.dismissed } == true) {
+                            Badge(
+                                modifier = Modifier
+                                    .offset(x = 11.dp, y = (-4).dp)
+                            ) {
+                                Text(
+                                    user.value?.notifications?.filter { !it.dismissed }?.size.toString()
+                                )
                             }
-                        },
-                        // TO LOCALIZE
-                        //label = { Text("Notifications") }
-                    )
-                }
+                        }
+                    },
+                    selected = currentRoute == NavRoute.Notifications.path,
+                    onClick = {
+                        closePanels()
+                        if (currentRoute != NavRoute.Notifications.path) {
+                            navController.navigate(NavRoute.Notifications.path) {
+                                popUpTo(NavRoute.Notifications.path) { inclusive = true }
+                            }
+                        }
+                    },
+                    // TO LOCALIZE
+                    //label = { Text("Notifications") }
+                )
 
                 NavigationBarItem(
                     icon = {

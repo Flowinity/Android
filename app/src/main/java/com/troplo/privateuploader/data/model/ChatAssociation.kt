@@ -14,5 +14,13 @@ data class ChatAssociation(
     @field:Json(name = "legacyUserId") val legacyUserId: Int,
     @field:Json(name = "tpuUser") val tpuUser: User?,
     @field:Json(name = "legacyUser") val legacyUser: User?,
-    @field:Json(name = "user") val user: User,
+    @field:Json(name = "user") val user: PartialUser,
+)
+
+@JsonClass(generateAdapter = true)
+data class ReadReceiptEvent(
+    @field:Json(name = "id") val id: Int,
+    @field:Json(name = "chatId") val chatId: Int,
+    @field:Json(name = "lastRead") val lastRead: Int,
+    @field:Json(name = "user") val user: PartialUser
 )

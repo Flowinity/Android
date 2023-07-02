@@ -52,8 +52,9 @@ enum class OverlappingPanelsValue {
     /**
      * The state of the overlapping panels when both panels are closed.
      */
-    Closed
-
+    Closed,
+    PartialOpenStart,
+    PartialOpenEnd
 }
 
 /**
@@ -114,6 +115,12 @@ class OverlappingPanelsState(
 
     val isStartPanelOpen
         get() = currentValue == OverlappingPanelsValue.OpenEnd
+
+    val isStartPanelPartialOpen
+        get() = offset.value > 200f
+
+    val isEndPanelPartialOpen
+        get() = offset.value < -200f
 
     /**
      * Open the start panel with animation.
@@ -186,7 +193,7 @@ fun OverlappingPanels(
     modifier: Modifier = Modifier,
     panelsState: OverlappingPanelsState = rememberOverlappingPanelsState(initialValue = OverlappingPanelsValue.Closed),
     gesturesEnabled: Boolean = true,
-    velocityThreshold: Dp = 400.dp,
+    velocityThreshold: Dp = 300.dp,
     resistance: (anchors: Set<Float>) -> ResistanceConfig? = { null },
     sidePanelWidthFraction: SidePanelWidthFraction = PanelDefaults.sidePanelWidthFraction(),
     centerPanelAlpha: CenterPanelAlpha = PanelDefaults.centerPanelAlpha(),

@@ -2,6 +2,7 @@ package com.troplo.privateuploader.components.settings.dialogs
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,6 +25,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -54,76 +56,103 @@ fun StatusDialog(open: MutableState<Boolean> = mutableStateOf(true)) {
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+    val user = UserStore.user.collectAsState()
+    val viewModel = remember { StatusViewModel() }
 
     ModalBottomSheet(
         onDismissRequest = { open.value = false },
         sheetState = bottomSheetState,
         windowInsets = windowInsets,
-        dragHandle = { }
+        dragHandle = { },
     ) {
         ListItem(
+            modifier = Modifier.clickable {
+                viewModel.updateStatus("online", open)
+            },
             headlineContent =  {
                 Row {
-                    Text(text = "Online")
+                    UserAvatar(avatar = user.value?.avatar, username = user.value?.username ?: "Deleted User", fakeStatus = "online")
+                    Column(
+                        modifier = Modifier.align(Alignment.CenterVertically).padding(start = 8.dp)
+                    ) {
+                        Text(text = "Online")
+                        Text(text = "You will receive all notifications unless changed for each individual chat.", style = MaterialTheme.typography.bodySmall)
+                    }
                 }
             }
         )
         Divider()
         ListItem(
+            modifier = Modifier.clickable {
+                viewModel.updateStatus("busy", open)
+            },
             headlineContent =  {
                 Row {
-                    Text(text = "Do not Disturb")
+                    UserAvatar(avatar = user.value?.avatar, username = user.value?.username ?: "Deleted User", fakeStatus = "busy")
+                    Column(
+                        modifier = Modifier.align(Alignment.CenterVertically).padding(start = 8.dp)
+                    ) {
+                        Text(text = "Do not Disturb")
+                        Text(text = "You will not receive any notifications.", style = MaterialTheme.typography.bodySmall)
+                    }
                 }
             }
         )
         Divider()
         ListItem(
+            modifier = Modifier.clickable {
+                viewModel.updateStatus("idle", open)
+            },
             headlineContent =  {
                 Row {
-                    Text(text = "Idle")
+                    UserAvatar(avatar = user.value?.avatar, username = user.value?.username ?: "Deleted User", fakeStatus = "idle")
+                    Column(
+                        modifier = Modifier.align(Alignment.CenterVertically).padding(start = 8.dp)
+                    ) {
+                        Text(text = "Idle")
+                        Text(text = "You will appear idle.", style = MaterialTheme.typography.bodySmall)
+                    }
                 }
             }
         )
         Divider()
         ListItem(
+            modifier = Modifier.clickable {
+                viewModel.updateStatus("invisible", open)
+            },
             headlineContent =  {
                 Row {
-                    Text(text = "Invisible")
+                    UserAvatar(avatar = user.value?.avatar, username = user.value?.username ?: "Deleted User", fakeStatus = "offline")
+                    Column(
+                        modifier = Modifier.align(Alignment.CenterVertically).padding(start = 8.dp)
+                    ) {
+                        Text(text = "Invisible")
+                        Text(text = "You will appear offline, read receipts, and the typing indicator will be disabled.", style = MaterialTheme.typography.bodySmall)
+                    }
                 }
             }
         )
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
 class StatusViewModel : ViewModel() {
     val loading = mutableStateOf(false)
 
-    fun changeSettings(
-        key: String,
-        value: String,
-        currentPassword: String?,
-        open: MutableState<Boolean>,
-        confirmPassword: String?,
-        context: Context,
+    fun updateStatus(
+        status: String,
+        open: MutableState<Boolean>
     ) {
-        if (key == "password" && value != confirmPassword) {
-            Toast.makeText(context, "Passwords don't match", Toast.LENGTH_SHORT).show()
-            return
-        }
         val patchUser = PatchUser(
-            currentPassword = if (currentPassword != null && currentPassword !== "") currentPassword else null,
-            username = if (key == "username") value else null,
-            email = if (key == "email") value else null,
-            password = if (key == "password") value else null
+            storedStatus = status
         )
+
         viewModelScope.launch(Dispatchers.IO) {
             loading.value = true
             val response = TpuApi.retrofitService.updateUser(patchUser).execute()
             if (response.isSuccessful) {
                 withContext(Dispatchers.Main) {
-                    loading.value = false
                     open.value = false
-                    Toast.makeText(context, "Updated $key", Toast.LENGTH_SHORT).show()
                 }
             } else {
                 withContext(Dispatchers.Main) {

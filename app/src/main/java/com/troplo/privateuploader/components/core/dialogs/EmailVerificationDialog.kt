@@ -5,12 +5,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -22,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -31,6 +34,7 @@ import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.components.core.InteractionDialog
 import com.troplo.privateuploader.components.core.LoadingButton
+import com.troplo.privateuploader.ui.theme.Primary
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,7 +42,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
-fun EmailVerificationDialog(open: MutableState<Boolean> = mutableStateOf(true)) {
+fun EmailVerificationDialog(open: MutableState<Boolean> = mutableStateOf(true), navigate: (String) -> Unit = {}) {
     val viewModel = EmailVerificationViewModel()
     val context = LocalContext.current
     LaunchedEffect(Unit) {
@@ -53,15 +57,25 @@ fun EmailVerificationDialog(open: MutableState<Boolean> = mutableStateOf(true)) 
             )
         },
         button = {
-            LoadingButton(
-                onClick = {
-                    viewModel.resend(context)
+            Column {
+                LoadingButton(
+                    onClick = {
+                        viewModel.resend(context)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    text = "Resend/recheck verification",
+                    loading = viewModel.loading.value
+                )
+                ClickableText(text = AnnotatedString("Logout"), onClick = {
+                    UserStore.logout(context)
+                    navigate("login")
                 },
-                modifier = Modifier
-                    .fillMaxWidth(),
-                text = "Resend/recheck verification",
-                loading = viewModel.loading.value
-            )
+            modifier = Modifier
+                        .align(Alignment.CenterHorizontally).padding(top = 16.dp, bottom = 16.dp),
+                style = MaterialTheme.typography.bodyMedium.copy(color = Primary)
+                )
+            }
         },
         open = open,
         content = {

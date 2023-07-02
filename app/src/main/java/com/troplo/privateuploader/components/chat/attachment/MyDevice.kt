@@ -6,8 +6,10 @@ import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -123,7 +125,9 @@ class MyDeviceViewModel : ViewModel() {
         // Perform the query
         var cursor: Cursor? = null
         try {
-            cursor = contentResolver.query(imagesUri, projection, null, null, sortOrder)
+            val bundle = Bundle()
+            bundle.putInt(ContentResolver.QUERY_ARG_LIMIT, 20)
+            cursor = contentResolver.query(imagesUri, projection, bundle, null)
             cursor?.let {
                 while (cursor.moveToNext()) {
                     // Retrieve the image ID

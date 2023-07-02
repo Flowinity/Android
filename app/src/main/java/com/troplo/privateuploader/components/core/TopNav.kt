@@ -3,6 +3,7 @@ package com.troplo.privateuploader.components.core
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,13 +49,22 @@ fun TopBarNav(navController: NavController, openPanel: () -> Unit) {
 
     TopAppBar(
         navigationIcon = {
-            if (currentRoute != NavRoute.Home.path) {
+            if (!currentRoute.startsWith("settings/")) {
                 IconButton(onClick = {
                     openPanel()
                 }) {
                     Icon(
                         imageVector = Icons.Filled.Menu,
                         contentDescription = "Menu"
+                    )
+                }
+            } else {
+                IconButton(onClick = {
+                    navController.popBackStack()
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = "Back"
                     )
                 }
             }
@@ -66,7 +76,7 @@ fun TopBarNav(navController: NavController, openPanel: () -> Unit) {
                         avatar = ChatStore.getChat()?.icon
                             ?: ChatStore.getChat()?.recipient?.avatar,
                         username = ChatStore.getChat()?.name
-                            ?: ChatStore.getChat()?.recipient?.username ?: "Deleted User",
+                            ?: TpuFunctions.getChatName(ChatStore.getChat()),
                         showStatus = true
                     )
                     Text(

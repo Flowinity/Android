@@ -44,6 +44,7 @@ sealed class NavRoute(val path: String) {
         }
     }
     object Register: NavRoute("register")
+    object Notifications: NavRoute("notifications")
 
 
     // build navigation path (for screen navigation)

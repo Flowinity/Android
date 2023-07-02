@@ -49,6 +49,7 @@ fun UserAvatar(
     modifier: Modifier = Modifier,
     showStatus: Boolean = true,
     fake: Boolean = false,
+    fakeStatus: String? = null,
 ) {
     Box {
         val imageSize = 40.dp
@@ -91,6 +92,7 @@ fun UserAvatar(
                 id = -1
             )
         }
+        if(fakeStatus != null) friend?.otherUser?.status = fakeStatus
         if (avatar != null) {
             Image(
                 contentDescription = "User profile picture",
