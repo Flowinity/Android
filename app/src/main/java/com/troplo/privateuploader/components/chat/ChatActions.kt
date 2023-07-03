@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -33,7 +34,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatActions(
-    chat: MutableState<Chat?>,
+    chat: State<Chat?>,
     openBottomSheet: MutableState<Boolean>,
 ) {
     val windowInsets = WindowInsets(0)
@@ -46,7 +47,10 @@ fun ChatActions(
     if (leaveChat.value) {
         DeleteConfirmDialog(open = leaveChat, onConfirm = {
             viewModel.leaveChat(chat.value?.association?.id ?: 0)
-        }, title = "chat", name = chat.value?.name, terminology = "Leave")
+        }, title = "chat", name = chat.value?.name, terminology = "Leave",
+            message = if(chat.value?.type == "group")
+                "Are you sure you want to leave this group? You will not be able to re-join unless added by a member."
+                else "Are you sure you want to leave this DM? The recipient will not be able to contact you until you manually re-create the chat.")
     }
 
     ModalBottomSheet(
@@ -101,6 +105,9 @@ fun ChatActions(
                             Icons.Default.ExitToApp,
                             contentDescription = "Leave icon"
                         )
+                    },
+                    modifier = Modifier.clickable {
+                        leaveChat.value = true
                     }
                 )
             }

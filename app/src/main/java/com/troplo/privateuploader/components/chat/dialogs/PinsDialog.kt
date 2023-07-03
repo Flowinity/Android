@@ -17,6 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +36,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.troplo.privateuploader.api.ChatStore
 import com.troplo.privateuploader.api.TpuApi
+import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.components.chat.Message
 import com.troplo.privateuploader.components.core.Paginate
 import com.troplo.privateuploader.data.model.Message
@@ -45,12 +48,15 @@ import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
-fun SearchDialog() {
+fun PinsDialog(pins: MutableState<Boolean>) {
     val content = remember { mutableStateOf("") }
     val chats = ChatStore.chats.collectAsState()
     val chat = chats.value.find { it.association?.id == ChatStore.associationId.value }
-    val searchViewModel = remember { SearchViewModel() }
-    val kbController = LocalSoftwareKeyboardController.current
+    val viewModel = remember { PinsViewModel() }
+
+    LaunchedEffect(Unit) {
+        viewModel.getPins(chat?.association?.id ?: 0)
+    }
 
     Dialog(
         properties = DialogProperties(usePlatformDefaultWidth = false),
@@ -61,82 +67,35 @@ fun SearchDialog() {
                 topBar = {
                     TopAppBar(
                         title = {
-                            TextField(
-                                value = content.value,
-                                onValueChange = { content.value = it },
-                                label = {
-                                    Text("Search ${chat?.name}")
-                                },
-                                keyboardOptions = KeyboardOptions(
-                                    imeAction = ImeAction.Done
-                                ),
-                                keyboardActions = KeyboardActions(
-                                    onDone = {
-                                        searchViewModel.searchMessages(
-                                            chat?.association?.id ?: 0,
-                                            content.value,
-                                            kbController = kbController
-                                        )
-                                    }
-                                ),
-                                singleLine = true,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp)
-                                    .onKeyEvent {
-                                        if (it.nativeKeyEvent.keyCode == 13) {
-                                            searchViewModel.searchMessages(
-                                                chat?.association?.id ?: 0,
-                                                content.value,
-                                                kbController = kbController
-                                            )
-                                            true
-                                        } else {
-                                            false
-                                        }
-                                    },
-                                trailingIcon = {
-                                    IconButton(onClick = {
-                                        searchViewModel.searchMessages(
-                                            chat?.association?.id ?: 0,
-                                            content.value,
-                                            kbController = kbController
-                                        )
-                                    }) {
-                                        Icon(Icons.Filled.Search, contentDescription = "Search")
-                                    }
-                                }
-                            )
+                            Text("Pins for ${TpuFunctions.getChatName(chat)}")
                         },
                         navigationIcon = {
-                            IconButton(onClick = { ChatStore.searchPanel.value = false }) {
+                            IconButton(onClick = { pins.value = false }) {
                                 Icon(Icons.Filled.ArrowBack, contentDescription = "Close")
                             }
                         }
                     )
-                    if (searchViewModel.messages.value != null) {
+                    if (viewModel.messages.value != null) {
                         Text(
-                            "Total results: ${searchViewModel.pager.value?.totalItems}",
+                            "Total results: ${viewModel.pager.value?.totalItems}",
                             modifier = Modifier.padding(start = 16.dp, top = 69.dp)
                         )
                     } else {
                         Text(
-                            "Search for some messages...",
+                            "There are no pins yet.",
                             modifier = Modifier.padding(start = 16.dp, top = 64.dp)
                         )
                     }
                 },
                 bottomBar = {
-                    if (searchViewModel.pager.value != null) {
+                    if (viewModel.pager.value != null) {
                         Paginate(
-                            modelValue = searchViewModel.pager.value?.currentPage ?: 0,
-                            totalPages = searchViewModel.pager.value?.totalPages ?: 0,
+                            modelValue = viewModel.pager.value?.currentPage ?: 0,
+                            totalPages = viewModel.pager.value?.totalPages ?: 0,
                             onUpdateModelValue = {
-                                searchViewModel.searchMessages(
+                                viewModel.getPins(
                                     chat?.association?.id ?: 0,
-                                    content.value,
-                                    it,
-                                    kbController = kbController
+                                    it
                                 )
                             },
                             modifier = Modifier.padding(bottom = 18.dp)
@@ -144,7 +103,7 @@ fun SearchDialog() {
                     }
                 }
             ) {
-                if (searchViewModel.messages.value != null) {
+                if (viewModel.messages.value != null) {
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
@@ -153,7 +112,7 @@ fun SearchDialog() {
                                 bottom = it.calculateBottomPadding()
                             )
                     ) {
-                        searchViewModel.messages.value?.forEach { msg ->
+                        viewModel.messages.value?.forEach { msg ->
                             item(
                                 key = msg.id
                             ) {
@@ -163,7 +122,7 @@ fun SearchDialog() {
                                     null,
                                     null,
                                     onClick = {
-                                        ChatStore.searchPanel.value = false
+                                        pins.value = false
                                         ChatStore.jumpToMessage.value = msg.id
                                     }
                                 )
@@ -173,26 +132,23 @@ fun SearchDialog() {
                 }
             }
         },
-        onDismissRequest = { ChatStore.searchPanel.value = false }
+        onDismissRequest = { pins.value = false }
     )
 }
 
-class SearchViewModel : ViewModel() {
+class PinsViewModel : ViewModel() {
     val messages = mutableStateOf<List<Message>?>(null)
     val pager = mutableStateOf<Pager?>(null)
 
-    @OptIn(ExperimentalComposeUiApi::class)
-    fun searchMessages(
+    fun getPins(
         associationId: Int,
-        content: String,
-        page: Int = 1,
-        kbController: SoftwareKeyboardController?,
+        page: Int = 1
     ) {
-        kbController?.hide()
         viewModelScope.launch(Dispatchers.IO) {
-            val response = TpuApi.retrofitService.searchMessages(
-                chatId = associationId,
-                query = content,
+            val response = TpuApi.retrofitService.getMessagesPaginate(
+                id = associationId,
+                mode = "paginate",
+                type = "pins",
                 page = page
             ).execute()
             withContext(Dispatchers.Main) {

@@ -576,7 +576,8 @@ class ChatViewModel : ViewModel() {
                 it[index] = it[index].copy(
                     content = editEvent.content,
                     edited = editEvent.edited,
-                    editedAt = editEvent.editedAt
+                    editedAt = editEvent.editedAt,
+                    pinned = editEvent.pinned
                 )
             }
         }

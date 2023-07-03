@@ -14,8 +14,8 @@ android {
         applicationId = "com.troplo.privateuploader"
         minSdk = 28
         targetSdk = 34
-        versionCode = 6
-        versionName = "1.0.6"
+        versionCode = 7
+        versionName = "1.0.7"
         multiDexEnabled = true
         buildConfigField("String", "SERVER_URL", "\"https://privateuploader.com\"")
         buildConfigField("String", "BUILD_TIME", "\"${System.currentTimeMillis()}\"")

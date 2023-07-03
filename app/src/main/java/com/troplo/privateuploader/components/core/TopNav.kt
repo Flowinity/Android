@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,7 +31,8 @@ import com.troplo.privateuploader.components.chat.dialogs.SearchDialog
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
 fun TopBarNav(navController: NavController, openPanel: () -> Unit) {
-    val chatSearch = remember { mutableStateOf(false) }
+    val chatSearch = ChatStore.searchPanel.collectAsState()
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     if (currentRoute == null || currentRoute == NavRoute.Login.path || currentRoute == NavRoute.Register.path) {
@@ -44,7 +44,7 @@ fun TopBarNav(navController: NavController, openPanel: () -> Unit) {
     val user = UserStore.user.collectAsState()
 
     if (chatSearch.value) {
-        SearchDialog(chatSearch)
+        SearchDialog()
     }
 
     TopAppBar(
@@ -95,7 +95,7 @@ fun TopBarNav(navController: NavController, openPanel: () -> Unit) {
         actions = {
             if (currentRoute.startsWith("chat/")) {
                 IconButton(onClick = {
-                    chatSearch.value = true
+                    ChatStore.searchPanel.value = true
                 }) {
                     Icon(
                         imageVector = Icons.Filled.Search,

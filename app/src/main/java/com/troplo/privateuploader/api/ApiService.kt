@@ -20,9 +20,11 @@ import com.troplo.privateuploader.data.model.Gallery
 import com.troplo.privateuploader.data.model.LoginRequest
 import com.troplo.privateuploader.data.model.LoginResponse
 import com.troplo.privateuploader.data.model.Message
+import com.troplo.privateuploader.data.model.MessagePaginate
 import com.troplo.privateuploader.data.model.MessageRequest
 import com.troplo.privateuploader.data.model.MessageSearchResponse
 import com.troplo.privateuploader.data.model.PatchUser
+import com.troplo.privateuploader.data.model.PinRequest
 import com.troplo.privateuploader.data.model.RegisterRequest
 import com.troplo.privateuploader.data.model.ShareCollectionRequest
 import com.troplo.privateuploader.data.model.ShareCollectionResponse
@@ -222,8 +224,17 @@ object TpuApi {
         @GET("chats/{id}/messages")
         fun getMessages(
             @Path("id") id: Int,
-            @Query("offset") offset: Int? = null,
+            @Query("offset") offset: Int? = null
         ): Call<List<Message>>
+
+        @GET("chats/{id}/messages")
+        fun getMessagesPaginate(
+            @Path("id") id: Int,
+            @Query("offset") offset: Int? = null,
+            @Query("type") type: String? = null,
+            @Query("mode") mode: String? = null,
+            @Query("page") page: Int? = null
+        ): Call<MessagePaginate>
 
         @POST("chats/{id}/message")
         fun sendMessage(
@@ -370,6 +381,12 @@ object TpuApi {
         @DELETE("chats/{associationId}/association")
         fun leaveChat(
             @Path("associationId") associationId: Int
+        ): Call<Unit>
+
+        @PUT("chats/{associationId}/message")
+        fun pinMessage(
+            @Path("associationId") associationId: Int,
+            @Body pinRequest: PinRequest
         ): Call<Unit>
     }
 

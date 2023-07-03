@@ -3,8 +3,10 @@ package com.troplo.privateuploader.api
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import com.troplo.privateuploader.data.model.AddChatUsersEvent
 import com.troplo.privateuploader.data.model.Chat
+import com.troplo.privateuploader.data.model.PinRequest
 import com.troplo.privateuploader.data.model.RemoveChatEvent
 import com.troplo.privateuploader.data.model.RemoveChatUserEvent
 import com.troplo.privateuploader.data.model.Typing
@@ -25,6 +27,7 @@ object ChatStore {
     var typers = MutableStateFlow(emptyList<Typing>())
     var jumpToMessage = MutableStateFlow(0)
     var hasInit = false
+    val searchPanel = MutableStateFlow(false)
 
     // To upload to TPU, uses URI Android system
     var attachmentsToUpload = mutableStateListOf<UploadTarget>()
@@ -124,6 +127,17 @@ object ChatStore {
 
         CoroutineScope(Dispatchers.IO).launch {
             TpuApi.retrofitService.deleteMessage(associationId.value, messageId).execute()
+        }
+    }
+
+    fun pinMessage(messageId: Int, pinned: Boolean) {
+        if (messageId == 0 || associationId.value == 0) return
+
+        CoroutineScope(Dispatchers.IO).launch {
+            TpuApi.retrofitService.pinMessage(associationId.value, PinRequest(
+                messageId,
+                pinned
+            )).execute()
         }
     }
 }

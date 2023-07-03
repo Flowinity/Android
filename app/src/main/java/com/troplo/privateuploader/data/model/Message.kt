@@ -75,6 +75,7 @@ data class EditEvent(
     @field:Json(name = "edited") val edited: Boolean,
     @field:Json(name = "editedAt") val editedAt: String?,
     @field:Json(name = "user") val user: User?,
+    @field:Json(name = "pinned") val pinned: Boolean,
 )
 
 data class Embed(
@@ -109,4 +110,16 @@ data class EmbedFail(
 data class MessageSearchResponse(
     @field:Json(name = "messages") val messages: List<Message>,
     @field:Json(name = "pager") val pager: Pager,
+)
+
+@JsonClass(generateAdapter = true)
+data class MessagePaginate(
+    @field:Json(name = "messages") val messages: List<Message>,
+    @field:Json(name = "pager") val pager: Pager
+)
+
+@JsonClass(generateAdapter = true)
+data class PinRequest(
+    @field:Json(name = "id") val id: Int,
+    @field:Json(name = "pinned") val pinned: Boolean,
 )

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Reply
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -49,6 +50,8 @@ fun MessageActions(
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+    val chat = ChatStore.getChat()
+    val isAdmin = chat?.association?.rank == "admin" || chat?.association?.rank == "owner"
 
     ModalBottomSheet(
         onDismissRequest = { openBottomSheet.value = false },
@@ -119,7 +122,7 @@ fun MessageActions(
                 )
             }
 
-            if (message.value?.userId == UserStore.getUser()?.id) {
+            if (message.value?.userId == UserStore.getUser()?.id || isAdmin) {
                 ListItem(
                     headlineContent = { Text("Delete") },
                     leadingContent = {
@@ -134,6 +137,24 @@ fun MessageActions(
                     }
                 )
             }
+
+            if(isAdmin) {
+                val pinned = message.value?.pinned ?: false
+                ListItem(
+                    headlineContent = { Text(if(pinned) "Unpin" else "Pin") },
+                    leadingContent = {
+                        Icon(
+                            Icons.Default.PushPin,
+                            contentDescription = "Pin icon"
+                        )
+                    },
+                    modifier = Modifier.clickable {
+                        ChatStore.pinMessage(message.value?.id ?: 0, !pinned)
+                        openBottomSheet.value = false
+                    }
+                )
+            }
+
             val clipboardManager =
                 LocalContext.current.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             ListItem(
