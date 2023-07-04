@@ -1,6 +1,5 @@
 package com.troplo.privateuploader.components.chat
 
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Badge
@@ -9,16 +8,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.troplo.privateuploader.api.ChatStore
 import com.troplo.privateuploader.api.TpuFunctions
+import com.troplo.privateuploader.components.core.NavRoute
 import com.troplo.privateuploader.components.core.UserAvatar
 import com.troplo.privateuploader.data.model.Chat
 
@@ -26,7 +25,7 @@ import com.troplo.privateuploader.data.model.Chat
 @Composable
 fun ChatItem(
     chat: Chat,
-    openChat: (Int) -> Unit
+    navController: NavController,
 ) {
     val chatName = TpuFunctions.getChatName(chat)
     // track ChatStore.associationId, is mutableStateOf<Int>(0)
@@ -55,7 +54,9 @@ fun ChatItem(
             .fillMaxWidth(),
         onClick = {
             chat.association?.let {
-                openChat(it.id)
+                if (navController.currentDestination?.route?.startsWith("chat/") == false || id.value != it.id) {
+                    navController.navigate("${NavRoute.Chat.path}/${it.id}")
+                }
             }
         },
         label = {
@@ -78,7 +79,7 @@ fun ChatItem(
                      )
                  }*/
         },
-        selected = id.value == chat.association?.id,
+        selected = navController.currentDestination?.route?.startsWith("chat/") == true && id.value == chat.association?.id,
         icon = {
             UserAvatar(
                 avatar = chat.icon ?: chat.recipient?.avatar,

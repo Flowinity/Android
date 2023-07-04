@@ -1,6 +1,7 @@
 package com.troplo.privateuploader
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -11,6 +12,8 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.toMutableStateList
 import androidx.core.content.ContextCompat
 import androidx.startup.AppInitializer
 import com.google.android.gms.common.GoogleApiAvailability
@@ -149,11 +152,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    fun upload(files: List<UploadTarget>) {
-        UploadStore.uploads = files.toMutableList()
+    fun upload(files: List<UploadTarget>, deleteOnceFinished: Boolean = true, context: Context = this) {
+        Log.d("TPU.Upload", "Uploading ${files.size} files")
+        if(deleteOnceFinished) {
+            UploadStore.uploads = files.toMutableStateList()
+        }
 
         val filesBody = files.map { file ->
-            TpuFunctions.uriToFile(file.uri, this, file.name)
+            TpuFunctions.uriToFile(file.uri, context, file.name)
         }
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -185,9 +191,18 @@ class MainActivity : ComponentActivity() {
             }
 
             val response = TpuApi.retrofitService.uploadFiles(parts).execute()
-            response.body()?.let {
+            response.body()?.let { upload ->
                 UploadStore.globalProgress.value = 0f
-                UploadStore.uploads = mutableListOf()
+                if(deleteOnceFinished) {
+                    UploadStore.uploads = mutableStateListOf()
+                } else {
+                    // set the upload status to finished
+                    UploadStore.uploads.find { it.uri == files.first().uri }?.let {
+                        it.progress = 100f
+                        it.url = upload[0].upload.attachment
+                    }
+                    Log.d("TPU.Upload", "Upload finished: ${upload[0].upload.attachment}, ${UploadStore.uploads.toList().toString()}")
+                }
             }
         }
     }

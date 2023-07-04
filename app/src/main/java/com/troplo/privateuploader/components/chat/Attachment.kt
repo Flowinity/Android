@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import com.troplo.privateuploader.api.ChatStore
+import com.troplo.privateuploader.api.stores.UploadStore
 import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.components.chat.attachment.MyDevice
 import com.troplo.privateuploader.data.model.Upload
@@ -80,7 +81,7 @@ fun Attachment(openBottomSheet: MutableState<Boolean>) {
 
         fun onClick(upload: Upload, tenor: Boolean = false) {
             openBottomSheet.value = false
-            ChatStore.attachmentsToUpload.add(
+            UploadStore.uploads.add(
                 UploadTarget(
                     uri = if (tenor) {
                         upload.attachment.toUri()

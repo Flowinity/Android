@@ -85,7 +85,7 @@ fun MessageActions(
             }
         }
         if (message.value != null) {
-            Message(message.value!!, "none", null, null, modifier = Modifier.padding(bottom = 8.dp))
+            Message(modifier = Modifier.padding(bottom = 8.dp), message.value!!, "none", null, null)
         }
         Column(
             modifier = Modifier.padding(bottom = 8.dp),

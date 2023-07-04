@@ -37,6 +37,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.troplo.privateuploader.api.ChatStore
+import com.troplo.privateuploader.api.stores.UploadStore
 import com.troplo.privateuploader.data.model.UploadTarget
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalLayoutApi::class)
@@ -68,18 +69,22 @@ fun MyDevice() {
                             modifier = Modifier.requiredHeight(120.dp).requiredWidth(120.dp)
                         ) {
                             UriPreview(upload, onClick = {
-                                if (ChatStore.attachmentsToUpload.find { it.uri == upload.uri } != null) {
+                                if (UploadStore.uploads.find { it.uri == upload.uri } != null) {
                                     Log.d(
                                         "MyDevice",
                                         "Removing ${upload.name} from attachments to upload."
                                     )
-                                    ChatStore.attachmentsToUpload.removeIf { it.uri == upload.uri }
+                                    UploadStore.uploads.removeIf { it.uri == upload.uri }
                                 } else {
                                     Log.d(
                                         "MyDevice",
                                         "Adding ${upload.name} to attachments to upload."
                                     )
-                                    ChatStore.attachmentsToUpload.add(upload)
+                                    UploadStore.uploads.add(upload)
+                                    Log.d(
+                                        "MyDevice",
+                                        "Uploads: ${UploadStore.uploads.map { it.name }}"
+                                    )
                                 }
                             })
                         }

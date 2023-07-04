@@ -72,19 +72,17 @@ object SocketHandler {
 
                         val message = messageEvent.message
                         Log.d("TPU.Untagged", "Message received (SocketHandler): $message")
+                        val chat =
+                            ChatStore.chats.value.find { it.association?.id == messageEvent.association.id }
                         if (messageEvent.association.id != ChatStore.associationId.value) {
                             // increase unread count
-                            val chat =
-                                ChatStore.chats.value.find { it.association?.id == messageEvent.association.id }
                             Log.d("TPU.Untagged", chat.toString())
                             if (chat != null) {
                                 chat.unread = chat.unread?.plus(1)
-                                ChatStore.setChats(listOf(chat) + ChatStore.chats.value.filter { it.association?.id != messageEvent.association.id })
                             }
+                        } else if(chat != null) {
+                            ChatStore.setChats(listOf(chat) + ChatStore.chats.value.filter { it.association?.id != messageEvent.association.id })
                         }
-
-                        // if running in background, send notification
-
                     }
                     socket?.on("typing") { it ->
                         CoroutineScope(Dispatchers.IO).launch {

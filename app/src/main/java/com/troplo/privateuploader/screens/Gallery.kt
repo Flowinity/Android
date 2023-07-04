@@ -292,6 +292,8 @@ class GalleryViewModel : ViewModel() {
 
     fun onMount() {
         val socket = SocketHandler.getSocket()
+        socket?.off("gallery/create")
+        socket?.off("gallery/update")
         socket?.on("gallery/create") {
             val jsonArray = it[0] as JSONArray
             val payload = jsonArray.toString()

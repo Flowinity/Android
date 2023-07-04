@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,6 +50,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -57,11 +59,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
+import com.troplo.privateuploader.MainActivity
 import com.troplo.privateuploader.api.ChatStore
+import com.troplo.privateuploader.api.RequestBodyWithProgress
 import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.TpuFunctions
+import com.troplo.privateuploader.api.stores.UploadStore
 import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.components.chat.Attachment
 import com.troplo.privateuploader.components.chat.Message
@@ -86,6 +91,7 @@ import io.socket.emitter.Emitter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.MultipartBody
 import org.json.JSONObject
 import retrofit2.HttpException
 import java.util.Date
@@ -152,7 +158,7 @@ fun ChatScreen(
                     .fillMaxWidth()
             ) {
 
-                if (ChatStore.attachmentsToUpload.size > 0) {
+                if (UploadStore.uploads.size > 0) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -166,12 +172,12 @@ fun ChatScreen(
                         LazyRow(
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            ChatStore.attachmentsToUpload.forEach {
+                            UploadStore.uploads.forEach {
                                 item(
                                     key = it.uri
                                 ) {
                                     UriPreview(it, onClick = {
-                                        ChatStore.attachmentsToUpload.remove(it)
+                                        UploadStore.uploads.remove(it)
                                     })
                                 }
                             }
@@ -283,7 +289,7 @@ fun ChatScreen(
                                         message.value = ""
                                         editId.value = 0
                                     },
-                                    enabled = ChatStore.attachmentsToUpload.none { it.url == null } && (message.value.isNotEmpty() || ChatStore.attachmentsToUpload.isNotEmpty())
+                                    enabled = UploadStore.uploads.none { it.url == null } && (message.value.isNotEmpty() || UploadStore.uploads.isNotEmpty())
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.Send,
@@ -340,13 +346,23 @@ fun ChatScreen(
                         key = msg.id
                     ) {
                         Message(
-                            msg,
-                            compact(msg, chatViewModel.messages.value!!),
-                            messageCtx,
-                            messageCtxMessage,
+                            modifier = Modifier.pointerInput(Unit) {
+                                detectTapGestures(
+                                    onLongPress = {
+                                        messageCtxMessage.value = msg
+                                        messageCtx.value = true
+                                    }
+                                )
+                            },
+                            message = msg,
+                            compact = compact(msg, chatViewModel.messages.value!!),
                             onReply = { id ->
                                 ChatStore.jumpToMessage.value = id
-                            }
+                            },
+                            onLongClick = {
+                                messageCtxMessage.value = msg
+                                messageCtx.value = true
+                            },
                         )
                     }
                 }
@@ -417,9 +433,12 @@ fun ChatScreen(
         }
     }
 
-    LaunchedEffect(ChatStore.attachmentsToUpload.size) {
-        ChatStore.attachmentsToUpload.forEach { file ->
-            if (file.started) return@LaunchedEffect
+    LaunchedEffect(UploadStore.uploads.size) {
+        Log.d("TPU.Upload", "Uploads changed, ${UploadStore.uploads.toList().toString()}}")
+        UploadStore.uploads.forEach { file ->
+            Log.d("TPU.Upload", "Checking file: $file")
+            if (file.started) return@forEach
+            Log.d("TPU.Upload", "Uploading file: $file")
             chatViewModel.uploadAttachment(file, context)
         }
     }
@@ -445,23 +464,23 @@ class ChatViewModel : ViewModel() {
         socket?.off("message", msgListener)
     }
 
-    val msgListener: Emitter.Listener = Emitter.Listener {
+    private val msgListener: Emitter.Listener = Emitter.Listener {
         onMessage(it)
     }
 
-    val readReceiptListener: Emitter.Listener = Emitter.Listener {
+    private val readReceiptListener: Emitter.Listener = Emitter.Listener {
         onReadReceipt(it)
     }
 
-    val editListener: Emitter.Listener = Emitter.Listener {
+    private val editListener: Emitter.Listener = Emitter.Listener {
         onEdit(it)
     }
 
-    val messageDeleteListener: Emitter.Listener = Emitter.Listener {
+    private val messageDeleteListener: Emitter.Listener = Emitter.Listener {
         onMessageDelete(it)
     }
 
-    val embedResolutionListener: Emitter.Listener = Emitter.Listener {
+    private val embedResolutionListener: Emitter.Listener = Emitter.Listener {
         onEmbedResolution(it)
     }
 
@@ -724,8 +743,8 @@ class ChatViewModel : ViewModel() {
                     try {
                         // ensure url is populated for attachments
                         val uploadedAttachments =
-                            ChatStore.attachmentsToUpload.filter { it.url != null }.map { it.url!! }
-                        ChatStore.attachmentsToUpload = mutableStateListOf()
+                            UploadStore.uploads.filter { it.url != null }.map { it.url!! }
+                        UploadStore.uploads = mutableStateListOf()
                         val response = TpuApi.retrofitService.sendMessage(
                             associationId, MessageRequest(
                                 message,
@@ -795,46 +814,10 @@ class ChatViewModel : ViewModel() {
     }
 
     fun uploadAttachment(file: UploadTarget, context: Context) {
-        //TODO: rewrite this to use the new upload endpoint
-    /*    val converted = TpuFunctions.uriToFile(file.uri, context, file.name)
-
-        viewModelScope.launch(Dispatchers.IO) {
-            val requestFile = RequestBodyWithProgress(
-                converted,
-                RequestBodyWithProgress.ContentType.PNG_IMAGE,
-                progressCallback = { progress ->
-                    Log.d("TPU.Upload", "Progress: $progress")
-                    ChatStore.attachmentsToUpload.find { it.uri == file.uri }
-                        ?: return@RequestBodyWithProgress
-                    ChatStore.attachmentsToUpload.removeIf { it.uri == file.uri }
-                    ChatStore.attachmentsToUpload.add(
-                        file.copy(
-                            progress = progress,
-                            started = true
-                        )
-                    )
-                })
-            val body = MultipartBody.Part.createFormData("attachment", file.name, requestFile)
-            val response = TpuApi.retrofitService.uploadFile(body).execute()
-            withContext(Dispatchers.Main) {
-                if (response.isSuccessful) {
-                    val attachment = response.body()
-                    if (attachment != null) {
-                        Log.d("TPU.Upload", "Success: ${attachment.url}")
-                        ChatStore.attachmentsToUpload.find { it.uri == file.uri }
-                            ?: return@withContext
-                        ChatStore.attachmentsToUpload.removeIf { it.uri == file.uri }
-                        ChatStore.attachmentsToUpload.add(
-                            file.copy(
-                                url = attachment.upload.attachment,
-                                progress = 100f,
-                                started = true
-                            )
-                        )
-                    }
-                }
-            }
-        }*/
+        UploadStore.uploads.find { it.uri == file.uri }?.started = true
+        Log.d("TPU.Chat", UploadStore.uploads.toList().toString())
+        val list = listOf(file)
+        MainActivity().upload(list, false, context)
     }
 }
 

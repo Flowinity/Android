@@ -29,9 +29,6 @@ object ChatStore {
     var hasInit = false
     val searchPanel = MutableStateFlow(false)
 
-    // To upload to TPU, uses URI Android system
-    var attachmentsToUpload = mutableStateListOf<UploadTarget>()
-
     val chats: StateFlow<List<Chat>>
         get() = _chats
 

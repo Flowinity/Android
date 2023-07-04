@@ -23,13 +23,14 @@ import coil.request.ImageRequest
 import coil.size.Size
 import com.troplo.privateuploader.api.ChatStore
 import com.troplo.privateuploader.api.imageLoader
+import com.troplo.privateuploader.api.stores.UploadStore
 import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.data.model.UploadTarget
 import kotlinx.coroutines.Dispatchers
 
 @Composable
 fun UriPreview(file: UploadTarget, onClick: () -> Unit) {
-    val store = ChatStore.attachmentsToUpload.find { it.uri == file.uri }
+    val store = UploadStore.uploads.find { it.uri == file.uri }
     Box(
         modifier = Modifier
             .fillMaxHeight()

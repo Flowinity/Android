@@ -17,3 +17,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "PrivateUploader"
 include(":app")
+include(":app:benchmark")

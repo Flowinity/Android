@@ -27,7 +27,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.res.ResourcesCompat
-import com.troplo.privateuploader.TpuApp
 import io.noties.markwon.AbstractMarkwonPlugin
 import io.noties.markwon.Markwon
 import io.noties.markwon.MarkwonConfiguration
@@ -35,8 +34,6 @@ import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.html.HtmlPlugin
 import io.noties.markwon.linkify.LinkifyPlugin
-import io.wax911.emojify.parser.parseToHtmlDecimal
-import io.wax911.emojify.parser.parseToUnicode
 
 
 @Composable
@@ -53,7 +50,7 @@ fun MarkdownText(
     onClick: (() -> Unit)? = null,
     // this option will disable all clicks on links, inside the markdown text
     // it also enable the parent view to receive the click event
-    onLinkClicked: ((String) -> Unit)? = null,
+    onLinkClicked: (() -> Unit)? = null,
     onTextLayout: ((numLines: Int) -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
 ) {
@@ -75,8 +72,7 @@ fun MarkdownText(
                 maxLines = maxLines,
                 style = style,
                 textAlign = textAlign,
-                viewId = viewId,
-                onClick = onClick
+                viewId = viewId
             )
         },
         update = { textView ->
@@ -88,8 +84,11 @@ fun MarkdownText(
             }
             textView.maxLines = maxLines
             textView.setOnLongClickListener {
+                Log.d("MarkdownText", "onLongClick")
                 preventLinkClick.value = true
-                onLongClick?.invoke()
+                if (onLongClick != null) {
+                    onLongClick()
+                }
                 true
             }
         }
@@ -147,7 +146,7 @@ private fun createTextView(
 
 private fun createMarkdownRender(
     context: Context,
-    onLinkClicked: ((String) -> Unit)? = null,
+    onLinkClicked: (() -> Unit)? = null,
     preventLinkClick: MutableState<Boolean>,
 ): Markwon {
     return Markwon.builder(context)

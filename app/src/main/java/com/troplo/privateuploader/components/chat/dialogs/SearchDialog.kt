@@ -158,10 +158,9 @@ fun SearchDialog() {
                                 key = msg.id
                             ) {
                                 Message(
-                                    msg,
-                                    "none",
-                                    null,
-                                    null,
+                                    message = msg,
+                                    compact = "none",
+                                    onReply = null,
                                     onClick = {
                                         ChatStore.searchPanel.value = false
                                         ChatStore.jumpToMessage.value = msg.id

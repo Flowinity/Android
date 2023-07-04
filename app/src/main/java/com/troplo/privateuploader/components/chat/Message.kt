@@ -15,53 +15,40 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Reply
 import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.components.core.UserAvatar
-import com.troplo.privateuploader.data.model.ChatAssociation
 import com.troplo.privateuploader.data.model.Embed
 import com.troplo.privateuploader.data.model.EmbedData
 import com.troplo.privateuploader.data.model.Message
 import com.troplo.privateuploader.data.model.defaultUser
 import com.troplo.privateuploader.ui.theme.PrivateUploaderTheme
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
 fun Message(
+    modifier: Modifier = Modifier,
     message: Message,
     compact: String = "none",
-    messageCtx: MutableState<Boolean>?,
-    messageCtxMessage: MutableState<Message?>?,
-    modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     onReply: ((replyId: Int) -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier
             .pointerInput(Unit) {
                 detectTapGestures(
-                    onLongPress = {
-                        if (messageCtx == null || messageCtxMessage == null) return@detectTapGestures
-                        messageCtxMessage.value = message
-                        messageCtx.value = true
-                    },
                     onTap = {
                         if (onClick != null) onClick()
                     }
@@ -181,15 +168,11 @@ fun Message(
                             MarkdownText(
                                 markdown = message.content,
                                 color = color,
-                                onLongClick = {
-                                    if (messageCtx == null || messageCtxMessage == null) return@MarkdownText
-                                    messageCtxMessage.value = message
-                                    messageCtx.value = true
-                                },
                                 onClick = {
                                     if (onClick != null) onClick()
                                 },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                onLongClick = onLongClick
                             )
                         if (message.edited && !normal) {
                             val context = LocalContext.current
@@ -229,11 +212,7 @@ fun Message(
                             }
                         } else {
                             Box(
-                                modifier = Modifier.padding(start = 4.dp).clickable {
-                                    if (messageCtx == null || messageCtxMessage == null) return@clickable
-                                    messageCtxMessage.value = message
-                                    messageCtx.value = true
-                                }
+                                modifier = Modifier.padding(start = 4.dp)
                             ) {
                                 UserAvatar(
                                     avatar = null,
@@ -318,9 +297,7 @@ fun MessagePreview() {
                         userId = 1,
                         type = "message"
                     ),
-                    compact = "none",
-                    messageCtx = null,
-                    messageCtxMessage = null
+                    compact = "none"
                 )
             }
         }

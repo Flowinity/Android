@@ -117,10 +117,9 @@ fun PinsDialog(pins: MutableState<Boolean>) {
                                 key = msg.id
                             ) {
                                 Message(
-                                    msg,
-                                    "none",
-                                    null,
-                                    null,
+                                    message = msg,
+                                    compact = "none",
+                                    onReply = null,
                                     onClick = {
                                         pins.value = false
                                         ChatStore.jumpToMessage.value = msg.id
