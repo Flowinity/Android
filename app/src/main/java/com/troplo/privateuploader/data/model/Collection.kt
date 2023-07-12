@@ -1,14 +1,18 @@
 package com.troplo.privateuploader.data.model
 
+import androidx.annotation.Keep
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class PartialCollection(
     @Json(name = "id") val id: Int,
     @Json(name = "name") val name: String,
 )
 
+@JsonClass(generateAdapter = true)
+@Keep
 data class Collection(
     @Json(name = "createdAt")
     val createdAt: String,
@@ -41,6 +45,8 @@ data class Collection(
     val users: List<CollectionUser>
 )
 
+@JsonClass(generateAdapter = true)
+@Keep
 data class PermissionsMetadata(
     @Json(name = "configure")
     val configure: Boolean,
@@ -50,6 +56,9 @@ data class PermissionsMetadata(
     val write: Boolean
 )
 
+
+@JsonClass(generateAdapter = true)
+@Keep
 data class Preview(
     @Json(name = "attachment")
     val attachment: Attachment,
@@ -71,6 +80,8 @@ data class Preview(
     val userId: Int
 )
 
+@JsonClass(generateAdapter = true)
+@Keep
 data class Recipient(
     @Json(name = "accepted")
     val accepted: Boolean,
@@ -123,6 +134,8 @@ data class CollectionUser(
     val write: Boolean
 )
 
+@JsonClass(generateAdapter = true)
+@Keep
 data class Attachment(
     @Json(name = "attachment")
     val attachment: String,
@@ -130,6 +143,8 @@ data class Attachment(
     val id: Int
 )
 
+@JsonClass(generateAdapter = true)
+@Keep
 data class CollectivizeRequest(
     @Json(name = "attachmentId")
     val attachmentId: Int,
@@ -137,11 +152,15 @@ data class CollectivizeRequest(
     val collectionId: Int
 )
 
+@JsonClass(generateAdapter = true)
+@Keep
 data class CreateCollectionRequest(
     @Json(name = "name")
     val name: String
 )
 
+@JsonClass(generateAdapter = true)
+@Keep
 data class ShareCollectionRequest(
     @Json(name = "id")
     val id: Int,
@@ -149,11 +168,15 @@ data class ShareCollectionRequest(
     val type: String
 )
 
+@JsonClass(generateAdapter = true)
+@Keep
 data class ShareCollectionResponse(
     @Json(name = "shareLink")
     val shareLink: String
 )
 
+@JsonClass(generateAdapter = true)
+@Keep
 data class UpdateCollectionRequest(
     @Json(name = "name")
     val name: String

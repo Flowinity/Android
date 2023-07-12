@@ -1,9 +1,11 @@
 package com.troplo.privateuploader.data.model
 
+import androidx.annotation.Keep
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class ChatAssociation(
     @field:Json(name = "id") val id: Int,
     @field:Json(name = "chatId") val chatId: Int,
@@ -21,6 +23,7 @@ data class ChatAssociation(
 }
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class ReadReceiptEvent(
     @field:Json(name = "id") val id: Int,
     @field:Json(name = "chatId") val chatId: Int,

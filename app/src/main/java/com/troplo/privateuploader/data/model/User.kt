@@ -1,10 +1,12 @@
 package com.troplo.privateuploader.data.model
 
+import androidx.annotation.Keep
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import com.troplo.privateuploader.api.TpuFunctions
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class User(
     @field:Json(name = "id") val id: Int,
     @field:Json(name = "username") val username: String,
@@ -56,6 +58,7 @@ data class User(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class Platform(
     @field:Json(name = "platform") val platform: String,
     @field:Json(name = "id") val id: String,
@@ -64,6 +67,7 @@ data class Platform(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class Experiment(
     @field:Json(name = "id") val id: Int,
     @field:Json(name = "key") val key: String,
@@ -74,6 +78,7 @@ data class Experiment(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class Domain(
     @field:Json(name = "id") val id: Int,
     @field:Json(name = "domain") val domain: String,
@@ -91,6 +96,7 @@ data class Domain(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class Plan(
     @field:Json(name = "id") val id: Int,
     @field:Json(name = "name") val name: String,
@@ -107,6 +113,7 @@ data class Plan(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class Badge(
     @field:Json(name = "id") val id: Int,
     @field:Json(name = "name") val name: String,
@@ -124,6 +131,7 @@ data class Badge(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class BadgeAssociation(
     @field:Json(name = "badgeId") val badgeId: Int,
     @field:Json(name = "userId") val userId: Int,
@@ -134,6 +142,7 @@ data class BadgeAssociation(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class Notification(
     @field:Json(name = "id") val id: Int,
     @field:Json(name = "message") val message: String,
@@ -264,6 +273,7 @@ fun defaultUser() = User(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class StatusPayload(
     @field:Json(name = "status") val status: String?,
     @field:Json(name = "id") val id: Int,
@@ -271,6 +281,7 @@ data class StatusPayload(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class PartialUser(
     @field:Json(name = "avatar") val avatar: String?,
     @field:Json(name = "banner") val banner: String?,
@@ -286,6 +297,7 @@ data class PartialUser(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class Nickname(
     @field:Json(name = "id") val id: Int,
     @field:Json(name = "nickname") val nickname: String,
@@ -336,6 +348,7 @@ fun defaultPartialUser(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class SettingsPayload(
     @field:Json(name = "description") val description: String?,
     @field:Json(name = "discordPrecache") val discordPrecache: Boolean?,
@@ -354,6 +367,7 @@ data class SettingsPayload(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class PatchUser(
     @field:Json(name = "username") val username: String? = null,
     @field:Json(name = "description") val description: String? = null,

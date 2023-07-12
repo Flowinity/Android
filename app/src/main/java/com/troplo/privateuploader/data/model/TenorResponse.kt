@@ -1,8 +1,10 @@
 package com.troplo.privateuploader.data.model
 
 
+import androidx.annotation.Keep
 import com.squareup.moshi.Json
 
+@Keep
 data class TenorResponse(
     @Json(name = "next")
     val next: String,
@@ -10,6 +12,7 @@ data class TenorResponse(
     val results: List<Result>
 )
 
+@Keep
 data class Result(
     @Json(name = "content_description")
     val contentDescription: String,
@@ -33,6 +36,7 @@ data class Result(
     val url: String
 )
 
+@Keep
 data class MediaFormats(
     @Json(name = "gif")
     val gif: MediaType,
@@ -64,6 +68,7 @@ data class MediaFormats(
     val webm: MediaType
 )
 
+@Keep
 data class MediaType(
     @Json(name = "dims")
     val dims: List<Int>,

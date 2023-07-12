@@ -1,9 +1,11 @@
 package com.troplo.privateuploader.data.model
 
+import androidx.annotation.Keep
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class Friend(
     @field:Json(name = "status") val status: String,
     @field:Json(name = "user") val user: PartialUser?,
@@ -16,6 +18,7 @@ data class Friend(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class FriendRequest(
     @Json(name = "friend")
     val friend: Friend?,
@@ -26,6 +29,7 @@ data class FriendRequest(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class FriendNicknameRequest(
     @Json(name = "nickname")
     val nickname: String

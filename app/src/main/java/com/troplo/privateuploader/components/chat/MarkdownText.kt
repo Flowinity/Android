@@ -38,7 +38,7 @@ import io.noties.markwon.linkify.LinkifyPlugin
 
 @Composable
 fun MarkdownText(
-    markdown: String,
+    content: String,
     modifier: Modifier = Modifier,
     color: Color = Color.Unspecified,
     fontSize: TextUnit = TextUnit.Unspecified,
@@ -76,7 +76,7 @@ fun MarkdownText(
             )
         },
         update = { textView ->
-            markdownRender.setMarkdown(textView, markdown)
+            markdownRender.setMarkdown(textView, content)
             if (onTextLayout != null) {
                 textView.post {
                     onTextLayout(textView.lineCount)

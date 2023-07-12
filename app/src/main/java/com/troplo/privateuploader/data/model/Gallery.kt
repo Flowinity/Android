@@ -1,15 +1,18 @@
 package com.troplo.privateuploader.data.model
 
+import androidx.annotation.Keep
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class Gallery(
     @field:Json(name = "gallery") val gallery: List<Upload>,
     @field:Json(name = "pager") val pager: Pager,
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class Pager(
     @field:Json(name = "currentPage") var currentPage: Int,
     @field:Json(name = "endIndex") val endIndex: Int,

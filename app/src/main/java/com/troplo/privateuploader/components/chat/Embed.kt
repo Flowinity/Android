@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -147,7 +148,9 @@ fun Embed(embed: Embed) {
             }
 
             else -> {
-                Card {
+                Card(
+                    modifier = Modifier.width(300.dp).heightIn(0.dp, 200.dp)
+                ) {
                     Text(
                         text = "The version of TPUvNATIVE you are using does not yet support the embed type ${embed.type}!",
                         modifier = Modifier.padding(16.dp)
@@ -157,7 +160,7 @@ fun Embed(embed: Embed) {
         }
     } else {
         Card(
-            modifier = Modifier.width(300.dp)
+            modifier = Modifier.width(300.dp).heightIn(0.dp, 200.dp)
         ) {
             Box(
                 modifier = Modifier.fillMaxSize(),

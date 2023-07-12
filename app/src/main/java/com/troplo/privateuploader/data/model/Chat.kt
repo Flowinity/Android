@@ -1,10 +1,12 @@
 package com.troplo.privateuploader.data.model
 
+import androidx.annotation.Keep
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class Chat(
     @field:Json(name = "id") val id: Int,
     @field:Json(name = "name") val name: String,
@@ -26,22 +28,26 @@ data class Chat(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class ChatCreateRequest(
     @field:Json(name = "users") val users: List<Int>,
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class RemoveChatEvent(
     @field:Json(name = "id") val id: Int,
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class RemoveChatUserEvent(
     // this refers to the user's associationId
     @field:Json(name = "id") val id: Int,
     @field:Json(name = "chatId") val chatId: Int
 )
 
+@Keep
 @JsonClass(generateAdapter = true)
 data class AddChatUsersEvent(
     @field:Json(name = "chatId") val chatId: Int,

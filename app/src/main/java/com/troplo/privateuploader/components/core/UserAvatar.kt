@@ -99,7 +99,7 @@ fun UserAvatar(
                 painter = rememberAsyncImagePainter(
                     ImageRequest.Builder(LocalContext.current)
                         .dispatcher(Dispatchers.IO)
-                        .data(data = TpuFunctions.image(avatar, null))
+                        .data(data = TpuFunctions.image(avatar, null, 512, 512))
                         .apply {
                             size(Size.ORIGINAL)
                         }

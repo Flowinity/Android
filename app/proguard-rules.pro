@@ -19,3 +19,24 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-dontwarn kotlinx.serialization.DeserializationStrategy
+-dontwarn kotlinx.serialization.KSerializer
+-dontwarn kotlinx.serialization.Serializable
+-dontwarn kotlinx.serialization.builtins.BuiltinSerializersKt
+-dontwarn kotlinx.serialization.internal.ArrayListSerializer
+-dontwarn kotlinx.serialization.internal.GeneratedSerializer
+-dontwarn kotlinx.serialization.internal.PluginGeneratedSerialDescriptor
+-dontwarn kotlinx.serialization.internal.StringSerializer
+-dontwarn kotlinx.serialization.json.Json
+-dontwarn kotlinx.serialization.json.JsonBuilder
+-dontwarn kotlinx.serialization.json.JsonKt
+-dontwarn kotlinx.serialization.json.JvmStreamsKt
+-keepclassmembers,allowobfuscation class * {
+  @com.google.gson.annotations.SerializedName <fields>;
+}
+
+-keep class * {
+  @com.google.gson.annotations.SerializedName <fields>;
+}
+-keepnames class com.fasterxml.jackson.databind.** { *; }
+-dontwarn com.fasterxml.jackson.databind.**

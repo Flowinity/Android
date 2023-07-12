@@ -22,9 +22,13 @@ import kotlin.math.ln
 import kotlin.math.pow
 
 object TpuFunctions {
-    fun image(link: String?, recipient: User?): String? {
+    fun image(link: String?, recipient: User?, width: Int? = null, height: Int? = null): String? {
         if (recipient?.avatar != null) {
-            return "https://i.troplo.com/i/${recipient.avatar}"
+            var string = "https://i.troplo.com/i/${recipient.avatar}"
+            if (width != null && height != null) {
+                string += "?width=$width&height=$height"
+            }
+            return string
         }
         if (link == null) {
             return null
@@ -32,7 +36,11 @@ object TpuFunctions {
         return if (link.length >= 20) {
             "https://colubrina.troplo.com/usercontent/$link"
         } else {
-            "https://i.troplo.com/i/$link"
+            var string = "https://i.troplo.com/i/$link"
+            if (width != null && height != null) {
+                string += "?width=$width&height=$height"
+            }
+            return string
         }
     }
 

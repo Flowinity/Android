@@ -7,7 +7,9 @@ import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.disk.DiskCache
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.newFixedThreadPoolContext
 
+val dispatcher = newFixedThreadPoolContext(2, "CoilDispatcherTPU")
 fun imageLoader(context: Context, cache: Boolean? = true): ImageLoader {
     return ImageLoader.Builder(context)
         .components {
@@ -17,7 +19,7 @@ fun imageLoader(context: Context, cache: Boolean? = true): ImageLoader {
                 add(GifDecoder.Factory())
             }
         }
-        .dispatcher(Dispatchers.IO)
+        .dispatcher(dispatcher)
         .diskCache {
             if (cache == true) {
                 DiskCache.Builder()

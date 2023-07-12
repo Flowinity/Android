@@ -166,7 +166,7 @@ fun Message(
                         modifier = Modifier.weight(1f).fillMaxWidth()
                     ) {
                             MarkdownText(
-                                markdown = message.content,
+                                content = message.content,
                                 color = color,
                                 onClick = {
                                     if (onClick != null) onClick()
@@ -225,6 +225,7 @@ fun Message(
                         }
                     }
                 }
+
                 message.embeds.forEach {
                     Embed(embed = it)
                 }

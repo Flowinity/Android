@@ -1,10 +1,12 @@
 package com.troplo.privateuploader.data.model
 
+import androidx.annotation.Keep
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class State(
     @Json(name = "announcements")
     val announcements: List<Announcement>,
@@ -51,6 +53,7 @@ data class State(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class Announcement(
     @Json(name = "content")
     val content: String,
@@ -69,6 +72,7 @@ data class Announcement(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class Connection(
     @Json(name = "ip")
     val ip: String,
@@ -77,6 +81,7 @@ data class Connection(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class Features(
     @Json(name = "autoCollects")
     val autoCollects: Boolean,
@@ -91,6 +96,7 @@ data class Features(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class Providers(
     @Json(name = "anilist")
     val anilist: Boolean,
@@ -101,6 +107,7 @@ data class Providers(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class Stats(
     @Json(name = "announcements")
     val announcements: Int,
@@ -139,6 +146,7 @@ data class Stats(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class MessageGraph(
     @Json(name = "data")
     val `data`: List<Int>,
@@ -147,6 +155,7 @@ data class MessageGraph(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class PulseGraph(
     @Json(name = "data")
     val `data`: List<Double>,
@@ -155,6 +164,7 @@ data class PulseGraph(
 )
 
 @JsonClass(generateAdapter = true)
+@Keep
 data class UploadGraph(
     @Json(name = "data")
     val `data`: List<Int>,

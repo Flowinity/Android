@@ -6,6 +6,12 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+sentry {
+    autoUploadProguardMapping
+    autoUploadNativeSymbols
+    autoUploadSourceContext
+}
+
 android {
     namespace = "com.troplo.privateuploader"
     compileSdk = 34
@@ -14,8 +20,8 @@ android {
         applicationId = "com.troplo.privateuploader"
         minSdk = 28
         targetSdk = 34
-        versionCode = 8
-        versionName = "1.0.8"
+        versionCode = 10
+        versionName = "1.0.10"
         multiDexEnabled = true
         buildConfigField("String", "SERVER_URL", "\"https://privateuploader.com\"")
         buildConfigField("String", "BUILD_TIME", "\"${System.currentTimeMillis()}\"")
@@ -29,7 +35,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             buildConfigField("String", "SERVER_URL", "\"https://privateuploader.com\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -95,15 +102,15 @@ dependencies {
     implementation("io.coil-kt:coil:2.3.0")
     implementation("com.github.jeziellago:compose-markdown:0.3.3")
     implementation("com.github.bumptech.glide:compose:1.0.0-alpha.1")
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
+    implementation("com.squareup.retrofit2:retrofit:2.10.0-SNAPSHOT")
+    implementation("com.squareup.retrofit2:converter-moshi:2.10.0-SNAPSHOT")
     implementation("com.squareup.moshi:moshi:1.12.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
     implementation("com.github.bumptech.glide:glide:4.16.0-SNAPSHOT")
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.1")
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("com.google.code.gson:gson:2.10.1")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.10.0-SNAPSHOT")
     implementation("io.socket:socket.io-client:2.1.0") {
         exclude("org.json", "json")
     }
