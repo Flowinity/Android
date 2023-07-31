@@ -27,7 +27,7 @@ data class State(
     @Json(name = "inviteAFriend")
     val inviteAFriend: Boolean,
     @Json(name = "maintenance")
-    val maintenance: Boolean,
+    val maintenance: Maintenance,
     @Json(name = "name")
     val name: String,
     @Json(name = "officialInstance")
@@ -170,4 +170,15 @@ data class UploadGraph(
     val `data`: List<Int>,
     @Json(name = "labels")
     val labels: List<String>,
+)
+
+@JsonClass(generateAdapter = true)
+@Keep
+data class Maintenance(
+    @Json(name = "enabled")
+    val enabled: Boolean,
+    @Json(name = "message")
+    val message: String,
+    @Json(name = "statusPage")
+    val statusPage: String,
 )

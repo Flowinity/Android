@@ -115,6 +115,7 @@ fun ChatScreen(
     val jumpToMessage = ChatStore.jumpToMessage.collectAsState()
     val attachment = remember { mutableStateOf(false) }
     val replyId: MutableState<Int> = remember { mutableIntStateOf(0) }
+    val uploads = UploadStore.uploads
 
     if(chatViewModel.loading.value && chatViewModel.messages.value == null) {
         Box(
@@ -158,7 +159,7 @@ fun ChatScreen(
                     .fillMaxWidth()
             ) {
 
-                if (UploadStore.uploads.size > 0) {
+                if (uploads.size > 0) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -172,7 +173,7 @@ fun ChatScreen(
                         LazyRow(
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            UploadStore.uploads.forEach {
+                            uploads.forEach {
                                 item(
                                     key = it.uri
                                 ) {
