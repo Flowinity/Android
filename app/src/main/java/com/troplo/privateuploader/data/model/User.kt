@@ -55,6 +55,7 @@ data class User(
     @field:Json(name = "notifications") var notifications: List<Notification>,
     @field:Json(name = "platforms") val platforms: List<Platform>?,
     @field:Json(name = "nickname") val nickname: Nickname? = null,
+    @field:Json(name = "bot") val bot: Boolean? = null,
 )
 
 @JsonClass(generateAdapter = true)
@@ -294,6 +295,14 @@ data class PartialUser(
     @field:Json(name = "username") val username: String,
     @field:Json(name = "administrator") val administrator: Boolean?,
     @field:Json(name = "moderator") val moderator: Boolean?
+)
+
+@JsonClass(generateAdapter = true)
+@Keep
+data class PartialUserSocket(
+    @field:Json(name = "avatar") val avatar: String?,
+    @field:Json(name = "id") val id: Int,
+    @field:Json(name = "username") val username: String,
 )
 
 @JsonClass(generateAdapter = true)

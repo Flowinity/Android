@@ -3,6 +3,7 @@ package com.troplo.privateuploader.api
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import com.troplo.privateuploader.api.stores.CoreStore
 import com.troplo.privateuploader.api.stores.FriendStore
 import com.troplo.privateuploader.data.model.Chat
 import com.troplo.privateuploader.data.model.PartialUser
@@ -23,8 +24,10 @@ import kotlin.math.pow
 
 object TpuFunctions {
     fun image(link: String?, recipient: User?, width: Int? = null, height: Int? = null): String? {
+        val coreStore = CoreStore.core.value
+        val domain = "https://${coreStore?.domain ?: "i.troplo.com"}"
         if (recipient?.avatar != null) {
-            var string = "https://i.troplo.com/i/${recipient.avatar}"
+            var string = "$domain/i/${recipient.avatar}"
             if (width != null && height != null) {
                 string += "?width=$width&height=$height"
             }
@@ -36,7 +39,7 @@ object TpuFunctions {
         return if (link.length >= 20) {
             "https://colubrina.troplo.com/usercontent/$link"
         } else {
-            var string = "https://i.troplo.com/i/$link"
+            var string = "$domain/i/$link"
             if (width != null && height != null) {
                 string += "?width=$width&height=$height"
             }

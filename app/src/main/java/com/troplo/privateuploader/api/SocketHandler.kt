@@ -9,19 +9,25 @@ import com.troplo.privateuploader.BuildConfig
 import com.troplo.privateuploader.data.model.MessageEvent
 import com.troplo.privateuploader.data.model.Typing
 import io.socket.client.IO
+import io.socket.client.Manager
 import io.socket.client.Socket
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import java.net.URI
 import java.net.URISyntaxException
 import java.util.Collections
 import java.util.concurrent.Executors
 
+
 object SocketHandler {
     var baseUrl = BuildConfig.SERVER_URL
 
-    private var socket: Socket? = null
+    private var chatSocket: Socket? = null
+    private var gallerySocket: Socket? = null
+
+    private var manager: Manager? = null
     val gson = Gson()
     var connected = mutableStateOf(false)
 
@@ -30,61 +36,77 @@ object SocketHandler {
             val options = IO.Options()
             options.forceNew = true
             options.reconnection = true
+            Log.d("TPU.SocketToken", token)
             options.auth = Collections.singletonMap("token", token)
-            options.query = "platform=$platform&version=3"
+            options.query = "platform=$platform&version=4"
             options.transports = arrayOf("websocket")
             options.reconnectionDelay = 1000
             options.reconnectionDelayMax = 5000
-            options.reconnectionAttempts = 99999
-            socket = IO.socket(baseUrl, options)
-            if (socket != null) {
-                socket?.open()
+            options.reconnectionAttempts = 9999
+            options.path = "/gateway"
+            manager = Manager(URI(baseUrl), options)
+            chatSocket = manager!!.socket("/chat", options)
+            gallerySocket = manager!!.socket("/gallery", options)
+            if(gallerySocket != null) {
+                gallerySocket?.open()
+            }
+            if (chatSocket != null) {
+                chatSocket?.open()
                 if (platform !== "android_kotlin_background_service") {
-                    socket?.on(Socket.EVENT_CONNECT) {
+                    chatSocket?.on(Socket.EVENT_CONNECT) {
                         this.connected.value = true
                         Log.d(
                             "TPU.Untagged",
-                            "Socket connected ${socket?.isActive}, Connected: ${this.connected.value}"
+                            "Socket connected ${chatSocket?.isActive}, Connected: ${this.connected.value}"
                         )
                     }
-                    socket?.on(Socket.EVENT_DISCONNECT) {
+                    chatSocket?.on(Socket.EVENT_DISCONNECT) {
                         this.connected.value = false
                         Log.d(
                             "TPU.Untagged",
-                            "Socket disconnected ${socket?.isActive}, Connected: ${this.connected.value}"
+                            "Socket disconnected ${chatSocket?.isActive}, Connected: ${this.connected.value}, Error: ${it[0]}"
                         )
                     }
-                    socket?.on(Socket.EVENT_CONNECT_ERROR) {
+                    chatSocket?.on(Socket.EVENT_CONNECT_ERROR) {
                         try {
                             this.connected.value = false
                             Log.d(
                                 "TPU.Untagged",
-                                "Socket connect error ${socket?.isActive}, Connected: ${this.connected.value}, Error: ${it[0]}"
+                                "Socket connect error ${chatSocket?.isActive}, Connected: ${this.connected.value}, Error: ${it[0]}, URL: ${baseUrl}/gateway"
                             )
                         } catch (e: Exception) {
                             //
                         }
                     }
-                    socket?.on("message") { it ->
+                    chatSocket?.on("message") { it ->
                         val jsonArray = it[0] as JSONObject
                         val payload = jsonArray.toString()
                         val messageEvent = gson.fromJson(payload, MessageEvent::class.java)
 
-                        val message = messageEvent.message
+                        // Change in v4 uses uppercase type
+                        val message = messageEvent.message.copy(
+                            type = messageEvent.message.type?.lowercase()
+                        )
+
                         Log.d("TPU.Untagged", "Message received (SocketHandler): $message")
                         val chat =
-                            ChatStore.chats.value.find { it.association?.id == messageEvent.association.id }
-                        if (messageEvent.association.id != ChatStore.associationId.value) {
+                            ChatStore.chats.find { it.association?.id?.toInt() == messageEvent.associationId.toInt() }
+                        val unread = chat?.unread ?: 0
+                        Log.d("MessageStore", "${messageEvent.associationId}, ${ChatStore.associationId.value}")
+                        Log.d("MessageStore", "Chat: $chat")
+                        if (messageEvent.associationId != ChatStore.associationId.value) {
                             // increase unread count
-                            Log.d("TPU.Untagged", chat.toString())
-                            if (chat != null) {
-                                chat.unread = chat.unread?.plus(1)
-                            }
-                        } else if(chat != null) {
-                            ChatStore.setChats(listOf(chat) + ChatStore.chats.value.filter { it.association?.id != messageEvent.association.id })
+                            Log.d("MessageStore", "Increasing unread count: ${chat?.unread?.plus(1)}")
+                            unread.plus(1)
+                        }
+                        Log.d("MessageStore", "Unread; $unread, Chat: $chat")
+                        if(chat != null) {
+                            val index = ChatStore.chats.indexOfFirst { it.id == chat.id }
+                            ChatStore.chats.removeAt(index)
+                            ChatStore.chats.add(0, chat.copy(unread = unread))
                         }
                     }
-                    socket?.on("typing") { it ->
+                    chatSocket?.on("typing") { it ->
                         CoroutineScope(Dispatchers.IO).launch {
                             val jsonArray = it[0] as JSONObject
                             val payload = jsonArray.toString()
@@ -109,7 +131,7 @@ object SocketHandler {
                         }
                     }
                 }
-                Log.d("TPU.Untagged", "Socket connected ${socket?.isActive}")
+                Log.d("TPU.Untagged", "Socket connected ${chatSocket?.isActive}")
             } else {
                 Log.d("TPU.Untagged", "Socket is null")
             }
@@ -127,11 +149,17 @@ object SocketHandler {
 
 
     fun getSocket(): Socket? {
-        return socket
+        return chatSocket
+    }
+
+    fun getGallerySocket(): Socket? {
+        return gallerySocket
     }
 
     fun closeSocket() {
-        socket?.disconnect()
-        socket = null
+        chatSocket?.disconnect()
+        chatSocket = null
+        gallerySocket?.disconnect()
+        gallerySocket = null
     }
 }

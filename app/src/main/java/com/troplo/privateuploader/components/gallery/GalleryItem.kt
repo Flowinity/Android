@@ -138,7 +138,7 @@ fun GalleryItem(
                         modifier = Modifier
                             .requiredHeight(200.dp)
                             .fillMaxWidth(),
-                        contentScale = ContentScale.FillWidth
+                        contentScale = ContentScale.Fit
                     )
                 } else {
                     Icon(
@@ -339,10 +339,10 @@ class SampleUploadProvider : PreviewParameterProvider<Upload> {
                 id = 1,
                 name = "Test",
                 attachment = "aaa.png",
-                type = "imagse",
+                type = "text",
                 originalFilename = "Test.png",
                 createdAt = "2021-08-01T00:00:00.000Z",
-                fileSize = 1000,
+                fileSize = 1024,
                 collections = listOf(
                     PartialCollection(
                         id = 1,

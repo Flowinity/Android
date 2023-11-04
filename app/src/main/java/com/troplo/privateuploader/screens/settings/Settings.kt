@@ -138,7 +138,7 @@ fun SettingsScreen(
                         item {
                             SettingsItem(
                                 Icons.Default.AccountBox,
-                                "My TPU",
+                                "My PrivateUploader",
                                 "Change your username, email, and password.",
                                 onClick = { navigate("settings/account") })
                         }
@@ -156,7 +156,7 @@ fun SettingsScreen(
                                 SettingsItem(
                                     Icons.Default.Upload,
                                     "Auto-Upload",
-                                    "Options to automatically upload to TPU.",
+                                    "Options to automatically upload to PrivateUploader.",
                                     onClick = { navigate("settings/upload") }
                                 )
                             }
@@ -199,7 +199,7 @@ fun SettingsScreen(
                             SettingsItem(
                                 Icons.Default.Logout,
                                 "Logout",
-                                "Logout of TPU.",
+                                "Logout of PrivateUploader.",
                                 onClick = {
                                     logout.value = true
                                 }
@@ -211,7 +211,7 @@ fun SettingsScreen(
                                 SettingsItem(
                                     Icons.Default.DeviceUnknown,
                                     "Re-attempt device registration",
-                                    "Re-attempt device registration with TPU Firebase CM",
+                                    "Re-attempt device registration with PrivateUploader Firebase CM",
                                     onClick = {
                                         UserStore.registerFCMToken()
                                     }
@@ -287,7 +287,7 @@ fun SettingsScreen(
                                             }", style = MaterialTheme.typography.bodySmall
                                         )
                                         Text(
-                                            text = "TPU Server: ${
+                                            text = "PrivateUploader Server: ${
                                                 TpuApi.instance
                                             }", style = MaterialTheme.typography.bodySmall
                                         )
@@ -297,7 +297,7 @@ fun SettingsScreen(
                                             }", style = MaterialTheme.typography.bodySmall
                                         )
                                         Text(
-                                            text = "Build time: ${
+                                            text = "Build date: ${
                                                 BuildConfig.BUILD_TIME
                                             }", style = MaterialTheme.typography.bodySmall
                                         )

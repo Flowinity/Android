@@ -52,7 +52,7 @@ fun SettingsCollectionsScreen(navigate: (String) -> Unit = {}) {
                 )
             }
 
-            collections.value.forEach { collection ->
+            collections.value.items.forEach { collection ->
                 item(
                     key = collection.id
                 ) {

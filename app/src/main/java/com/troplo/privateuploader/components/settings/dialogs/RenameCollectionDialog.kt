@@ -36,7 +36,7 @@ fun RenameCollectionDialog(
     collectionId: Int
 ) {
     val collections = CollectionStore.collections.collectAsState()
-    val collection = collections.value.find { it.id == collectionId }
+    val collection = collections.value.items.find { it.id == collectionId }
     val name = remember { mutableStateOf(collection?.name ?: "") }
     val viewModel = remember { RenameCollectionViewModel() }
 

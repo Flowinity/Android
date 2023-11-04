@@ -115,7 +115,7 @@ fun ChatScreen(
     val jumpToMessage = ChatStore.jumpToMessage.collectAsState()
     val attachment = remember { mutableStateOf(false) }
     val replyId: MutableState<Int> = remember { mutableIntStateOf(0) }
-    val uploads = UploadStore.uploads
+    val uploads = remember { UploadStore.uploads }
 
     if(chatViewModel.loading.value && chatViewModel.messages.value == null) {
         Box(
@@ -188,26 +188,30 @@ fun ChatScreen(
 
                 if(replyId.value != 0) {
                     val msg = chatViewModel.messages.value?.find { it.id == replyId.value }
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
-                        ReplyMessage(msg, null)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(end = 24.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            ReplyMessage(msg, null)
+                        }
                         IconButton(
                             onClick = {
                                 replyId.value = 0
-                            }
+                            },
+                            modifier = Modifier.align(Alignment.CenterEnd)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Close reply",
-                                modifier = Modifier.padding(end = 16.dp, bottom = 4.dp)
+                                contentDescription = "Cancel reply",
                             )
                         }
                     }
                 }
-
                 if (editId.value != 0) {
                     Row(
                         modifier = Modifier
@@ -279,18 +283,24 @@ fun ChatScreen(
                                 }
                             },
                             trailingIcon = {
+                                val enabled = remember(uploads, message.value, uploads) {
+                                    uploads.none { it.url == null } && (message.value.isNotEmpty() || uploads.isNotEmpty())
+                                }
+
                                 IconButton(
                                     onClick = {
                                         chatViewModel.sendMessage(
                                             associationId,
                                             message.value,
                                             context,
-                                            editId.value
+                                            editId.value,
+                                            if(replyId.value != 0) replyId.value else null
                                         )
                                         message.value = ""
                                         editId.value = 0
+                                        replyId.value = 0
                                     },
-                                    enabled = UploadStore.uploads.none { it.url == null } && (message.value.isNotEmpty() || UploadStore.uploads.isNotEmpty())
+                                    enabled = enabled
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.Send,
@@ -492,12 +502,15 @@ class ChatViewModel : ViewModel() {
         val payload = jsonArray.toString()
         val messageEvent = gson.fromJson(payload, MessageEvent::class.java)
 
-        val message = messageEvent.message
+        // Change in v4 uses uppercase type
+        val message = messageEvent.message.copy(
+            type = messageEvent.message.type?.lowercase()
+        )
 
-        if (associationId != messageEvent.association.id) {
+        if (associationId != messageEvent.associationId.toInt()) {
             Log.d(
-                "TPU.Untagged",
-                "Message not for this association, ${messageEvent.association.id} != $associationId"
+                "Chat",
+                "Message not for this association, ${messageEvent.associationId} != $associationId ${associationId::class.java.typeName} ${messageEvent.associationId::class.java.typeName}"
             )
             return
         }
@@ -505,8 +518,8 @@ class ChatViewModel : ViewModel() {
         val existingMessage =
             messages.value?.find { e -> e.id == message.id || (e.content == message.content && e.pending == true && e.userId == message.userId) }
         Log.d(
-            "TPU.Untagged",
-            "Message for this association, ${messageEvent.association.id} == $associationId, $existingMessage"
+            "Chat",
+            "Message for this association, ${messageEvent.associationId} == $associationId, $existingMessage"
         )
         if (existingMessage == null) {
             // add to start of list
@@ -527,7 +540,7 @@ class ChatViewModel : ViewModel() {
     }
 
     fun onEmbedResolution(data: Array<Any>) {
-        val chatId = ChatStore.chats.value.find { it.association?.id == associationId }?.id
+        val chatId = ChatStore.chats.find { it.association?.id == associationId }?.id
         val jsonArray = data[0] as JSONObject
         val payload = jsonArray.toString()
         val embed = gson.fromJson(payload, EmbedResolutionEvent::class.java)
@@ -644,6 +657,7 @@ class ChatViewModel : ViewModel() {
             }
 
             // find the old read receipt belonging to the user and delete it in messages[].readreceipts array
+            Log.d("ReadReceipts", "$readReceiptEvent")
             val index = messages.value.orEmpty()
                 .indexOfFirst { e -> e.readReceipts.find { it.user.id == readReceiptEvent.user.id } != null }
             if (index != -1) {
@@ -710,6 +724,7 @@ class ChatViewModel : ViewModel() {
         message: String,
         context: Context,
         editId: Int = 0,
+        replyId: Int? = null
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             val user = UserStore.getUser()
@@ -735,7 +750,7 @@ class ChatViewModel : ViewModel() {
                         pinned = false,
                         readReceipts = emptyList(),
                         reply = null,
-                        replyId = null,
+                        replyId = replyId,
                         tpuUser = user,
                         type = "message"
                     )
@@ -745,11 +760,12 @@ class ChatViewModel : ViewModel() {
                         // ensure url is populated for attachments
                         val uploadedAttachments =
                             UploadStore.uploads.filter { it.url != null }.map { it.url!! }
-                        UploadStore.uploads = mutableStateListOf()
+                        UploadStore.uploads.clear()
                         val response = TpuApi.retrofitService.sendMessage(
                             associationId, MessageRequest(
                                 message,
-                                attachments = uploadedAttachments
+                                attachments = uploadedAttachments,
+                                replyId = replyId
                             )
                         ).execute()
                         launch(Dispatchers.IO) {

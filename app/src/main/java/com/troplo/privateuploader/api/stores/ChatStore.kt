@@ -22,21 +22,19 @@ import java.net.URISyntaxException
 
 
 object ChatStore {
-    private val _chats: MutableStateFlow<List<Chat>> = MutableStateFlow(emptyList())
+    val chats = mutableStateListOf<Chat>()
     var associationId = MutableStateFlow(0)
     var typers = MutableStateFlow(emptyList<Typing>())
     var jumpToMessage = MutableStateFlow(0)
     var hasInit = false
     val searchPanel = MutableStateFlow(false)
 
-    val chats: StateFlow<List<Chat>>
-        get() = _chats
-
     fun initializeChats() {
         try {
             CoroutineScope(Dispatchers.IO).launch {
                 val response = TpuApi.retrofitService.getChats().execute().body() ?: emptyList()
-                _chats.value = response
+                chats.clear()
+                chats.addAll(response)
             }
             if(hasInit) return
             hasInit = true
@@ -47,30 +45,27 @@ object ChatStore {
                     val payload = jsonArray.toString()
                     val chat = SocketHandler.gson.fromJson(payload, Chat::class.java)
                     // add it to the top
-                    _chats.value = listOf(chat).plus(_chats.value)
+                    chats.add(0, chat)
                 }
 
                 socket.on("removeChat") {
                     val jsonArray = it[0] as JSONObject
                     val payload = jsonArray.toString()
                     val chat = SocketHandler.gson.fromJson(payload, RemoveChatEvent::class.java)
-                    _chats.value = _chats.value.filter { it.id != chat.id }
+                    val index = chats.indexOfFirst { it.id == chat.id }
+                    chats.removeAt(index)
                 }
 
                 socket.on("removeChatUser") {
                     val jsonArray = it[0] as JSONObject
                     val payload = jsonArray.toString()
                     val assoc = SocketHandler.gson.fromJson(payload, RemoveChatUserEvent::class.java)
-                    val chatIndex = _chats.value.indexOfFirst { it.id == assoc.chatId }
+                    val chatIndex = chats.indexOfFirst { it.id == assoc.chatId }
                     if (chatIndex != -1) {
-                        val chat = _chats.value[chatIndex]
+                        val chat = chats[chatIndex]
                         val userIndex = chat.users.indexOfFirst { it.id == assoc.id }
                         if (userIndex != -1) {
-                            _chats.value = _chats.value.toMutableList().apply {
-                                this[chatIndex] = chat.copy(users = chat.users.toMutableList().apply {
-                                    this.removeAt(userIndex)
-                                })
-                            }
+                            chats[chatIndex].users.toMutableList().removeAt(userIndex)
                         }
                     }
                 }
@@ -80,14 +75,12 @@ object ChatStore {
                     val payload = jsonArray.toString()
                     val users = SocketHandler.gson.fromJson(payload, AddChatUsersEvent::class.java)
 
-                    val chatIndex = _chats.value.indexOfFirst { it.id == users.chatId }
+                    val chatIndex = chats.indexOfFirst { it.id == users.chatId }
                     if (chatIndex != -1) {
-                        val chat = _chats.value[chatIndex]
-                        _chats.value = _chats.value.toMutableList().apply {
-                            this[chatIndex] = chat.copy(users = chat.users.toMutableList().apply {
-                                this.addAll(users.users)
-                            })
-                        }
+                        val chat = chats[chatIndex]
+                        chats[chatIndex] = chats[chatIndex].copy(users = chats[chatIndex].users.toMutableList().apply {
+                            addAll(users.users)
+                        })
                     }
                 }
             } else {
@@ -99,7 +92,7 @@ object ChatStore {
     }
 
     fun getChat(): Chat? {
-        return chats.value.find { it.association?.id == associationId.value }
+        return chats.find { it.association?.id == associationId.value }
     }
 
     fun setAssociationId(id: Int, context: Context) {
@@ -109,14 +102,10 @@ object ChatStore {
         // Handle unread count, and init read receipt
         val socket = SocketHandler.getSocket()
         socket?.emit("readChat", id)
-        val chat = chats.value.find { it.association?.id == id }
+        val chat = chats.find { it.association?.id == id }
         if (chat != null) {
             chat.unread = 0
         }
-    }
-
-    fun setChats(chats: List<Chat>) {
-        _chats.value = chats
     }
 
     fun deleteMessage(messageId: Int) {

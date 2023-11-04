@@ -1,5 +1,6 @@
 package com.troplo.privateuploader.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,7 +45,7 @@ fun HomeScreen(
     val loading = remember { mutableStateOf(true) }
     val chatViewModel = remember { ChatHomeViewModel() }
     val chatStore = ChatStore
-    val chats = chatStore.chats.collectAsState()
+    val chats = remember { chatStore.chats }
     val createChat = remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
     LaunchedEffect(Unit) {
@@ -57,7 +58,7 @@ fun HomeScreen(
         NewChatDialog(createChat, navController)
     }
 
-    LaunchedEffect(chats.value) {
+    LaunchedEffect(chatStore.chats) {
         if (listState.firstVisibleItemIndex == 1) listState.scrollToItem(0)
     }
 
@@ -77,7 +78,7 @@ fun HomeScreen(
                 .fillMaxSize()
         ) {
             LazyColumn(modifier = Modifier.fillMaxSize(), state = listState) {
-                chats.value.forEach {
+                chats.forEach {
                     item(
                         key = it.id
                     ) {

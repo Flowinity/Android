@@ -38,9 +38,9 @@ fun TopBarNav(navController: NavController, openPanel: () -> Unit) {
     if (currentRoute == null || currentRoute == NavRoute.Login.path || currentRoute == NavRoute.Register.path) {
         return
     }
-    val chats = ChatStore.chats.collectAsState()
+    val chats = remember { ChatStore.chats }
     val chat =
-        remember { derivedStateOf { chats.value.find { it.association?.id == ChatStore.associationId.value } } }
+        remember { derivedStateOf { chats.find { it.association?.id == ChatStore.associationId.value } } }
     val user = UserStore.user.collectAsState()
 
     if (chatSearch.value) {

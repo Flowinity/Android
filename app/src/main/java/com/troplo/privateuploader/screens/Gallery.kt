@@ -1,10 +1,19 @@
 package com.troplo.privateuploader.screens
 
 import android.app.Activity
+import android.app.PendingIntent
+import android.content.ContentResolver
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
+import android.content.IntentSender
+import android.net.Uri
+import android.provider.OpenableColumns
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,6 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.troplo.privateuploader.MainActivity
 import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.stores.CollectionStore
@@ -67,6 +77,7 @@ import com.troplo.privateuploader.data.model.Pager
 import com.troplo.privateuploader.data.model.TenorResponse
 import com.troplo.privateuploader.data.model.Upload
 import com.troplo.privateuploader.data.model.UploadResponse
+import com.troplo.privateuploader.data.model.UploadTarget
 import com.troplo.privateuploader.data.model.defaultUser
 import com.troplo.privateuploader.ui.theme.PrivateUploaderTheme
 import kotlinx.coroutines.Dispatchers
@@ -75,6 +86,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import retrofit2.Response
+import java.util.Date
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -86,10 +98,42 @@ fun GalleryScreen(
     inline: Boolean = false,
     onClick: (Upload) -> Unit = {},
 ) {
+    val contentResolver: ContentResolver = LocalContext.current.contentResolver
+    fun getFileName(uri: Uri): String {
+        var result: String? = null
+        if (uri.scheme == "content") {
+            val cursor = contentResolver.query(uri, null, null, null, null)
+            cursor.use { c ->
+                if (c != null && c.moveToFirst()) {
+                    val index = c.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    result = c.getString(index)
+                }
+            }
+        }
+        if (result == null) {
+            result = uri.path
+            val cut = result!!.lastIndexOf('/')
+            if (cut != -1) {
+                result = result!!.substring(cut + 1)
+            }
+        }
+        return result as String
+    }
+
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { data ->
+       Log.d("TPU.UploadResponse", "Upload response received, data: $data")
+        val files = mutableListOf<UploadTarget>()
+        for (uri in data) {
+            files.add(UploadTarget(uri = uri, name = getFileName(uri)))
+        }
+        MainActivity().upload(files, false, context)
+    }
+
+
     val galleryViewModel = remember { GalleryViewModel() }
     val searchState = remember { mutableStateOf(galleryViewModel.search) }
     val listState = rememberLazyListState()
-    val context = LocalContext.current
     val activity = LocalContext.current as Activity
     var expanded by remember { mutableStateOf(false) }
     var selectedCollectionText = remember { mutableStateOf("None") }
@@ -202,7 +246,7 @@ fun GalleryScreen(
                                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                                 )
                                 Divider()
-                                collections.value.forEach { collection ->
+                                collections.value.items.forEach { collection ->
                                     DropdownMenuItem(
                                         text = { Text(collection.name) },
                                         onClick = {
@@ -265,9 +309,7 @@ fun GalleryScreen(
             if(type != "tenor") {
                 ExpandedFloatingActionButton(
                     onClick = {
-                        Log.d("GalleryScreen", activity.toString())
-                        if (activity == null) return@ExpandedFloatingActionButton
-                        UploadStore.requestUploadIntent(activity)
+                        launcher.launch(arrayOf("*/*"))
                     },
                     extended = listState.isScrollingUp(),
                     icon = {
@@ -285,16 +327,17 @@ fun GalleryScreen(
     )
 }
 
+
 class GalleryViewModel : ViewModel() {
     val gallery = mutableStateOf<Gallery?>(null)
     val search = mutableStateOf("")
     val loading = mutableStateOf(true)
 
     fun onMount() {
-        val socket = SocketHandler.getSocket()
-        socket?.off("gallery/create")
-        socket?.off("gallery/update")
-        socket?.on("gallery/create") {
+        val socket = SocketHandler.getGallerySocket()
+        socket?.off("create")
+        socket?.off("update")
+        socket?.on("create") {
             val jsonArray = it[0] as JSONArray
             val payload = jsonArray.toString()
             val uploads = SocketHandler.gson.fromJson(payload, Array<UploadResponse>::class.java).toList()
@@ -307,16 +350,26 @@ class GalleryViewModel : ViewModel() {
             }
         }
 
-        socket?.on("gallery/update") {
+        socket?.on("update") {
             val jsonArray = it[0] as JSONArray
             val payload = jsonArray.toString()
             val uploads = SocketHandler.gson.fromJson(payload, Array<Upload>::class.java).toList()
-            if(search.value.isEmpty()) {
+
+            if (search.value.isEmpty()) {
                 Log.d("GalleryViewModel", "Received upload: $uploads")
-                // replace the existing uploads if they exist with new data
+
+                // Update the existing gallery with new data based on matching IDs
                 gallery.value = gallery.value?.copy(
-                    gallery = gallery.value?.gallery?.map { upload ->
-                        uploads.find { it.id == upload.id } ?: upload
+                    gallery = gallery.value?.gallery?.map { existingUpload ->
+                        uploads.find { it.id == existingUpload.id }?.let { newUpload ->
+                            // Create a new upload by spreading the fields of the existing upload
+                            existingUpload.copy(
+                                name = newUpload.name ?: existingUpload.name,
+                                collections = newUpload.collections ?: existingUpload.collections,
+                                starred = newUpload.starred ?: existingUpload.starred,
+                                textMetadata = newUpload.textMetadata ?: existingUpload.textMetadata
+                            )
+                        } ?: existingUpload // If no match found, keep the existing upload
                     }.orEmpty()
                 )
             }
@@ -325,8 +378,8 @@ class GalleryViewModel : ViewModel() {
 
     fun onStop() {
         Log.d("GalleryViewModel", "onStop")
-        SocketHandler.getSocket()?.off("gallery/create")
-        SocketHandler.getSocket()?.off("gallery/update")
+        SocketHandler.getGallerySocket()?.off("create")
+        SocketHandler.getGallerySocket()?.off("update")
     }
 
     fun getGalleryItems(t: String = "gallery", collectionId: Int = 0) {

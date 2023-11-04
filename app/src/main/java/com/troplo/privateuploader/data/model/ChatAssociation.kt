@@ -28,5 +28,5 @@ data class ReadReceiptEvent(
     @field:Json(name = "id") val id: Int,
     @field:Json(name = "chatId") val chatId: Int,
     @field:Json(name = "lastRead") val lastRead: Int,
-    @field:Json(name = "user") val user: PartialUser
+    @field:Json(name = "user") val user: PartialUserSocket
 )

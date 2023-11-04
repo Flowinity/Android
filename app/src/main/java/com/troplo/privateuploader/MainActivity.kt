@@ -24,6 +24,7 @@ import com.troplo.privateuploader.api.SocketHandlerService
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.api.stores.CollectionStore
+import com.troplo.privateuploader.api.stores.CoreStore
 import com.troplo.privateuploader.api.stores.UploadStore
 import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.data.model.UploadTarget
@@ -72,6 +73,7 @@ class MainActivity : ComponentActivity() {
             SocketHandler.initializeSocket(token, this)
             UserStore.initializeUser(this)
         }
+        CoreStore.initializeCore()
         if (token != null) {
             setContent {
                 PrivateUploaderTheme(
@@ -152,7 +154,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    fun upload(files: List<UploadTarget>, deleteOnceFinished: Boolean = true, context: Context = this) {
+    public fun upload(files: List<UploadTarget>, deleteOnceFinished: Boolean = true, context: Context = this) {
         Log.d("TPU.Upload", "Uploading ${files.size} files")
         if(deleteOnceFinished) {
             UploadStore.uploads = files.toMutableStateList()
@@ -194,7 +196,7 @@ class MainActivity : ComponentActivity() {
             response.body()?.let { upload ->
                 UploadStore.globalProgress.value = 0f
                 if(deleteOnceFinished) {
-                    UploadStore.uploads = mutableStateListOf()
+                    UploadStore.uploads.clear()
                 } else {
                     // set the upload status to finished
                     UploadStore.uploads.find { it.uri == files.first().uri }?.let {
@@ -207,9 +209,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @Deprecated("Deprecated in Java")
+    @Deprecated("Deprecated in Java :(")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        Log.d("TPU.Upload", "Upload response received (MainActivity)")
         if (requestCode == UploadStore.intentCode && resultCode == RESULT_OK) {
             if (data != null) {
                 if (data.clipData != null) {

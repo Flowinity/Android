@@ -36,6 +36,7 @@ data class Message(
 data class MessageRequest(
     @field:Json(name = "content") val content: String,
     @field:Json(name = "attachments") val attachments: List<String> = emptyList(),
+    @field:Json(name = "replyId") val replyId: Int? = null,
 )
 
 @JsonClass(generateAdapter = true)
@@ -51,7 +52,7 @@ data class MessageEvent(
     @field:Json(name = "message") val message: Message,
     @field:Json(name = "mention") val mention: Boolean,
     @field:Json(name = "chat") val chat: Chat,
-    @field:Json(name = "association") val association: ChatAssociation,
+    @field:Json(name = "associationId") val associationId: Number,
 )
 
 @JsonClass(generateAdapter = true)

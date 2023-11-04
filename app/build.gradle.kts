@@ -1,9 +1,20 @@
+import java.text.DateFormat
+
 @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
     id("io.sentry.android.gradle") version "3.11.1"
     id("com.google.gms.google-services")
+    id("com.apollographql.apollo3") version "3.8.2"
+    id("se.patrikerdes.use-latest-versions") version "0.2.18"
+    id("com.github.ben-manes.versions") version "0.41.0"
+}
+
+apollo {
+    service("service") {
+        packageName.set("com.troplo.privateuploader")
+    }
 }
 
 sentry {
@@ -20,11 +31,11 @@ android {
         applicationId = "com.troplo.privateuploader"
         minSdk = 28
         targetSdk = 34
-        versionCode = 10
-        versionName = "1.0.10"
+        versionCode = 11
+        versionName = "1.0.11"
         multiDexEnabled = true
         buildConfigField("String", "SERVER_URL", "\"https://privateuploader.com\"")
-        buildConfigField("String", "BUILD_TIME", "\"${System.currentTimeMillis()}\"")
+        buildConfigField("String", "BUILD_TIME", "\"${DateFormat.getDateTimeInstance().format(System.currentTimeMillis())}\"")
         buildConfigField("Integer", "BETA_VERSION", "6")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -76,6 +87,7 @@ android {
 }
 
 dependencies {
+    implementation("com.apollographql.apollo3:apollo-runtime:3.8.2")
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.1.1"))
     implementation("com.google.firebase:firebase-messaging-ktx:23.2.0")
@@ -119,7 +131,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.6.0")
 
     // Material Design 3
-    implementation("androidx.compose.material3:material3:1.2.0-alpha03")
+    implementation("androidx.compose.material3:material3:1.2.0-alpha10")
     // For SwipeableState
     implementation("androidx.compose.material:material:1.4.3")
     // or only import the main APIs for the underlying toolkit systems,

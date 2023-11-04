@@ -18,6 +18,7 @@ class UploadResponseActivity: Activity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
             super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == UploadStore.intentCode && resultCode == RESULT_OK) {
+            Log.d("TPU.UploadResponse", "Upload response received")
             if (data != null) {
                 if (data.clipData != null) {
                     // Multiple files were selected

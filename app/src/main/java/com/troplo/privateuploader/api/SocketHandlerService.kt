@@ -22,12 +22,12 @@ object SocketHandlerService {
             options.forceNew = true
             options.reconnection = true
             options.auth = Collections.singletonMap("token", token)
-            options.query = "platform=$platform&version=3"
+            options.query = "platform=$platform&version=4"
             options.transports = arrayOf("websocket")
             options.reconnectionDelay = 1000
             options.reconnectionDelayMax = 5000
             options.reconnectionAttempts = 99999
-            socket = IO.socket(baseUrl, options)
+            socket = IO.socket("$baseUrl/gateway", options)
             if (socket != null) {
                 socket?.open()
                 Log.d("TPU.Untagged", "Socket connected ${socket?.isActive}")

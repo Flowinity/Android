@@ -34,6 +34,7 @@ import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.SocketHandlerService
 import com.troplo.privateuploader.api.TpuApi
+import com.troplo.privateuploader.api.stores.CoreStore
 import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.components.core.LoadingButton
 import com.troplo.privateuploader.data.model.LoginRequest
@@ -195,6 +196,7 @@ class LoginViewModel : ViewModel() {
                     SessionManager(context).saveAuthToken(token)
                     // go to the main screen
                     TpuApi.init(data.body()!!.token, context)
+                    CoreStore.initializeCore()
                     SocketHandler.closeSocket()
                     SocketHandler.initializeSocket(token, context)
                     UserStore.initializeUser(context)

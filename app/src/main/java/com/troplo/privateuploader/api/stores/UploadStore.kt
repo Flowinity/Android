@@ -27,6 +27,6 @@ object UploadStore {
             putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
             type = "*/*"
         }
-        startActivityForResult(activity, intent, intentCode, null)
+        activity.startActivityForResult(intent, intentCode, null)
     }
 }

@@ -36,9 +36,9 @@ import com.troplo.privateuploader.components.user.UserPopup
 fun MemberSidebar() {
     val chatActions = remember { mutableStateOf(false) }
     val chatId = ChatStore.associationId.collectAsState()
-    val chats = ChatStore.chats.collectAsState()
+    val chats = remember { ChatStore.chats }
     val chat =
-        remember { derivedStateOf { chats.value.find { it.association?.id == chatId.value } } }
+        remember { derivedStateOf { chats.find { it.association?.id == chatId.value } } }
     val user: MutableState<PopupRequiredUser?> = remember { mutableStateOf(null) }
     val popup = remember { mutableStateOf(false) }
     val pins = remember { mutableStateOf(false) }

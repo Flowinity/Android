@@ -10,6 +10,7 @@ import com.troplo.privateuploader.data.model.Chat
 import com.troplo.privateuploader.data.model.ChatCreateRequest
 import com.troplo.privateuploader.data.model.Collection
 import com.troplo.privateuploader.data.model.CollectionItem
+import com.troplo.privateuploader.data.model.Collections
 import com.troplo.privateuploader.data.model.CollectivizeRequest
 import com.troplo.privateuploader.data.model.CreateCollectionRequest
 import com.troplo.privateuploader.data.model.EditRequest
@@ -317,7 +318,7 @@ object TpuApi {
         ): Call<TenorResponse>
 
         @GET("collections")
-        fun getCollections(): Call<List<Collection>>
+        fun getCollections(): Call<Collections>
 
         @POST("collections/attachment")
         fun collectivize(

@@ -44,7 +44,7 @@ fun SettingsCollectionItemScreen(id: Int? = 0, navigate: (String) -> Unit = {}) 
     Box(modifier = Modifier.fillMaxSize()) {
         val viewModel = remember { SettingsCollectionItemViewModel() }
         val collections = CollectionStore.collections.collectAsState()
-        val collection = remember { mutableStateOf(collections.value.find { it.id == id }) }
+        val collection = remember { mutableStateOf(collections.value.items.find { it.id == id }) }
         val privacyOption: MutableState<Int> = remember { mutableIntStateOf(
             if(collection.value?.shareLink != null) 1 else 0
         )}

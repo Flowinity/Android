@@ -47,8 +47,8 @@ import kotlinx.coroutines.withContext
 @Composable
 fun SearchDialog() {
     val content = remember { mutableStateOf("") }
-    val chats = ChatStore.chats.collectAsState()
-    val chat = chats.value.find { it.association?.id == ChatStore.associationId.value }
+    val chats = remember { ChatStore.chats }
+    val chat = chats.find { it.association?.id == ChatStore.associationId.value }
     val searchViewModel = remember { SearchViewModel() }
     val kbController = LocalSoftwareKeyboardController.current
 

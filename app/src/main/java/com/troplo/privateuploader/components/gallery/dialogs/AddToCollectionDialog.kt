@@ -71,7 +71,7 @@ fun AddToCollectionDialog(open: MutableState<Boolean>, item: Upload) {
                         expanded = expanded,
                         onDismissRequest = { expanded = false },
                     ) {
-                        options.value.forEach { collection ->
+                        options.value.items.forEach { collection ->
                             DropdownMenuItem(
                                 text = { Text(collection.name) },
                                 onClick = {
