@@ -255,12 +255,12 @@ fun MessagePreview() {
                                 data = EmbedData(
                                     type = "image",
                                     description = "yes",
-                                    height = 69,
+                                    height = 69f,
                                     siteName = "TPU",
                                     title = "TPU",
                                     upload = null,
                                     url = "https://i.troplo.com",
-                                    width = 420
+                                    width = 420f
                                 ),
                                 type = "image",
                             )

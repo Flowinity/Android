@@ -101,8 +101,8 @@ data class EmbedData(
     val title: String?,
     val description: String?,
     val siteName: String?,
-    val width: Int?,
-    val height: Int?,
+    val width: Float?,
+    val height: Float?,
     val upload: Upload?,
     val type: String?,
 )
