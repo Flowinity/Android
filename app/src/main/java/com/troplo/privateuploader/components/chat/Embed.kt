@@ -2,14 +2,12 @@ package com.troplo.privateuploader.components.chat
 
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -29,18 +27,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
-import coil.size.Size
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.skydoves.landscapist.ImageOptions
+import com.skydoves.landscapist.glide.GlideImage
 import com.troplo.privateuploader.api.TpuFunctions
-import com.troplo.privateuploader.api.imageLoader
 import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.components.chat.dialogs.ImageDialog
 import com.troplo.privateuploader.data.model.Embed
-import kotlinx.coroutines.Dispatchers
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
@@ -76,22 +72,18 @@ fun Embed(embed: Embed) {
                 if (expand.value) {
                     ImageDialog(url ?: "", embed.data.upload?.name ?: "unknown.png", expand)
                 }
-                Image(
-                    contentDescription = "Embed image (no alt text)",
-                    painter = rememberAsyncImagePainter(
-                        ImageRequest.Builder(LocalContext.current)
-                            .dispatcher(Dispatchers.IO)
-                            .data(data = url)
-                            .apply(block = fun ImageRequest.Builder.() {
-                                size(Size.ORIGINAL)
-                            }).build(), imageLoader = imageLoader(LocalContext.current, false)
-                    ),
+
+                GlideImage(
+                    imageModel = { url },
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxSize()
                         .height(if (embed.data.height!! > 300) 300.dp else embed.data.height.dp)
                         .clickable {
                             expand.value = true
-                        }
+                        },
+                    imageOptions = ImageOptions(
+                        contentScale = ContentScale.FillWidth
+                    )
                 )
 
             }
@@ -149,7 +141,9 @@ fun Embed(embed: Embed) {
 
             else -> {
                 Card(
-                    modifier = Modifier.width(300.dp).heightIn(0.dp, 200.dp)
+                    modifier = Modifier
+                        .width(300.dp)
+                        .heightIn(0.dp, 200.dp)
                 ) {
                     Text(
                         text = "The version of TPUvNATIVE you are using does not yet support the embed type ${embed.type}!",
@@ -160,7 +154,9 @@ fun Embed(embed: Embed) {
         }
     } else {
         Card(
-            modifier = Modifier.width(300.dp).heightIn(0.dp, 200.dp)
+            modifier = Modifier
+                .width(300.dp)
+                .heightIn(0.dp, 200.dp)
         ) {
             Box(
                 modifier = Modifier.fillMaxSize(),

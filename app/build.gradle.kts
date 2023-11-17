@@ -31,8 +31,8 @@ android {
         applicationId = "com.troplo.privateuploader"
         minSdk = 28
         targetSdk = 34
-        versionCode = 11
-        versionName = "1.0.11"
+        versionCode = 12
+        versionName = "1.0.12"
         multiDexEnabled = true
         buildConfigField("String", "SERVER_URL", "\"https://privateuploader.com\"")
         buildConfigField("String", "BUILD_TIME", "\"${DateFormat.getDateTimeInstance().format(System.currentTimeMillis())}\"")
@@ -87,6 +87,7 @@ android {
 }
 
 dependencies {
+    implementation("com.github.skydoves:landscapist-glide:2.2.13-SNAPSHOT")
     implementation("com.apollographql.apollo3:apollo-runtime:3.8.2")
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.1.1"))
@@ -108,18 +109,18 @@ dependencies {
     implementation("io.sentry:sentry-android:6.23.0")
     implementation("io.sentry:sentry-compose-android:6.23.0")
     implementation("androidx.compose.runtime:runtime-tracing:1.0.0-alpha03")
-    implementation("io.coil-kt:coil-gif:2.4.0")
-    implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("com.github.X1nto:OverlappingPanelsCompose:1.2.0")
-    implementation("io.coil-kt:coil:2.3.0")
     implementation("com.github.jeziellago:compose-markdown:0.3.3")
-    implementation("com.github.bumptech.glide:compose:1.0.0-alpha.1")
+    implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
     implementation("com.squareup.retrofit2:retrofit:2.10.0-SNAPSHOT")
     implementation("com.squareup.retrofit2:converter-moshi:2.10.0-SNAPSHOT")
     implementation("com.squareup.moshi:moshi:1.12.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
-    implementation("com.github.bumptech.glide:glide:4.16.0-SNAPSHOT")
+    implementation("com.github.bumptech.glide:glide:5.0.0-rc01")
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.1")
+    implementation("io.coil-kt:coil:2.3.0")
+    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("io.coil-kt:coil-gif:2.4.0")
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.squareup.retrofit2:converter-gson:2.10.0-SNAPSHOT")

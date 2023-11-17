@@ -1,5 +1,6 @@
 package com.troplo.privateuploader.components.core
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -32,6 +33,9 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
+import com.skydoves.landscapist.glide.GlideImage
 import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.api.imageLoader
 import com.troplo.privateuploader.api.stores.FriendStore
@@ -94,19 +98,15 @@ fun UserAvatar(
         }
         if(fakeStatus != null) friend?.otherUser?.status = fakeStatus
         if (avatar != null) {
-            Image(
-                contentDescription = "User profile picture",
-                painter = rememberAsyncImagePainter(
-                    ImageRequest.Builder(LocalContext.current)
-                        .dispatcher(Dispatchers.IO)
-                        .data(data = TpuFunctions.image(avatar, null, 512, 512))
-                        .apply {
-                            size(Size.ORIGINAL)
-                        }
-                        .build(),
-                    imageLoader = imageLoader(LocalContext.current),
-                    contentScale = ContentScale.FillWidth
-                ),
+            Log.d("UserAvatar", "avatar: ${ TpuFunctions.image(avatar, null, 512, 512)}")
+            GlideImage(
+                imageModel = { TpuFunctions.image(avatar, null, 512, 512) },
+                requestOptions = {
+                    RequestOptions()
+                        .override(512, 512)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .centerCrop()
+                },
                 modifier = Modifier
                     .clip(CircleShape)
                     .background(if (fake) MaterialTheme.colorScheme.surface else Color.Transparent)

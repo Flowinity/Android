@@ -15,11 +15,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
+import com.skydoves.landscapist.ImageOptions
+import com.skydoves.landscapist.glide.GlideImage
 import com.troplo.privateuploader.api.imageLoader
 import com.troplo.privateuploader.components.core.InteractionDialog
 import com.troplo.privateuploader.components.core.ZoomableBox
@@ -34,24 +39,17 @@ fun ImageDialog(url: String, name: String, open: MutableState<Boolean>) {
         open = open,
         content = {
             ZoomableBox {
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        ImageRequest.Builder(LocalContext.current)
-                            .dispatcher(Dispatchers.IO)
-                            .data(data = url)
-                            .apply(block = fun ImageRequest.Builder.() {
-                                size(Size.ORIGINAL)
-                            }).build(), imageLoader = imageLoader(LocalContext.current, false)
+                GlideImage(
+                    imageModel = { url },
+                    imageOptions = ImageOptions(
+                        contentScale = ContentScale.FillWidth
                     ),
-                    contentDescription = name,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer(
-                            scaleX = scale,
-                            scaleY = scale,
-                            translationX = offsetX,
-                            translationY = offsetY
-                        )
+                    modifier = Modifier.fillMaxSize().graphicsLayer(
+                        scaleX = scale,
+                        scaleY = scale,
+                        translationX = offsetX,
+                        translationY = offsetY
+                    ),
                 )
             }
         },

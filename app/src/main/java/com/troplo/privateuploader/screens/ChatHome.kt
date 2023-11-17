@@ -44,8 +44,7 @@ fun HomeScreen(
 ) {
     val loading = remember { mutableStateOf(true) }
     val chatViewModel = remember { ChatHomeViewModel() }
-    val chatStore = ChatStore
-    val chats = remember { chatStore.chats }
+    val chats = ChatStore.chats
     val createChat = remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
     LaunchedEffect(Unit) {
@@ -58,7 +57,7 @@ fun HomeScreen(
         NewChatDialog(createChat, navController)
     }
 
-    LaunchedEffect(chatStore.chats) {
+    LaunchedEffect(chats) {
         if (listState.firstVisibleItemIndex == 1) listState.scrollToItem(0)
     }
 

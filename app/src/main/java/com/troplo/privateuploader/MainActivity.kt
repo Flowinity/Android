@@ -156,6 +156,11 @@ class MainActivity : ComponentActivity() {
 
     public fun upload(files: List<UploadTarget>, deleteOnceFinished: Boolean = true, context: Context = this) {
         Log.d("TPU.Upload", "Uploading ${files.size} files")
+
+        if(!files.any()) {
+            return
+        }
+
         if(deleteOnceFinished) {
             UploadStore.uploads = files.toMutableStateList()
         }

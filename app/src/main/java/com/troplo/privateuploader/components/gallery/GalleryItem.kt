@@ -53,7 +53,8 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.skydoves.landscapist.ImageOptions
+import com.skydoves.landscapist.glide.GlideImage
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.api.imageLoader
@@ -67,9 +68,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class,
-    ExperimentalLayoutApi::class
-)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 @Preview
 fun GalleryItem(
@@ -127,18 +126,15 @@ fun GalleryItem(
                     } else {
                         TpuFunctions.image(item.attachment, null)
                     }
-                    Image(
-                        contentDescription = item.name,
-                        painter = rememberAsyncImagePainter(
-                            ImageRequest.Builder(LocalContext.current)
-                                .data(data = url)
-                                .apply(block = fun ImageRequest.Builder.() {}).build(),
-                            imageLoader = imageLoader(LocalContext.current)
+                    
+                    GlideImage(
+                        imageModel = { url },
+                        imageOptions = ImageOptions(
+                            contentScale = ContentScale.Fit
                         ),
                         modifier = Modifier
                             .requiredHeight(200.dp)
                             .fillMaxWidth(),
-                        contentScale = ContentScale.Fit
                     )
                 } else {
                     Icon(

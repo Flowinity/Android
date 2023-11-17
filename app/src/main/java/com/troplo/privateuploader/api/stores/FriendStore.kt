@@ -19,8 +19,9 @@ object FriendStore {
 
     fun initializeFriends() {
         try {
-            val socket = SocketHandler.getSocket()
-            socket?.off("userStatus")
+            val socket = SocketHandler.getFriendsSocket();
+            val tracked = SocketHandler.getTrackedUsersSocket()
+            tracked?.off("userStatus")
             socket?.off("friendRequest")
 
             CoroutineScope(
@@ -32,26 +33,32 @@ object FriendStore {
                 }
             }
 
+            Log.d("FriendStore", "initialized")
 
-            socket?.on("userStatus") { it ->
+            tracked?.on("userStatus") { it ->
                 val jsonArray = it[0] as JSONObject
                 val payload = jsonArray.toString()
-                Log.d("TPU.Untagged", payload)
+                Log.d("FriendStore.UserStatus", payload)
                 val status = SocketHandler.gson.fromJson(payload, StatusPayload::class.java)
                 val friend = friends.value.find { it.otherUser?.id == status.id }
+
+                Log.d("FriendStore.UserStatus", "friend: $friend")
 
                 if (friend != null) {
                     friends.value = friends.value.minus(friend).plus(
                         friend.copy(
                             otherUser = friend.otherUser?.copy(
-                                status = status.status ?: "offline",
+                                status = status.status?.lowercase() ?: "offline",
                                 platforms = status.platforms
                             )
                         )
                     )
                 } else if (status.id == UserStore.user.value?.id) {
+                    Log.d("FriendStore.UserStatus", "updating current user status")
                     UserStore.user.value = UserStore.user.value?.copy(
-                        status = status.status ?: "offline",
+                        status = status.status?.lowercase() ?: "offline",
+                        storedStatus = if (status.status?.lowercase() === "offline") "invisible" else status.status?.lowercase()
+                            ?: "offline",
                         platforms = status.platforms
                     )
                 }
@@ -87,7 +94,13 @@ object FriendStore {
     fun updateFriendNickname(name: String, userId: Int) {
         friends.value = friends.value.map {
             if (it.otherUser?.id == userId) {
-                it.copy(otherUser = it.otherUser?.copy(nickname = it.otherUser?.nickname?.copy(nickname = name)))
+                it.copy(
+                    otherUser = it.otherUser?.copy(
+                        nickname = it.otherUser?.nickname?.copy(
+                            nickname = name
+                        )
+                    )
+                )
             } else {
                 it
             }

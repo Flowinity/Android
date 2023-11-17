@@ -26,6 +26,9 @@ object SocketHandler {
 
     private var chatSocket: Socket? = null
     private var gallerySocket: Socket? = null
+    private var userSocket: Socket? = null
+    private var friendsSocket: Socket? = null
+    private var trackedUsersSocket: Socket? = null
 
     private var manager: Manager? = null
     val gson = Gson()
@@ -47,9 +50,15 @@ object SocketHandler {
             manager = Manager(URI(baseUrl), options)
             chatSocket = manager!!.socket("/chat", options)
             gallerySocket = manager!!.socket("/gallery", options)
-            if(gallerySocket != null) {
-                gallerySocket?.open()
-            }
+            userSocket = manager!!.socket("/user", options)
+            friendsSocket = manager!!.socket("/friends", options)
+            trackedUsersSocket = manager!!.socket("/trackedUsers", options)
+
+            gallerySocket?.open()
+            userSocket?.open()
+            friendsSocket?.open()
+            trackedUsersSocket?.open()
+
             if (chatSocket != null) {
                 chatSocket?.open()
                 if (platform !== "android_kotlin_background_service") {
@@ -101,9 +110,14 @@ object SocketHandler {
                         }
                         Log.d("MessageStore", "Unread; $unread, Chat: $chat")
                         if(chat != null) {
-                            val index = ChatStore.chats.indexOfFirst { it.id == chat.id }
-                            ChatStore.chats.removeAt(index)
-                            ChatStore.chats.add(0, chat.copy(unread = unread))
+                            val modifiedChats = ChatStore.chats.toMutableList()
+                            val index = modifiedChats.indexOfFirst { it.id == chat.id }
+                            if (index != -1) {
+                                modifiedChats.removeAt(index)
+                                modifiedChats.add(0, chat.copy(unread = unread))
+                                ChatStore.chats.clear()
+                                ChatStore.chats.addAll(modifiedChats)
+                            }
                         }
                     }
                     chatSocket?.on("typing") { it ->
@@ -154,6 +168,18 @@ object SocketHandler {
 
     fun getGallerySocket(): Socket? {
         return gallerySocket
+    }
+
+    fun getUserSocket(): Socket? {
+        return userSocket
+    }
+
+    fun getFriendsSocket(): Socket? {
+        return friendsSocket
+    }
+
+    fun getTrackedUsersSocket(): Socket? {
+        return trackedUsersSocket
     }
 
     fun closeSocket() {

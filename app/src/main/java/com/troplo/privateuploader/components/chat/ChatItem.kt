@@ -83,7 +83,8 @@ fun ChatItem(
         icon = {
             UserAvatar(
                 avatar = chat.icon ?: chat.recipient?.avatar,
-                username = chatName
+                username = chat.recipient?.username ?: chatName,
+                showStatus = chat.recipient != null
             )
         }
     )
