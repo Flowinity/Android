@@ -26,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +39,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.troplo.privateuploader.api.ChatStore
 import com.troplo.privateuploader.api.stores.UploadStore
+import com.troplo.privateuploader.components.core.InfiniteListHandler
 import com.troplo.privateuploader.data.model.UploadTarget
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalLayoutApi::class)
@@ -47,7 +49,7 @@ fun MyDevice() {
     val viewModel = remember { MyDeviceViewModel() }
     val context = LocalContext.current
 
-    val mediaPermissionState = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+    val imagesPermissionState = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         rememberPermissionState(
             android.Manifest.permission.READ_MEDIA_IMAGES
         )
@@ -57,9 +59,25 @@ fun MyDevice() {
         )
     }
 
-    if (mediaPermissionState.status.isGranted) {
+    val filesPermissionState = rememberPermissionState(
+        android.Manifest.permission.READ_EXTERNAL_STORAGE
+    )
+
+    val lazyListState = remember { androidx.compose.foundation.lazy.LazyListState() }
+
+
+    InfiniteListHandler(listState = lazyListState) {
+        Log.d("TPU.MyDevice", "Load more images")
+        if (viewModel.offset.value == -1 || viewModel.loading.value) return@InfiniteListHandler
         viewModel.loadImages(context)
-        LazyColumn {
+    }
+
+
+    if (imagesPermissionState.status.isGranted) {
+        viewModel.loadImages(context)
+        LazyColumn(
+            state = lazyListState
+        ) {
             item {
                 FlowRow(
                     modifier = Modifier.fillMaxWidth()
@@ -107,7 +125,7 @@ fun MyDevice() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text("This feature requires permission to access your local media files.")
-            Button(onClick = { mediaPermissionState.launchPermissionRequest() }) {
+            Button(onClick = { imagesPermissionState.launchPermissionRequest(); filesPermissionState.launchPermissionRequest() }) {
                 Text("Request permission")
             }
         }
@@ -116,8 +134,14 @@ fun MyDevice() {
 
 class MyDeviceViewModel : ViewModel() {
     val images = mutableStateListOf<UploadTarget>()
+    val offset = mutableStateOf<Int>(0)
+    val loading = mutableStateOf(false)
 
     fun loadImages(context: Context) {
+        if (loading.value || offset.value == -1) return
+        loading.value = true
+        val cachedOffset = offset.value
+        offset.value += 20
         val contentResolver: ContentResolver = context.contentResolver
         val imagesUri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
@@ -125,16 +149,22 @@ class MyDeviceViewModel : ViewModel() {
         val projection = arrayOf(MediaStore.Images.Media._ID, MediaStore.Images.Media.DISPLAY_NAME)
 
         // Sorting by date modified in descending order
-        val sortOrder = "${MediaStore.Images.Media.DATE_MODIFIED} DESC"
+        val sortOrder = "  LIMIT 20 OFFSET 0 ${MediaStore.Images.Media.DATE_MODIFIED} DESC"
 
         // Perform the query
         var cursor: Cursor? = null
+
         try {
             val bundle = Bundle()
             bundle.putInt(ContentResolver.QUERY_ARG_LIMIT, 20)
+            bundle.putString(ContentResolver.QUERY_ARG_SORT_COLUMNS, MediaStore.Images.Media.DATE_MODIFIED)
+            bundle.putString(ContentResolver.QUERY_ARG_SORT_DIRECTION, "DESC")
+            print("Offset: $cachedOffset")
+            bundle.putInt(ContentResolver.QUERY_ARG_OFFSET, cachedOffset)
             cursor = contentResolver.query(imagesUri, projection, bundle, null)
+
             cursor?.let {
-                while (cursor.moveToNext()) {
+                if (it.moveToFirst()) {
                     // Retrieve the image ID
                     val imageId =
                         cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID))
@@ -142,17 +172,29 @@ class MyDeviceViewModel : ViewModel() {
                     // Create the content URI for the image
                     val imageUri = ContentUris.withAppendedId(imagesUri, imageId)
 
-                    // Add the image URI to the list
+                    // Add the image URI to the end of the list (newest first)
                     Log.d("MediaStoreUtils", "Found image: $imageUri")
+                    // add to start of list
                     images.add(
+                        0,
                         UploadTarget(
                             uri = imageUri,
                             name = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME))
                                 ?: "unknown.file"
                         )
                     )
+
+                    Log.d("MediaStoreUtils", "Found ${cursor.count} images")
+                } else {
+                    Log.d("MediaStoreUtils", "No images found")
+                    offset.value = -1
                 }
+
+                // Don't forget to close the cursor when you're done with it
+                it.close()
+                loading.value = false
             }
+
         } catch (e: Exception) {
             Log.e("MediaStoreUtils", "Error retrieving images: ${e.message}")
         } finally {

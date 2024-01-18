@@ -75,7 +75,7 @@ fun SettingsAccountScreen() {
                 SettingsItem(
                     Icons.Default.Password,
                     "Change password",
-                    "Change your TPU password",
+                    "Change your Flowinity password",
                     trailingContent = {
                         Icon(Icons.Default.ChevronRight, contentDescription = "Change password")
                     },

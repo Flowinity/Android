@@ -88,6 +88,7 @@ import com.troplo.privateuploader.data.model.MessageRequest
 import com.troplo.privateuploader.data.model.ReadReceiptEvent
 import com.troplo.privateuploader.data.model.UploadTarget
 import io.socket.emitter.Emitter
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -743,7 +744,7 @@ class ChatViewModel : ViewModel() {
                         pending = true,
                         edited = false,
                         editedAt = null,
-                        embeds = emptyList<Embed>(),
+                        embeds = emptyList(),
                         error = false,
                         legacyUser = null,
                         legacyUserId = null,

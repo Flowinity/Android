@@ -250,21 +250,7 @@ fun MessagePreview() {
                         updatedAt = "2021-09-01T00:00:00.000Z",
                         edited = true,
                         editedAt = null,
-                        embeds = listOf(
-                            Embed(
-                                data = EmbedData(
-                                    type = "image",
-                                    description = "yes",
-                                    height = 69f,
-                                    siteName = "TPU",
-                                    title = "TPU",
-                                    upload = null,
-                                    url = "https://i.troplo.com",
-                                    width = 420f
-                                ),
-                                type = "image",
-                            )
-                        ),
+                        embeds = emptyList(),
                         error = false,
                         legacyUser = null,
                         legacyUserId = null,
@@ -280,7 +266,7 @@ fun MessagePreview() {
                             updatedAt = "2021-09-01T00:00:00.000Z",
                             edited = false,
                             editedAt = null,
-                            embeds = emptyList<Embed>(),
+                            embeds = emptyList(),
                             error = false,
                             legacyUser = null,
                             legacyUserId = null,

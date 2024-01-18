@@ -2,6 +2,7 @@ package com.troplo.privateuploader.screens
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -23,7 +26,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -31,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.troplo.privateuploader.R
 import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.SocketHandlerService
@@ -53,107 +59,112 @@ fun RegisterScreen(onLoginSuccess: () -> Unit, navigate: (String) -> Unit) {
     val context = LocalContext.current
     val viewModel = remember { RegisterViewModel() }
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "PrivateUploader",
-            style = MaterialTheme.typography.displayMedium,
-            color = Primary,
-            modifier = Modifier.padding(top = 8.dp)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        val instanceState = remember { mutableStateOf(SessionManager(context).getInstanceURL()) }
-        LaunchedEffect(instanceState.value) {
-            delay(500)
-            viewModel.checkInstance(instanceState.value, context)
-        }
+        item {
+            Image(
+                painter = painterResource(id = R.drawable.flowinity_full),
+                contentDescription = "Flowinity Logo",
+                modifier = Modifier
+                    .width(250.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+            )
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            TextField(
-                value = instanceState.value,
-                onValueChange = { instanceState.value = it },
-                label = { Text("PrivateUploader Instance") },
-                supportingText = { Text(viewModel.instanceVersion.value) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-            Spacer(modifier = Modifier.height(32.dp))
-            val usernameState = remember { mutableStateOf("") }
-            TextField(
-                value = usernameState.value,
-                onValueChange = { usernameState.value = it },
-                label = { Text("Username") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            val emailState = remember { mutableStateOf("") }
-            TextField(
-                value = emailState.value,
-                onValueChange = { emailState.value = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            val passwordState = remember { mutableStateOf("") }
-            TextField(
-                value = passwordState.value,
-                onValueChange = { passwordState.value = it },
-                label = { Text("Password") },
-                visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-            HyperlinkText(
-                modifier = Modifier.padding(top = 8.dp),
-                linkTextColor = Primary,
-                fullText = "By registering I agree to the Privacy Policy, and Content Policy.",
-                hyperLinks = mutableMapOf(
-                    "Privacy Policy" to "https://privateuploader.com/policies/privacy",
-                    "Content Policy" to "https://privateuploader.com/policies/content"
-                ),
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            LoadingButton(
-                onClick = {
-                    viewModel.register(
-                        username = usernameState.value,
-                        password = passwordState.value,
-                        email = emailState.value,
-                        context = context,
-                        onLoginSuccess = onLoginSuccess
-                    )
-                },
-                loading = viewModel.loading,
-                text = "Register",
-                enabled = usernameState.value.isNotEmpty() && passwordState.value.isNotEmpty(),
-                modifier = Modifier.fillMaxWidth()
-            )
-            Box(
+            Spacer(modifier = Modifier.height(8.dp))
+            val instanceState =
+                remember { mutableStateOf(SessionManager(context).getInstanceURL()) }
+            LaunchedEffect(instanceState.value) {
+                delay(500)
+                viewModel.checkInstance(instanceState.value, context)
+            }
+
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
+                    .padding(16.dp)
             ) {
-                ClickableText(
-                    text = AnnotatedString("Already have an account?"),
-                    style = TextStyle(
-                        color = Primary,
-                        fontSize = MaterialTheme.typography.bodyMedium.fontSize
-                    ),
-                    modifier = Modifier.align(Alignment.CenterEnd),
-                    onClick = {
-                        navigate("login")
-                    }
+                TextField(
+                    value = instanceState.value,
+                    onValueChange = { instanceState.value = it },
+                    label = { Text("Flowinity Instance") },
+                    supportingText = { Text(viewModel.instanceVersion.value) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
                 )
+                Spacer(modifier = Modifier.height(32.dp))
+                val usernameState = remember { mutableStateOf("") }
+                TextField(
+                    value = usernameState.value,
+                    onValueChange = { usernameState.value = it },
+                    label = { Text("Username") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                val emailState = remember { mutableStateOf("") }
+                TextField(
+                    value = emailState.value,
+                    onValueChange = { emailState.value = it },
+                    label = { Text("Email") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                val passwordState = remember { mutableStateOf("") }
+                TextField(
+                    value = passwordState.value,
+                    onValueChange = { passwordState.value = it },
+                    label = { Text("Password") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+                HyperlinkText(
+                    modifier = Modifier.padding(top = 8.dp),
+                    linkTextColor = Primary,
+                    fullText = "By registering I agree to the Privacy Policy, and Content Policy.",
+                    hyperLinks = mutableMapOf(
+                        "Privacy Policy" to "https://privateuploader.com/policies/privacy",
+                        "Content Policy" to "https://privateuploader.com/policies/content"
+                    )
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                LoadingButton(
+                    onClick = {
+                        viewModel.register(
+                            username = usernameState.value,
+                            password = passwordState.value,
+                            email = emailState.value,
+                            context = context,
+                            onLoginSuccess = onLoginSuccess
+                        )
+                    },
+                    loading = viewModel.loading,
+                    text = "Register",
+                    enabled = usernameState.value.isNotEmpty() && passwordState.value.isNotEmpty(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    ClickableText(
+                        text = AnnotatedString("Already have an account?"),
+                        style = TextStyle(
+                            color = Primary,
+                            fontSize = MaterialTheme.typography.bodyMedium.fontSize
+                        ),
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                        onClick = {
+                            navigate("login")
+                        }
+                    )
+                }
             }
         }
     }

@@ -3,6 +3,7 @@ package com.troplo.privateuploader.screens.settings
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
@@ -41,12 +43,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.troplo.privateuploader.BuildConfig
+import com.troplo.privateuploader.R
 import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.stores.UserStore
@@ -85,9 +90,6 @@ fun SettingsScreen(
         }
         Scaffold(
             modifier = Modifier.fillMaxSize(),
-            topBar = {
-                UserBanner()
-            },
             content = { paddingValues ->
                 Column(
                     modifier = Modifier.padding(top = paddingValues.calculateTopPadding() + 8.dp)
@@ -97,6 +99,7 @@ fun SettingsScreen(
                             .fillMaxSize()
                     ) {
                         item {
+                            UserBanner()
                             SettingsItem(
                                 content = {
                                     Row(
@@ -138,7 +141,7 @@ fun SettingsScreen(
                         item {
                             SettingsItem(
                                 Icons.Default.AccountBox,
-                                "My PrivateUploader",
+                                "My Flowinity",
                                 "Change your username, email, and password.",
                                 onClick = { navigate("settings/account") })
                         }
@@ -156,7 +159,7 @@ fun SettingsScreen(
                                 SettingsItem(
                                     Icons.Default.Upload,
                                     "Auto-Upload",
-                                    "Options to automatically upload to PrivateUploader.",
+                                    "Options to automatically upload to Flowinity.",
                                     onClick = { navigate("settings/upload") }
                                 )
                             }
@@ -175,7 +178,7 @@ fun SettingsScreen(
                             SettingsItem(
                                 Icons.Default.MoreTime,
                                 "Changelog",
-                                "Recent updates to PrivateUploader Mobile.",
+                                "Recent updates to Flowinity Mobile.",
                                 onClick = { navigate("settings/changelog") }
                             )
                         }
@@ -184,11 +187,11 @@ fun SettingsScreen(
                             SettingsItem(
                                 Icons.Default.OpenInBrowser,
                                 "Can't find what you're looking for?",
-                                "Visit PrivateUploader on the web.",
+                                "Visit Flowinity on the web.",
                                 onClick = {
                                     val intent = Intent(
                                         Intent.ACTION_VIEW,
-                                        Uri.parse("https://privateuploader.com")
+                                        Uri.parse("https://flowinity.com")
                                     )
                                     context.startActivity(intent)
                                 }
@@ -199,7 +202,7 @@ fun SettingsScreen(
                             SettingsItem(
                                 Icons.Default.Logout,
                                 "Logout",
-                                "Logout of PrivateUploader.",
+                                "Logout of Flowinity.",
                                 onClick = {
                                     logout.value = true
                                 }
@@ -211,7 +214,7 @@ fun SettingsScreen(
                                 SettingsItem(
                                     Icons.Default.DeviceUnknown,
                                     "Re-attempt device registration",
-                                    "Re-attempt device registration with PrivateUploader Firebase CM",
+                                    "Re-attempt device registration with Flowinity Firebase CM",
                                     onClick = {
                                         UserStore.registerFCMToken()
                                     }
@@ -236,36 +239,17 @@ fun SettingsScreen(
                                     ) {
                                         val rippled: MutableState<Int> =
                                             remember { mutableIntStateOf(0) }
-                                        Text(
-                                            text = "Troplo",
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            color = Primary,
+                                        Image(
+                                            painter = painterResource(id = R.drawable.flowinity_full),
+                                            contentDescription = "Flowinity Logo",
                                             modifier = Modifier
-                                                .align(Alignment.CenterHorizontally)
-                                                .offset(y = (6).dp)
-                                        )
-                                        Text(
-                                            text = "PrivateUploader",
-                                            style = MaterialTheme.typography.displayMedium,
-                                            color = Primary,
-                                            modifier = Modifier.clickable {
-                                                rippled.value += 1
-                                                if (rippled.value > 5) {
-                                                    SessionManager(context).setDebugMode(!UserStore.debug)
-                                                    UserStore.debug = !UserStore.debug
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Debug mode: ${UserStore.debug}",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                    rippled.value = 0
-                                                }
-                                            }
+                                                .width(250.dp),
+                                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
                                         )
                                         Text(
                                             text = "Mobile Early Access",
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            color = Primary
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurface
                                         )
                                         Divider(
                                             modifier = Modifier
@@ -287,7 +271,7 @@ fun SettingsScreen(
                                             }", style = MaterialTheme.typography.bodySmall
                                         )
                                         Text(
-                                            text = "PrivateUploader Server: ${
+                                            text = "Flowinity Server: ${
                                                 TpuApi.instance
                                             }", style = MaterialTheme.typography.bodySmall
                                         )

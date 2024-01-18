@@ -189,7 +189,7 @@ class FirebaseChatService : FirebaseMessagingService() {
                     .build()
 
                 val replyAction = NotificationCompat.Action.Builder(
-                    R.drawable.tpu_logo,
+                    R.drawable.flowinity_logo,
                     "Reply",
                     replyPendingIntent
                 )
@@ -203,7 +203,7 @@ class FirebaseChatService : FirebaseMessagingService() {
                         .setStyle(style)
                         .setContentText(message.content)
                         .setContentTitle(message.username)
-                        .setSmallIcon(R.drawable.tpu_logo)
+                        .setSmallIcon(R.drawable.flowinity_logo)
                         .setWhen(TpuFunctions.getDate(message.createdAt)?.time ?: 0)
                         .addAction(replyAction)
                         .setContentIntent(

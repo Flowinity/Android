@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -34,6 +35,7 @@ fun HyperlinkText(
             addStyle(
                 style = SpanStyle(
                     color = linkTextColor,
+
                     fontSize = fontSize,
                     fontWeight = linkTextFontWeight,
                     textDecoration = linkTextDecoration
@@ -51,7 +53,7 @@ fun HyperlinkText(
         addStyle(
             style = SpanStyle(
                 fontSize = fontSize,
-                color = textStyle.color,
+                color = textStyle.color.takeOrElse { MaterialTheme.colorScheme.onBackground },
             ),
             start = 0,
             end = fullText.length

@@ -31,12 +31,11 @@ android {
         applicationId = "com.troplo.privateuploader"
         minSdk = 28
         targetSdk = 34
-        versionCode = 12
-        versionName = "1.0.12"
+        versionCode = 13
+        versionName = "1.0.13"
         multiDexEnabled = true
-        buildConfigField("String", "SERVER_URL", "\"https://privateuploader.com\"")
+        buildConfigField("String", "SERVER_URL", "\"https://flowinity.com\"")
         buildConfigField("String", "BUILD_TIME", "\"${DateFormat.getDateTimeInstance().format(System.currentTimeMillis())}\"")
-        buildConfigField("Integer", "BETA_VERSION", "6")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -48,7 +47,7 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            buildConfigField("String", "SERVER_URL", "\"https://privateuploader.com\"")
+            buildConfigField("String", "SERVER_URL", "\"https://flowinity.com\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

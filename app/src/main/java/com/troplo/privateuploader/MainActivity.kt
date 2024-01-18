@@ -154,11 +154,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    public fun upload(files: List<UploadTarget>, deleteOnceFinished: Boolean = true, context: Context = this) {
+    public fun upload(files: List<UploadTarget>, deleteOnceFinished: Boolean = true, context: Context = this): List<String>? {
+        var uploads = mutableListOf<String>()
         Log.d("TPU.Upload", "Uploading ${files.size} files")
 
         if(!files.any()) {
-            return
+            return null
         }
 
         if(deleteOnceFinished) {
@@ -210,8 +211,16 @@ class MainActivity : ComponentActivity() {
                     }
                     Log.d("TPU.Upload", "Upload finished: ${upload[0].upload.attachment}, ${UploadStore.uploads.toList().toString()}")
                 }
+
+                uploads = upload.map { it.upload.attachment }.toMutableList()
+            }
+
+            return@launch withContext(Dispatchers.Main) {
+                uploads
             }
         }
+
+        return null
     }
 
     @Deprecated("Deprecated in Java :(")

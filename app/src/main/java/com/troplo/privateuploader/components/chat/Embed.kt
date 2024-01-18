@@ -34,136 +34,158 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.glide.GlideImage
 import com.troplo.privateuploader.api.TpuFunctions
+import com.troplo.privateuploader.api.stores.CoreStore
 import com.troplo.privateuploader.api.stores.UserStore
 import com.troplo.privateuploader.components.chat.dialogs.ImageDialog
 import com.troplo.privateuploader.data.model.Embed
+import com.troplo.privateuploader.data.model.EmbedDataV2
+import com.troplo.privateuploader.data.model.EmbedMedia
+import com.troplo.privateuploader.data.model.EmbedMediaType
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun Embed(embed: Embed) {
-    if (embed.data != null) {
-        val url =
-            if (embed.data.type == "TPU_DIRECT") embed.data.url else "https://" + UserStore.getUser()?.domain?.domain + embed.data.url
-        when (embed.type) {
-            "openGraph" -> {
+fun Embed(embed: EmbedDataV2) {
+    if (embed.metadata != null) {
+        val context = LocalContext.current
+        val coreStore = CoreStore.core.value
+        if (embed.metadata.siteName?.isNotEmpty() == true) {
+            Card {
+                Column {
+                    Text(
+                        text = embed.metadata.siteName.orEmpty(),
+                        modifier = Modifier.padding(top = 8.dp),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    EmbedText(embed)
+                }
+            }
+        }
+
+            if (embed.metadata.siteName?.isEmpty() == true) {
                 Card {
                     Column {
-                        Text(
-                            text = embed.data.siteName.orEmpty(),
-                            modifier = Modifier.padding(top = 8.dp),
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                        Text(
-                            text = embed.data.title.orEmpty(),
-                            modifier = Modifier.padding(top = 8.dp),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Text(
-                            text = embed.data.description.orEmpty(),
-                            modifier = Modifier.padding(top = 8.dp),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        EmbedText(embed)
                     }
                 }
             }
 
-            "image" -> {
-                val expand = remember { mutableStateOf(false) }
-                if (expand.value) {
-                    ImageDialog(url ?: "", embed.data.upload?.name ?: "unknown.png", expand)
-                }
+            for (media in embed.media ?: emptyList()) {
+                if (media.type == 0) {
+                    val url =
+                        if (!media.isInternal) "https://${coreStore?.domain ?: "https://flowinity.com/"}${media.proxyUrl}" else "https://" + UserStore.getUser()?.domain?.domain + "/i/" + media.attachment
+                    val expand = remember { mutableStateOf(false) }
+                    if (expand.value) {
+                        ImageDialog(
+                            url ?: "",
+                            media.upload?.name ?: media.attachment ?: media.url ?: "unknown.png",
+                            expand
+                        )
+                    }
 
-                GlideImage(
-                    imageModel = { url },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .height(if (embed.data.height!! > 300) 300.dp else embed.data.height.dp)
-                        .clickable {
-                            expand.value = true
-                        },
-                    imageOptions = ImageOptions(
-                        contentScale = ContentScale.FillWidth
+                    GlideImage(
+                        imageModel = { url },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .height(if (media.height!! > 300) 300.dp else media.height.dp)
+                            .clickable {
+                                expand.value = true
+                            },
+                        imageOptions = ImageOptions(
+                            contentScale = ContentScale.FillWidth
+                        )
                     )
-                )
-
-            }
-
-            "file" -> {
-                val context = LocalContext.current
-                Card {
-                    Column {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(start = 16.dp, top = 16.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.InsertDriveFile,
-                                contentDescription = null,
-                                modifier = Modifier.size(48.dp)
-                            )
-                            Text(
-                                text = embed.data.upload?.name.orEmpty(),
-                                modifier = Modifier.padding(start = 8.dp),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(start = 16.dp)
-                        ) {
-                            Text(
-                                text = TpuFunctions.fileSize(embed.data.upload?.fileSize),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.Gray,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Spacer(modifier = Modifier.weight(0.1f))
-                            IconButton(
-                                onClick = {
-                                    val attachment = embed.data.upload?.attachment
-                                    if (attachment != null) {
+                } else if ((media.type == 3 || media.type == 1) && media.upload != null) {
+                    Card {
+                        Column {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(start = 16.dp, top = 16.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.InsertDriveFile,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                                Text(
+                                    text = media.upload.name,
+                                    modifier = Modifier.padding(start = 8.dp),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(start = 16.dp)
+                            ) {
+                                Text(
+                                    text = TpuFunctions.fileSize(media.upload.fileSize),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color.Gray,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Spacer(modifier = Modifier.weight(0.1f))
+                                IconButton(
+                                    onClick = {
+                                        val attachment = media.upload.attachment
                                         val intent = Intent(Intent.ACTION_VIEW)
                                         intent.data =
                                             Uri.parse("https://${UserStore.getUser()?.domain?.domain}/i/${attachment}?force=true")
                                         context.startActivity(intent)
                                     }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Download,
+                                        contentDescription = null
+                                    )
                                 }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Download,
-                                    contentDescription = null
-                                )
                             }
+                        }
+                    }
+                } else if(media.type == 3 || media.type == 1) {
+                    Card(
+                        modifier = Modifier
+                            .width(300.dp)
+                            .heightIn(0.dp, 200.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "This file has been deleted by the owner.",
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                    }
+                } else {
+                    Card(
+                        modifier = Modifier
+                            .width(300.dp)
+                            .heightIn(0.dp, 200.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "This embed cannot be loaded.\n\nType: ${media.type}\n\nURL: ${media.url}",
+                                modifier = Modifier.padding(16.dp)
+                            )
                         }
                     }
                 }
             }
-
-            else -> {
-                Card(
-                    modifier = Modifier
-                        .width(300.dp)
-                        .heightIn(0.dp, 200.dp)
+        } else {
+            Card(
+                modifier = Modifier
+                    .width(300.dp)
+                    .heightIn(0.dp, 200.dp)
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "The version of TPUvNATIVE you are using does not yet support the embed type ${embed.type}!",
-                        modifier = Modifier.padding(16.dp)
-                    )
+                    Text(text = "This embed cannot be loaded.", modifier = Modifier.padding(16.dp))
                 }
             }
         }
-    } else {
-        Card(
-            modifier = Modifier
-                .width(300.dp)
-                .heightIn(0.dp, 200.dp)
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "This embed cannot be loaded.", modifier = Modifier.padding(16.dp))
-            }
-        }
     }
-}

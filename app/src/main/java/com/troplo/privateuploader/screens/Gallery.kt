@@ -88,6 +88,27 @@ import org.json.JSONObject
 import retrofit2.Response
 import java.util.Date
 
+public fun getFileName(uri: Uri, ctx: Context): String {
+    val contentResolver: ContentResolver = ctx.contentResolver
+    var result: String? = null
+    if (uri.scheme == "content") {
+        val cursor = contentResolver.query(uri, null, null, null, null)
+        cursor.use { c ->
+            if (c != null && c.moveToFirst()) {
+                val index = c.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                result = c.getString(index)
+            }
+        }
+    }
+    if (result == null) {
+        result = uri.path
+        val cut = result!!.lastIndexOf('/')
+        if (cut != -1) {
+            result = result!!.substring(cut + 1)
+        }
+    }
+    return result as String
+}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -98,34 +119,12 @@ fun GalleryScreen(
     inline: Boolean = false,
     onClick: (Upload) -> Unit = {},
 ) {
-    val contentResolver: ContentResolver = LocalContext.current.contentResolver
-    fun getFileName(uri: Uri): String {
-        var result: String? = null
-        if (uri.scheme == "content") {
-            val cursor = contentResolver.query(uri, null, null, null, null)
-            cursor.use { c ->
-                if (c != null && c.moveToFirst()) {
-                    val index = c.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                    result = c.getString(index)
-                }
-            }
-        }
-        if (result == null) {
-            result = uri.path
-            val cut = result!!.lastIndexOf('/')
-            if (cut != -1) {
-                result = result!!.substring(cut + 1)
-            }
-        }
-        return result as String
-    }
-
     val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { data ->
        Log.d("TPU.UploadResponse", "Upload response received, data: $data")
         val files = mutableListOf<UploadTarget>()
         for (uri in data) {
-            files.add(UploadTarget(uri = uri, name = getFileName(uri)))
+            files.add(UploadTarget(uri = uri, name = getFileName(uri, context)))
         }
         MainActivity().upload(files, false, context)
     }

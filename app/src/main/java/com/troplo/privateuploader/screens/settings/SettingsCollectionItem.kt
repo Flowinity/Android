@@ -151,7 +151,7 @@ fun SettingsCollectionItemScreen(id: Int? = 0, navigate: (String) -> Unit = {}) 
                             contentColor = MaterialTheme.colorScheme.onErrorContainer
                         )
                     )
-                    Text("More Collection settings are coming soon to PrivateUploader Mobile! You can see more settings on the web app.", modifier = Modifier.padding(8.dp))
+                    Text("More Collection settings are coming soon to Flowinity Mobile! You can see more settings on the web app.", modifier = Modifier.padding(8.dp))
                 }
             }
         }

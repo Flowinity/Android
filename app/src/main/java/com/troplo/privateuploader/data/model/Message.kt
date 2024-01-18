@@ -13,7 +13,7 @@ data class Message(
     @field:Json(name = "content") val content: String,
     // Type is null on Colubrina messages
     @field:Json(name = "type") val type: String?,
-    @field:Json(name = "embeds") val embeds: List<Embed>,
+    @field:Json(name = "embeds") val embeds: List<EmbedDataV2>,
     @field:Json(name = "edited") val edited: Boolean,
     @field:Json(name = "editedAt") val editedAt: String?,
     @field:Json(name = "replyId") val replyId: Int?,
@@ -112,7 +112,7 @@ data class EmbedData(
 data class EmbedResolutionEvent(
     @field:Json(name = "chatId") val chatId: Int,
     @field:Json(name = "id") val id: Int,
-    @field:Json(name = "embeds") val embeds: List<Embed>,
+    @field:Json(name = "embeds") val embeds: List<EmbedDataV2>,
 )
 
 data class EmbedFail(
@@ -139,4 +139,69 @@ data class MessagePaginate(
 data class PinRequest(
     @field:Json(name = "id") val id: Int,
     @field:Json(name = "pinned") val pinned: Boolean,
+)
+
+// EmbedDataV2
+enum class EmbedMediaType {
+    IMAGE,
+    VIDEO,
+    AUDIO,
+    FILE
+}
+
+enum class EmbedVersion {
+    COLUBRINA,
+    V1,
+    V2
+}
+
+@JsonClass(generateAdapter = true)
+@Keep
+data class EmbedMedia(
+    @Json(name = "url") val url: String?,
+    @Json(name = "proxyUrl") val proxyUrl: String?,
+    @Json(name = "attachment") val attachment: String?,
+    @Json(name = "width") val width: Int?,
+    @Json(name = "height") val height: Int?,
+    @Json(name = "isInternal") val isInternal: Boolean,
+    @Json(name = "upload") val upload: Upload?,
+    @Json(name = "mimeType") val mimeType: String?,
+    @Json(name = "type") val type: Int,
+    @Json(name = "videoEmbedUrl") val videoEmbedUrl: String?
+)
+
+@JsonClass(generateAdapter = true)
+@Keep
+data class EmbedText(
+    @Json(name = "imageProxyUrl") val imageProxyUrl: String?,
+    @Json(name = "text") val text: String,
+    @Json(name = "heading") val heading: Boolean?,
+    @Json(name = "imageUrl") val imageUrl: String?
+)
+
+enum class EmbedType {
+    REGULAR,
+    CHAT_INVITE,
+    DIRECT
+}
+
+@JsonClass(generateAdapter = true)
+@Keep
+data class EmbedMetadata(
+    @Json(name = "url") val url: String?,
+    @Json(name = "siteName") val siteName: String?,
+    @Json(name = "siteIcon") val siteIcon: String?,
+    @Json(name = "footer") val footer: String?,
+    @Json(name = "type") val type: Int,
+    @Json(name = "id") val id: String?,
+    @Json(name = "restricted") val restricted: Boolean = false
+)
+
+@JsonClass(generateAdapter = true)
+@Keep
+data class EmbedDataV2(
+    @Json(name = "media") val media: List<EmbedMedia>?,
+    @Json(name = "text") val text: List<EmbedText>?,
+    @Json(name = "metadata") val metadata: EmbedMetadata,
+    @Json(name = "version") val version: EmbedVersion = EmbedVersion.V2
 )
