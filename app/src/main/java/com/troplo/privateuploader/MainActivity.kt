@@ -23,6 +23,7 @@ import com.troplo.privateuploader.api.SocketHandler
 import com.troplo.privateuploader.api.SocketHandlerService
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.TpuFunctions
+import com.troplo.privateuploader.api.stores.AppStore
 import com.troplo.privateuploader.api.stores.CollectionStore
 import com.troplo.privateuploader.api.stores.CoreStore
 import com.troplo.privateuploader.api.stores.UploadStore
@@ -42,8 +43,10 @@ import okhttp3.RequestBody.Companion.asRequestBody
 
 
 class MainActivity : ComponentActivity() {
+
     override fun onResume() {
         super.onResume()
+        AppStore.foreground = true
         GoogleApiAvailability.getInstance().makeGooglePlayServicesAvailable(this)
         val socket = SocketHandler.getSocket()
         if (socket != null && !socket.connected()) {
@@ -51,8 +54,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        AppStore.foreground = false
+    }
+
     override fun onStart() {
         super.onStart()
+        AppStore.foreground = true
         val socket = SocketHandler.getSocket()
         if (socket != null && !socket.connected()) {
             socket.connect()

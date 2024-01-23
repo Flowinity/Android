@@ -32,6 +32,7 @@ import coil.request.ImageRequest
 import coil.size.Size
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.troplo.privateuploader.api.SessionManager
 import com.troplo.privateuploader.api.TpuApi
 import com.troplo.privateuploader.api.TpuFunctions
 import com.troplo.privateuploader.api.imageLoader
@@ -60,7 +61,7 @@ class FirebaseChatService : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         Log.d(TAG, "[NewChatService] Message received")
-        if (isAppOnForeground(this)) {
+        if (isAppOnForeground(this) && remoteMessage.data["type"] == "message") {
             Log.d(TAG, "[NewChatService] App is on foreground")
             return
         }
@@ -73,7 +74,8 @@ class FirebaseChatService : FirebaseMessagingService() {
                 chatName = remoteMessage.data["chatName"] ?: "",
                 associationId = remoteMessage.data["associationId"]?.toInt() ?: 0,
                 avatar = remoteMessage.data["avatar"] ?: "",
-                id = remoteMessage.data["id"]?.toInt() ?: 0
+                id = remoteMessage.data["id"]?.toInt() ?: 0,
+                type = remoteMessage.data["type"] ?: ""
             )
         )
     }
@@ -140,95 +142,121 @@ class FirebaseChatService : FirebaseMessagingService() {
             // for ActivityCompat#requestPermissions for more details.
             return
         }
-        asyncLoadIcon(message.avatar, this) {
-            try {
-                Log.d("TPU.Untagged", "[ChatService] Loaded icon")
-                val chatPartner = Person.Builder().apply {
-                    setName(message.username)
-                    setKey(message.userId.toString())
-                    setIcon(it)
-                    setImportant(false)
-                }.build()
 
-                val notificationManager = NotificationManagerCompat.from(this)
-                val channel = NotificationChannel(
-                    "communications",
-                    "Messages from Communications",
-                    NotificationManager.IMPORTANCE_HIGH
-                )
-                notificationManager.createNotificationChannel(channel)
-                if (messages[message.associationId] == null) messages[message.associationId] =
-                    mutableListOf()
-                messages[message.associationId]?.add(
-                    NotificationCompat.MessagingStyle.Message(
-                        message.content,
-                        TpuFunctions.getDate(message.createdAt)?.time ?: 0,
-                        chatPartner
+        if(message.type == "message") {
+            asyncLoadIcon(message.avatar, this) {
+                try {
+                    Log.d("TPU.Untagged", "[ChatService] Loaded icon")
+                    val chatPartner = Person.Builder().apply {
+                        setName(message.username)
+                        setKey(message.userId.toString())
+                        setIcon(it)
+                        setImportant(false)
+                    }.build()
+
+                    val notificationManager = NotificationManagerCompat.from(this)
+                    val channel = NotificationChannel(
+                        "communications",
+                        "Messages from Communications",
+                        NotificationManager.IMPORTANCE_HIGH
                     )
-                )
+                    notificationManager.createNotificationChannel(channel)
+                    if (messages[message.associationId] == null) messages[message.associationId] =
+                        mutableListOf()
 
-                val style = NotificationCompat.MessagingStyle(chatPartner)
-                    .setConversationTitle(message.chatName)
 
-                for (msg in messages[message.associationId]!!) {
-                    style.addMessage(msg)
-                }
+                    Log.d("TPU.Firebase", "[ChatService] Secure message")
+                    val rep = Intent(this, InlineNotificationActivity::class.java)
+                    rep.replaceExtras(Bundle())
+                    rep.putExtra("chatId", message.associationId)
+                    Log.d("TPU.Firebase", "[ChatService] ${rep.extras}")
+                    val style = NotificationCompat.MessagingStyle(chatPartner)
+                        .setConversationTitle(message.chatName)
+                    val replyPendingIntent = PendingIntent.getBroadcast(
+                        this@FirebaseChatService,
+                        message.associationId,
+                        rep,
+                        PendingIntent.FLAG_MUTABLE
+                    )
 
-                val rep = Intent(this, InlineNotificationActivity::class.java)
-                rep.replaceExtras(Bundle())
-                rep.putExtra("chatId", message.associationId)
-                val replyPendingIntent = PendingIntent.getBroadcast(
-                    this,
-                    message.associationId,
-                    rep,
-                    PendingIntent.FLAG_MUTABLE
-                )
+                    val remoteInput = RemoteInput.Builder("content")
+                        .setLabel("Reply")
+                        .build()
 
-                val remoteInput = RemoteInput.Builder("content")
-                    .setLabel("Reply")
-                    .build()
-
-                val replyAction = NotificationCompat.Action.Builder(
-                    R.drawable.flowinity_logo,
-                    "Reply",
-                    replyPendingIntent
-                )
-                    .addRemoteInput(remoteInput)
-                    .setAllowGeneratedReplies(true)
-                    .build()
-
-                val builder: NotificationCompat.Builder =
-                    NotificationCompat.Builder(this, "communications")
-                        .addPerson(chatPartner)
-                        .setStyle(style)
-                        .setContentText(message.content)
-                        .setContentTitle(message.username)
-                        .setSmallIcon(R.drawable.flowinity_logo)
-                        .setWhen(TpuFunctions.getDate(message.createdAt)?.time ?: 0)
-                        .addAction(replyAction)
-                        .setContentIntent(
-                            PendingIntent.getActivity(
-                                this,
-                                message.associationId,
-                                Intent(this, MainActivity::class.java).apply {
-                                    putExtra("chatId", message.associationId)
-                                },
-                                PendingIntent.FLAG_MUTABLE
+                    val replyAction = NotificationCompat.Action.Builder(
+                        R.drawable.flowinity_logo,
+                        "Reply",
+                        replyPendingIntent
+                    )
+                        .addRemoteInput(remoteInput)
+                        .setAllowGeneratedReplies(true)
+                        .build()
+                    Log.d("TPU.Firebase", "[ChatService] ${message.associationId}")
+                    val builder: NotificationCompat.Builder =
+                        NotificationCompat.Builder(this, "communications")
+                            .addPerson(chatPartner)
+                            .setContentText(message.content)
+                            .setContentTitle(message.username)
+                            .setSmallIcon(R.drawable.flowinity_logo)
+                            .setWhen(TpuFunctions.getDate(message.createdAt)?.time ?: 0)
+                            .addAction(replyAction)
+                            .setContentIntent(
+                                PendingIntent.getActivity(
+                                    this,
+                                    message.associationId,
+                                    Intent(this, MainActivity::class.java).apply {
+                                        putExtra("chatId", message.associationId)
+                                    },
+                                    PendingIntent.FLAG_MUTABLE
+                                )
                             )
-                        )
-                val res = notificationManager.notify(message.associationId, builder.build())
-                Log.d("TPU.Untagged", "[ChatService] Notification sent, $res")
-            } catch (e: Exception) {
-                Log.d(
-                    "TPU.Untagged",
-                    "[ChatService] Error sending notification, ${e.printStackTrace()}"
-                )
+                    CoroutineScope(Dispatchers.IO).launch {
+                        TpuApi.init(SessionManager(this@FirebaseChatService).getAuthToken() ?: "", this@FirebaseChatService)
+                        val messageRequest = TpuApi.retrofitService.getMessage(
+                            messageId = message.id
+                        ).execute()
+
+                        if (messageRequest.isSuccessful) {
+                            Log.d(
+                                "TPU.Firebase",
+                                "New message came through, ${messageRequest.body()?.content}"
+                            )
+                            messages[message.associationId]?.add(
+                                NotificationCompat.MessagingStyle.Message(
+                                    messageRequest.body()?.content ?: "",
+                                    TpuFunctions.getDate(message.createdAt)?.time ?: 0,
+                                    chatPartner
+                                )
+                            )
+                        }
+
+                        Log.d("TPU.Firebase", "[ChatService] Added message to list")
+
+                        for (msg in messages[message.associationId]!!) {
+                            style.addMessage(msg)
+                        }
+
+                        builder.setStyle(style)
+
+                        val res = notificationManager.notify(message.associationId, builder.build())
+                        Log.d("TPU.Untagged", "[ChatService] Notification sent, $res")
+                    }
+                } catch (e: Exception) {
+                    Log.d(
+                        "TPU.Untagged",
+                        "[ChatService] Error sending notification, ${e.printStackTrace()}"
+                    )
+                }
             }
+        } else if(message.type == "read") {
+            val notificationManager = NotificationManagerCompat.from(this)
+            notificationManager.cancel(message.associationId)
         }
     }
 
     companion object {
         private const val TAG = "FirebaseChatService"
+        private const val FAKE_MESSAGE_CONTENT = "Please update your version of the Flowinity app."
     }
 
     internal class MyWorker(appContext: Context, workerParams: WorkerParameters) :

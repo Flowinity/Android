@@ -389,6 +389,11 @@ object TpuApi {
             @Path("associationId") associationId: Int,
             @Body pinRequest: PinRequest
         ): Call<Unit>
+
+        @GET("chats/messages/{messageId}")
+        fun getMessage(
+            @Path("messageId") messageId: Int
+        ): Call<Message>
     }
 
     val retrofitService: TpuApiService by lazy {

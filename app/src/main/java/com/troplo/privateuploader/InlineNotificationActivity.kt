@@ -18,23 +18,24 @@ class InlineNotificationActivity : BroadcastReceiver() {
         try {
             Log.d(
                 "TPU.Untagged",
-                "[ChatService] InlineNotificationActivity onCreate, intent: $intent, extras: ${intent.extras}"
+                "[Firebase] InlineNotificationActivity onCreate, intent: $intent, extras: ${intent.extras}"
             )
 
             val chatId = intent.getIntExtra("chatId", 0)
             val remoteInput = RemoteInput.getResultsFromIntent(intent)
             val content = remoteInput?.getCharSequence("content")?.toString()
+            Log.d("InlineNotificationAct", "Firebase - chatId: $chatId, content: $content")
             TpuApi.init(SessionManager(context).getAuthToken() ?: "", context)
             sendReply(chatId, content, context)
         } catch (e: Exception) {
-            Log.d("TPU.InlineNotificationActivity", "Exception: $e")
+            Log.d("TPU.InlineNotificationAct", "Firebase - Exception: $e")
         }
     }
 
     private fun sendReply(chatId: Int, content: String?, context: Context) {
         try {
             if (chatId == 0) return
-            Log.d("TPU.Untagged", "Sending reply to chatId: $chatId")
+            Log.d("TPU.Untagged", "Firebase - Sending reply to chatId: $chatId")
             CoroutineScope(Dispatchers.IO).launch {
                 val response = TpuApi.retrofitService.sendMessage(
                     id = chatId, messageRequest = MessageRequest(
@@ -43,7 +44,7 @@ class InlineNotificationActivity : BroadcastReceiver() {
                 ).execute()
             }
         } catch (e: Exception) {
-            Log.d("TPU.InlineNotificationActivity", "sendReply exception: $e")
+            Log.d("TPU.InlineNotificationAct", "Firebase - sendReply exception: $e")
         }
     }
 }

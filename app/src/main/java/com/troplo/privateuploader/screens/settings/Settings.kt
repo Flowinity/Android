@@ -243,7 +243,19 @@ fun SettingsScreen(
                                             painter = painterResource(id = R.drawable.flowinity_full),
                                             contentDescription = "Flowinity Logo",
                                             modifier = Modifier
-                                                .width(250.dp),
+                                                .width(250.dp).clickable {
+                                                    rippled.value += 1
+                                                    if (rippled.value > 5) {
+                                                        SessionManager(context).setDebugMode(!UserStore.debug)
+                                                        UserStore.debug = !UserStore.debug
+                                                        Toast.makeText(
+                                                            context,
+                                                            "Debug mode: ${UserStore.debug}",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                        rippled.value = 0
+                                                    }
+                                                },
                                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
                                         )
                                         Text(

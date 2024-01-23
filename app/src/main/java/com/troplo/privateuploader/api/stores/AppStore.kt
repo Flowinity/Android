@@ -5,4 +5,5 @@ import androidx.navigation.NavController
 
 object AppStore {
     var navController: NavController? = null
+    var foreground = false
 }

@@ -66,6 +66,7 @@ data class MessageEventFirebase(
     @field:Json(name = "avatar") val avatar: String,
     @field:Json(name = "chatName") val chatName: String,
     @field:Json(name = "createdAt") val createdAt: String,
+    @field:Json(name = "type") val type: String,
 )
 
 @JsonClass(generateAdapter = true)

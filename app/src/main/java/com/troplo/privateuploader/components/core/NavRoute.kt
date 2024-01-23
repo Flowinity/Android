@@ -12,7 +12,8 @@ fun getCurrentRouteTitle(route: String): String {
         NavRoute.SettingsPreferences.path -> "Preferences"
         NavRoute.Friends.path -> "Friends"
         NavRoute.SettingsCollections.path -> "Collections"
-        else -> "PrivateUploader"
+        NavRoute.Notifications.path -> "Notifications"
+        else -> "Flowinity"
     }
 }
 

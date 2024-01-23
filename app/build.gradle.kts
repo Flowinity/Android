@@ -31,8 +31,8 @@ android {
         applicationId = "com.troplo.privateuploader"
         minSdk = 28
         targetSdk = 34
-        versionCode = 13
-        versionName = "1.0.13"
+        versionCode = 14
+        versionName = "1.0.14"
         multiDexEnabled = true
         buildConfigField("String", "SERVER_URL", "\"https://flowinity.com\"")
         buildConfigField("String", "BUILD_TIME", "\"${DateFormat.getDateTimeInstance().format(System.currentTimeMillis())}\"")

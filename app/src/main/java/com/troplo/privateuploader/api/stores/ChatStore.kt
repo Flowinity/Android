@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import com.troplo.privateuploader.api.stores.AppStore
 import com.troplo.privateuploader.data.model.AddChatUsersEvent
 import com.troplo.privateuploader.data.model.Chat
 import com.troplo.privateuploader.data.model.PinRequest
@@ -100,11 +101,16 @@ object ChatStore {
         associationId.value = id
 
         // Handle unread count, and init read receipt
+        // Ensure that the app is in the foreground
+
         val socket = SocketHandler.getSocket()
-        socket?.emit("readChat", id)
-        val chat = chats.find { it.association?.id == id }
-        if (chat != null) {
-            chat.unread = 0
+        Log.d("MarkAsRead", "Foreground: ${AppStore.foreground}")
+        if(AppStore.foreground) {
+            socket?.emit("readChat", id)
+            val chat = chats.find { it.association?.id == id }
+            if (chat != null) {
+                chat.unread = 0
+            }
         }
     }
 
